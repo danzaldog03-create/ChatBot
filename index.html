@@ -20,17 +20,17 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- CONFIGURACIÓN DE FIREBASE (DANIEL: PEGA TUS DATOS AQUÍ) ---
         let firebaseConfig = {
-            apiKey: "TU_API_KEY",
-            authDomain: "TU_PROYECTO.firebaseapp.com",
-            projectId: "TU_PROYECTO",
-            storageBucket: "TU_PROYECTO.appspot.com",
-            messagingSenderId: "TU_SENDER_ID",
-            appId: "TU_APP_ID"
+            apiKey: "AIzaSyDPi5pcDL6OL2zCJK_0n3A_RdDGt3U3LVQ",
+            authDomain: "chatbot-8d0a3.firebaseapp.com",
+            projectId: "hatbot-8d0a3",
+            storageBucket: "chatbot-8d0a3.firebasestorage.app",
+            messagingSenderId: "390359131739",
+            appId: "1:390359131739:web:23373d0ba69b4719bb417e"
         };
 
         // Verificación para entorno de prueba Gemini
@@ -41,8 +41,11 @@
         const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'spei-ops-app';
 
-        // Exportar a window para que el HTML pueda ver las funciones
-        window.fb = { auth, db, appId, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc };
+        // Exportar a window para que el HTML pueda ver las funciones (Corregido: Incluidas funciones de Auth)
+        window.fb = { 
+            auth, db, appId, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, query,
+            signInAnonymously, onAuthStateChanged, signInWithCustomToken 
+        };
     </script>
 
     <style>
@@ -59,7 +62,6 @@
             position: fixed;
         }
 
-        /* Contenedor que fuerza pantalla completa sin importar el hosting */
         .app-shell {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -136,7 +138,7 @@
             <div class="w-20 h-20 bg-blue-600 rounded-[2rem] mb-8 flex items-center justify-center shadow-2xl">
                 <i class="fas fa-fingerprint text-3xl text-white"></i>
             </div>
-            <h2 class="text-3xl font-black mb-1">SPEI Ops</h2>
+            <h2 class="text-3xl font-black mb-1 text-white">SPEI Ops</h2>
             <p class="text-slate-400 text-sm mb-10 text-center font-medium">Operación Pagos Electrónicos</p>
             
             <div class="w-full max-w-[300px] space-y-4">
@@ -182,7 +184,7 @@
                 </div>
                 
                 <div id="admin-controls" class="hidden flex items-center gap-3">
-                    <button id="settings-btn" onclick="toggleSettings()" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10"><i class="fas fa-database text-sm"></i></button>
+                    <button id="settings-btn" onclick="toggleSettings()" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10"><i class="fas fa-database text-sm text-white"></i></button>
                     <div class="flex flex-col items-center">
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="mode-toggle" class="sr-only peer" onchange="toggleAdminView()">
@@ -220,7 +222,7 @@
             <div class="w-full max-w-2xl bg-white p-6 rounded-[2.5rem] shadow-2xl flex flex-col max-h-[85vh]">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-black text-slate-800 uppercase italic">Gestión Central</h2>
-                    <button onclick="toggleSettings()" class="bg-slate-100 p-2.5 rounded-full text-slate-500"><i class="fas fa-times"></i></button>
+                    <button onclick="toggleSettings()" class="bg-slate-100 p-2.5 rounded-full text-slate-400"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="flex gap-6 border-b border-slate-100 mb-6">
                     <button onclick="switchTab('tab-kb')" id="btn-tab-kb" class="tab-btn active pb-3 text-[10px] font-black uppercase tracking-wider">Manuales</button>
@@ -229,7 +231,7 @@
                 <div class="overflow-y-auto flex-1 space-y-6">
                     <div id="tab-kb" class="space-y-4">
                         <div class="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-4">
-                            <div class="flex gap-2">
+                            <div class="flex gap-2 flex-wrap">
                                 <select id="entry-category" class="bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold flex-1">
                                     <option value="Procesos">Procesos</option>
                                     <option value="Servidores">Servidores</option>
@@ -240,7 +242,6 @@
                             <textarea id="entry-content" placeholder="Contenido técnico..." class="w-full h-24 bg-white border border-slate-200 rounded-xl p-4 text-xs font-medium"></textarea>
                             <div class="flex gap-2">
                                 <button onclick="addManualEntry()" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold text-xs shadow-lg">Publicar</button>
-                                <!-- BOTÓN DE CARGA REPARADO -->
                                 <button type="button" onclick="document.getElementById('file-selector').click()" class="bg-slate-800 text-white px-5 rounded-xl hover:bg-slate-700">
                                     <i class="fas fa-paperclip"></i>
                                 </button>
@@ -282,11 +283,18 @@
         let chatHistory = [];
 
         const chatBox = document.getElementById('chat-box');
-        const { auth, db, appId, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, signInAnonymously, onAuthStateChanged } = window.fb;
+        // Destructurando desde window.fb (Corregido: Incluidas funciones necesarias)
+        const { auth, db, appId, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, query, signInAnonymously, onAuthStateChanged, signInWithCustomToken } = window.fb;
 
         async function initApp() {
             try {
-                await signInAnonymously(auth);
+                // Manejo de autenticación robusto
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
                 onAuthStateChanged(auth, async (user) => {
                     if (!user) return;
 
@@ -305,7 +313,7 @@
                         }
                     });
 
-                    const saved = localStorage.getItem('spei_ops_vfinal_safe');
+                    const saved = localStorage.getItem('spei_ops_vfinal_stable');
                     if (saved) {
                         currentUser = JSON.parse(saved);
                         setupIdentity();
@@ -347,10 +355,11 @@
             const user = employeeRegistry.find(u => u.empNumber === input);
             if (user) {
                 currentUser = user;
-                localStorage.setItem('spei_ops_vfinal_safe', JSON.stringify(user));
+                localStorage.setItem('spei_ops_vfinal_stable', JSON.stringify(user));
                 setupIdentity();
                 document.getElementById('lock-screen').classList.add('hidden-ui');
                 document.getElementById('app-content').classList.remove('blur-md');
+                // Saludo personalizado con nombre
                 addMessage(`Bienvenido al sistema SPEI Ops, ${user.name}. He sincronizado el manual operativo. ¿En qué puedo apoyarte?`);
                 resetInactivityTimer();
             } else {
@@ -402,7 +411,7 @@
         window.logout = function() {
             clearTimeout(inactivityTimer);
             clearTimeout(warningTimer);
-            localStorage.removeItem('spei_ops_vfinal_safe');
+            localStorage.removeItem('spei_ops_vfinal_stable');
             location.reload();
         };
 
@@ -452,7 +461,7 @@
             `).join('');
         }
 
-        // PROCESADOR DE ARCHIVOS (REPARADO)
+        // PROCESADOR DE ARCHIVOS
         const fileSelector = document.getElementById('file-selector');
         fileSelector.addEventListener('change', async (e) => {
             const files = e.target.files;
@@ -513,14 +522,15 @@
                     body: JSON.stringify({ contents: [...chatHistory, { role: "user", parts: [{ text: queryText }] }], systemInstruction: { parts: [{ text: sysPrompt }] } })
                 });
                 const data = await res.json();
-                const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "No hay información.";
+                const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "No hay información disponible.";
                 chatHistory.push({ role: "user", parts: [{ text: queryText }] }, { role: "model", parts: [{ text: responseText }] });
                 if (chatHistory.length > 10) chatHistory.splice(0, 2);
+                
                 if (!isInternalMode && currentUser) {
                     await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', currentUser.empNumber), { queries: (currentUser.queries || 0) + 1 });
                 }
                 return responseText;
-            } catch (e) { return "Error técnico remota."; }
+            } catch (e) { return "Error técnico en la red operativa."; }
         }
 
         window.handleQuery = async function(q) {
@@ -537,7 +547,7 @@
             const div = document.createElement('div');
             div.className = `flex flex-col gap-1.5 message-appear ${isUser ? 'items-end ml-auto' : 'items-start'} max-w-[92%]`;
             const color = isUser ? 'bg-blue-600 text-white user-bubble' : 'bg-white text-slate-800 bot-bubble';
-            div.innerHTML = `<div class="${color} px-5 py-4 text-[13px] leading-[1.6] rounded-[2rem] ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} shadow-sm">${text.replace(/\n/g, '<br>')}</div><span class="text-[8px] text-slate-400 mx-4 font-black uppercase tracking-widest">${isUser ? (currentUser?.name || 'Tú') : 'SPEI Ops'}</span>`;
+            div.innerHTML = `<div class="${color} px-5 py-4 text-[13px] leading-[1.6] rounded-[2rem] ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} shadow-sm">${text.replace(/\n/g, '<br>')}</div><span class="text-[8px] text-slate-400 mx-4 font-black uppercase tracking-widest">${isUser ? (currentUser?.name || 'Tú') : 'Asistente'}</span>`;
             chatBox.appendChild(div); chatBox.scrollTop = chatBox.scrollHeight;
         }
 
@@ -550,7 +560,7 @@
         function removeLoading() { if (document.getElementById('loader')) document.getElementById('loader').remove(); }
         function addSystemMessage(t) {
             const div = document.createElement('div'); div.className = "text-center my-4 message-appear";
-            div.innerHTML = `<span class="text-[8px] bg-slate-200/40 px-3 py-1.5 rounded-full text-slate-500 font-black uppercase border border-slate-100">${t}</span>`;
+            div.innerHTML = `<span class="text-[8px] bg-slate-200/40 px-3 py-1.5 rounded-full text-slate-500 font-black uppercase border border-slate-100 tracking-tighter">${t}</span>`;
             chatBox.appendChild(div);
         }
 
