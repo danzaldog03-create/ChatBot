@@ -71,12 +71,12 @@
         .app-shell {
             width: 100%; height: 100%;
             display: flex; justify-content: center; align-items: center;
-            padding: 1rem;
+            padding: 1.5rem;
         }
 
         .app-container {
             width: 100%;
-            max-width: 65rem; /* Daniel: Ancho total para aprovechar tu pantalla en PC */
+            max-width: 65rem; 
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -141,8 +141,8 @@
         .manual-text-admin {
             white-space: pre-wrap;
             line-height: 1.7;
-            font-size: 0.9rem;
-            color: #475569;
+            font-size: 0.95rem;
+            color: #334155;
         }
     </style>
 </head>
@@ -171,8 +171,10 @@
                 <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all text-white disabled:opacity-50" disabled>
                     ACCEDER
                 </button>
-                <p id="error-emp" class="text-red-400 text-[9px] text-center opacity-0 font-black tracking-widest uppercase">Número no registrado</p>
+                <p id="error-emp" class="text-red-400 text-[9px] text-center opacity-0 font-black tracking-widest uppercase mt-4">Número no registrado</p>
             </div>
+            <!-- SECCIÓN RESTAURADA -->
+            <p class="mt-20 text-slate-500 text-[10px] uppercase tracking-[0.4em] font-black italic">Creado por Daniel Anzaldo • 2026</p>
         </div>
 
         <!-- Aplicación Principal -->
@@ -183,10 +185,10 @@
                         <i class="fas fa-university text-white text-xl"></i>
                     </div>
                     <div>
-                        <h1 class="font-extrabold text-xl tracking-tight leading-none mb-1">SPEI Ops</h1>
+                        <h1 class="font-extrabold text-xl tracking-tight leading-none mb-1 text-white">SPEI Ops</h1>
                         <div class="flex items-center gap-1.5">
                             <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                            <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 italic">Consulta Operativa</span>
+                            <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 italic">Terminal de Consulta</span>
                         </div>
                     </div>
                 </div>
@@ -204,26 +206,26 @@
 
             <footer class="bg-white p-6 border-t border-slate-100 shrink-0 pb-12">
                 <form id="chat-form" class="flex gap-4 items-center">
-                    <div class="flex-1 bg-slate-50 rounded-3xl flex items-center px-6 border border-slate-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 transition-all shadow-inner">
-                        <input type="text" id="user-input" placeholder="Realiza una consulta técnica al manual..." class="w-full bg-transparent border-none py-4 text-[16px] font-medium text-slate-700 outline-none" autocomplete="off">
+                    <div class="flex-1 bg-slate-50 rounded-3xl flex items-center px-6 border border-slate-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 transition-all shadow-sm">
+                        <input type="text" id="user-input" placeholder="Realiza una consulta técnica..." class="w-full bg-transparent border-none py-4 text-[16px] font-medium text-slate-700 outline-none" autocomplete="off">
                     </div>
                     <button type="submit" class="bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200 active:scale-90 transition-all">
-                        <i class="fas fa-paper-plane text-lg"></i>
+                        <i class="fas fa-paper-plane text-lg text-white"></i>
                     </button>
                 </form>
                 <div class="flex justify-between items-center mt-6">
-                    <p id="footer-username" class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Cargando identidad...</p>
+                    <p id="footer-username" class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Cargando...</p>
                     <button id="logout-btn" class="text-[10px] font-black text-slate-400 uppercase underline hover:text-red-500 transition-colors">Salir del Sistema</button>
                 </div>
             </footer>
         </div>
 
-        <!-- Panel de Administración -->
+        <!-- Panel Administrativo -->
         <div id="settings-modal" class="hidden-ui system-overlay overlay" style="z-index: 10005;">
             <div class="w-full max-w-5xl bg-white p-8 rounded-[2.5rem] shadow-2xl flex flex-col max-h-[92vh] text-slate-800">
                 <div class="flex justify-between items-center mb-8">
                     <h2 class="text-2xl font-black uppercase italic tracking-tighter">Administración de Conocimiento</h2>
-                    <button id="close-settings-btn" class="bg-slate-100 p-3 rounded-full text-slate-400 hover:bg-slate-200 transition-all"><i class="fas fa-times text-lg"></i></button>
+                    <button id="close-settings-btn" class="bg-slate-100 p-3 rounded-full text-slate-500 hover:bg-slate-200 transition-all"><i class="fas fa-times text-lg"></i></button>
                 </div>
                 
                 <div class="flex gap-8 border-b border-slate-100 mb-8">
@@ -243,10 +245,10 @@
                                 </select>
                                 <input type="text" id="entry-title" placeholder="Título del procedimiento..." class="flex-[2] min-w-[300px] bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none text-slate-800 shadow-sm">
                             </div>
-                            <textarea id="entry-content" placeholder="Escribe aquí el texto técnico exacto que el bot debe responder..." class="w-full h-56 bg-white border border-slate-200 rounded-xl p-5 text-sm font-medium outline-none text-slate-700 leading-relaxed shadow-sm"></textarea>
+                            <textarea id="entry-content" placeholder="Escribe el texto técnico exacto que el bot debe transcribir..." class="w-full h-56 bg-white border border-slate-200 rounded-xl p-5 text-sm font-medium outline-none text-slate-700 leading-relaxed shadow-sm"></textarea>
                             <div class="flex gap-4">
                                 <input type="hidden" id="editing-id">
-                                <button id="save-entry-btn" class="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest hover:bg-emerald-700">Guardar Registro</button>
+                                <button id="save-entry-btn" class="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest hover:bg-emerald-700 transition-all">Guardar Manual</button>
                                 <button id="file-trigger" class="bg-slate-800 text-white px-8 rounded-2xl hover:bg-slate-700 transition-colors shadow-lg"><i class="fas fa-file-upload text-lg"></i></button>
                                 <input type="file" id="file-selector" class="hidden" multiple accept=".pdf,.xlsx,.txt">
                             </div>
@@ -275,8 +277,8 @@
         <!-- Aviso Inactividad -->
         <div id="timeout-modal" class="overlay hidden-ui" style="background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(15px); z-index: 10000;">
             <div class="w-full max-w-sm bg-white p-10 rounded-[3rem] shadow-2xl text-center text-slate-800">
-                <h3 class="text-2xl font-black mb-3 text-blue-600 tracking-tighter italic">¿Continuas?</h3>
-                <p class="text-sm text-slate-500 mb-10 font-medium">Por seguridad, tu sesión cerrará pronto por inactividad.</p>
+                <h3 class="text-2xl font-black mb-3 text-blue-600 tracking-tighter italic text-center">¿Continuas?</h3>
+                <p class="text-sm text-slate-500 mb-10 font-medium text-center">Por seguridad, tu sesión cerrará pronto por inactividad.</p>
                 <div class="flex gap-3">
                     <button id="timeout-logout-btn" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold text-sm">SALIR</button>
                     <button id="timeout-extend-btn" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-bold text-sm shadow-lg uppercase tracking-widest">Seguir</button>
@@ -326,7 +328,7 @@
                             btn.innerText = "INGRESAR";
                             btn.disabled = false;
 
-                            const saved = localStorage.getItem('spei_ops_prod_strict_v1');
+                            const saved = localStorage.getItem('spei_ops_production_vstrict_final');
                             if (saved) {
                                 const savedUser = JSON.parse(saved);
                                 const updated = employeeRegistry.find(u => u.empNumber === savedUser.empNumber);
@@ -361,7 +363,7 @@
         }
 
         function logout() {
-            localStorage.removeItem('spei_ops_prod_strict_v1');
+            localStorage.removeItem('spei_ops_production_vstrict_final');
             location.reload();
         }
 
@@ -382,7 +384,7 @@
             const user = employeeRegistry.find(u => u.empNumber === input);
             if (user) {
                 currentUser = user;
-                localStorage.setItem('spei_ops_prod_strict_v1', JSON.stringify(user));
+                localStorage.setItem('spei_ops_production_vstrict_final', JSON.stringify(user));
                 enterApp();
                 addMessage(`Bienvenido, ${user.name}. Terminal operativa sincronizada. ¿Qué proceso deseas consultar?`);
             } else {
@@ -406,16 +408,15 @@
             document.getElementById('chat-header').className = isInternalMode 
                 ? "bg-emerald-900 text-white p-6 pt-10 shadow-xl flex items-center justify-between shrink-0 transition-all"
                 : "bg-slate-900 text-white p-6 pt-10 shadow-xl flex items-center justify-between shrink-0 transition-all";
-            notify(isInternalMode ? "Panel Administrador" : "Asistente Operativo");
+            notify(isInternalMode ? "Administrador" : "Asistente");
         };
 
-        // GESTIÓN DE MANUALES CON EDICIÓN
         document.getElementById('save-entry-btn').onclick = async () => {
             const cat = document.getElementById('entry-category').value;
             const title = document.getElementById('entry-title').value.trim();
             const content = document.getElementById('entry-content').value.trim();
             const editId = document.getElementById('editing-id').value;
-            if (!title || !content) return notify("Completa todos los campos", true);
+            if (!title || !content) return notify("Faltan datos", true);
             try {
                 const id = editId || Date.now().toString();
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), { 
@@ -430,7 +431,7 @@
             document.getElementById('entry-title').value = "";
             document.getElementById('entry-content').value = "";
             document.getElementById('editing-id').value = "";
-            document.getElementById('save-entry-btn').innerText = "Guardar Registro";
+            document.getElementById('save-entry-btn').innerText = "Guardar Manual";
             document.getElementById('save-entry-btn').className = "flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest transition-all";
         }
 
@@ -448,7 +449,7 @@
         };
 
         window.deleteEntry = async (id) => {
-            if (confirm("¿Borrar definitivamente este manual?")) {
+            if (confirm("¿Borrar definitivamente?")) {
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id));
                 notify("Eliminado");
             }
@@ -463,12 +464,12 @@
                             <span class="text-[9px] text-slate-300 font-bold">${e.date}</span>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="editEntry('${e.id}')" class="text-blue-500 hover:bg-blue-50 w-9 h-9 rounded-full flex items-center justify-center transition-all"><i class="fas fa-pen text-sm"></i></button>
-                            <button onclick="deleteEntry('${e.id}')" class="text-red-300 hover:bg-red-50 w-9 h-9 rounded-full flex items-center justify-center transition-all"><i class="fas fa-trash text-sm"></i></button>
+                            <button onclick="editEntry('${e.id}')" class="text-blue-500 hover:bg-blue-50 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm"><i class="fas fa-pen text-sm"></i></button>
+                            <button onclick="deleteEntry('${e.id}')" class="text-red-300 hover:bg-red-50 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm"><i class="fas fa-trash text-sm"></i></button>
                         </div>
                     </div>
                     <h4 class="text-sm font-black uppercase mb-3 tracking-tight">${e.title}</h4>
-                    <p class="manual-text-admin text-[13px] text-slate-600 font-medium">${e.content}</p>
+                    <p class="manual-text-admin text-[13.5px] text-slate-600 font-medium">${e.content}</p>
                 </div>
             `).join('');
         }
@@ -487,32 +488,36 @@
 
         function renderUsers() {
             document.getElementById('user-registry-list').innerHTML = employeeRegistry.map(u => `
-                <div class="flex items-center justify-between p-5 bg-slate-50 rounded-3xl border border-slate-100 mb-2">
-                    <div class="text-[12px] font-bold text-slate-800">${u.name} <span class="text-[9px] opacity-40 uppercase ml-2 font-black">[${u.role}]</span></div>
+                <div class="flex items-center justify-between p-5 bg-slate-50 rounded-3xl border border-slate-100 mb-2 shadow-sm">
+                    <div class="text-[12px] font-bold text-slate-800">${u.name} <span class="text-[9px] opacity-40 uppercase ml-2 font-black tracking-widest">[${u.role}]</span></div>
                     <div class="text-[11px] font-black text-blue-600 bg-blue-100 px-4 py-1 rounded-full">${u.queries || 0} q</div>
                 </div>
             `).join('');
         }
 
-        // PARSER PARA ICONOS EN TÍTULOS
+        // LIMPIEZA DE ETIQUETAS Y FORMATO DE ICONOS
         function formatBotResponse(text) {
+            // Elimina etiquetas residuales que el bot pueda incluir
+            let clean = text.replace(/\[CATEGORÍA:.*?\| TEMA:.*?\]/gi, "");
+            clean = clean.replace(/REGISTRO:.*?\n/gi, "");
+            clean = clean.replace(/CONTENIDO:\s*/gi, "");
+            
             // Reemplaza ### Título por un encabezado con icono de libro
-            return text.replace(/###\s*(.*?)(\n|$)/g, '<div class="bot-header"><i class="fas fa-book-open text-blue-600"></i> $1</div>')
+            return clean.replace(/###\s*(.*?)(\n|$)/g, '<div class="bot-header"><i class="fas fa-book-open text-blue-600"></i> $1</div>')
                        .replace(/\n/g, '<br>');
         }
 
         async function fetchGemini(q) {
-            // Unificamos toda la base para el RAG estricto
             const kb = knowledgeBase.map(e => `REGISTRO: ${e.title}\nCONTENIDO: ${e.content}`).join('\n\n---\n\n');
             
-            const systemPrompt = `ACTÚA COMO UN MOTOR DE BÚSQUEDA TÉCNICO ESTRICTO.
+            const systemPrompt = `ACTÚA COMO UN MOTOR DE BÚSQUEDA TÉCNICO EXCLUSIVO.
             TU ÚNICA FUENTE ES: ${kb}.
             
-            REGLAS INQUEBRANTABLES:
+            REGLAS DE RESPUESTA:
             1. Si la consulta se responde con el manual, transcribe ÚNICAMENTE el texto técnico.
-            2. QUEDA PROHIBIDO explicar, dar ejemplos no presentes en el manual, saludar o despedirse.
-            3. NO uses etiquetas como "REGISTRO:", "CONTENIDO:", o corchetes de categorías.
-            4. Si el usuario dice "no entiendo" o pide ejemplos, busca si existen en el manual. Si no existen, di únicamente: "Esa aclaración o ejemplo no se encuentra en el manual operativo."
+            2. QUEDA PROHIBIDO incluir frases como "REGISTRO:", "CONTENIDO:", o "CATEGORÍA:".
+            3. QUEDA PROHIBIDO explicar con tus propias palabras o dar ejemplos que no estén en el manual.
+            4. NO saludes, NO te despidas, NO rellenes información.
             5. Usa LaTeX ($$formula$$) para matemáticas y ### para títulos internos.
             6. Si la información no está en el manual, di únicamente: "Información no registrada en el manual operativo actualmente."`;
 
@@ -536,7 +541,7 @@
                     await updateDoc(userRef, { queries: (currentUser.queries || 0) + 1 });
                 }
                 return text;
-            } catch (e) { return "Fallo en la conexión operativa."; }
+            } catch (e) { return "Error técnico operativo."; }
         }
 
         document.getElementById('chat-form').onsubmit = async (e) => {
@@ -560,7 +565,7 @@
             
             const formattedContent = isUser ? text.replace(/\n/g, '<br>') : formatBotResponse(text);
             
-            div.innerHTML = `<div class="${color} px-8 py-6 text-[15.5px] leading-[1.8] font-medium transition-all">${formattedContent}</div><span class="text-[9px] text-slate-400 mx-6 font-black uppercase tracking-widest">${isUser ? currentUser.name : 'Asistente SPEI Ops'}</span>`;
+            div.innerHTML = `<div class="${color} px-8 py-6 text-[15.5px] leading-[1.8] font-medium transition-all shadow-md">${formattedContent}</div><span class="text-[9px] text-slate-400 mx-6 font-black uppercase tracking-widest">${isUser ? currentUser.name : 'Asistente SPEI Ops'}</span>`;
             
             document.getElementById('chat-box').appendChild(div);
             document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
