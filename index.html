@@ -15,11 +15,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Librerías de Procesamiento -->
+    <!-- Librerías -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    <!-- RENDERIZADOR DE MATEMÁTICAS (NUEVO) -->
+    <!-- MathJax para Fórmulas -->
     <script>
         window.MathJax = {
             tex: {
@@ -27,9 +27,7 @@
                 displayMath: [['$$', '$$'], ['\\[', '\\]']],
                 processEscapes: true
             },
-            options: {
-                enableMenu: false
-            }
+            options: { enableMenu: false }
         };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -39,7 +37,6 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // CONFIGURACIÓN DE FIREBASE (DANIEL)
         const firebaseConfig = {
             apiKey: "AIzaSyDPi5pcDL6OL2zCJK_0n3A_RdDGt3U3LVQ",
             authDomain: "chatbot-8d0a3.firebaseapp.com",
@@ -73,29 +70,37 @@
         .app-shell {
             width: 100%; height: 100%;
             display: flex; justify-content: center; align-items: center;
+            padding: 1rem;
         }
 
         .app-container {
             width: 100%;
-            max-width: 30rem;
+            max-width: 58rem; /* Ancho optimizado para Desktop */
             height: 100%;
             display: flex;
             flex-direction: column;
             background: #f8fafc;
             position: relative;
-            box-shadow: 0 0 80px rgba(0,0,0,0.4);
+            border-radius: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        @media (max-width: 768px) {
+            .app-shell { padding: 0; }
+            .app-container { border-radius: 0; max-width: 100%; }
         }
 
         .chat-container {
             flex: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding: 1.25rem;
+            padding: 1.5rem;
             display: flex;
             flex-direction: column;
-            gap: 1.25rem;
-            background-image: radial-gradient(#e2e8f0 1.2px, transparent 1.2px);
-            background-size: 24px 24px;
+            gap: 1.5rem;
+            background-image: radial-gradient(#e2e8f0 1.5px, transparent 1.2px);
+            background-size: 30px 30px;
         }
 
         .overlay {
@@ -105,21 +110,32 @@
             background: #0f172a;
         }
 
-        #timeout-modal {
-            position: absolute; inset: 0; z-index: 10000;
-            background: rgba(15, 23, 42, 0.9);
-            backdrop-filter: blur(8px);
-            display: flex; align-items: center; justify-content: center; padding: 1.5rem;
-        }
-
         .hidden-ui { display: none !important; }
         .user-bubble { box-shadow: 0 4px 15px -3px rgba(37, 99, 235, 0.3); }
         .bot-bubble { border: 1px solid #f1f5f9; box-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.04); }
         
         .tab-btn.active { color: #3b82f6; border-bottom: 3px solid #3b82f6; }
         
-        /* Contenedor de Fórmulas */
-        .mjx-container { overflow-x: auto; max-width: 100%; padding: 0.5rem 0; }
+        .mjx-container { 
+            overflow-x: auto; 
+            max-width: 100%; 
+            padding: 1rem 0;
+            display: block !important;
+        }
+
+        /* Estilo para los títulos con iconos que reemplazan a ### */
+        .bot-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-top: 1.25rem;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 0.4rem;
+        }
 
         #toast {
             position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%);
@@ -128,7 +144,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             transition: all 0.3s ease; opacity: 0; pointer-events: none;
         }
-        #toast.show { opacity: 1; top: 2rem; }
+        #toast.show { opacity: 1; top: 2.5rem; }
     </style>
 </head>
 <body>
@@ -144,108 +160,127 @@
 
         <!-- Pantalla de Login -->
         <div id="lock-screen" class="overlay hidden-ui">
-            <div class="w-20 h-20 bg-blue-600 rounded-[1.8rem] mb-6 flex items-center justify-center shadow-2xl">
+            <div class="w-20 h-20 bg-blue-600 rounded-[2.2rem] mb-8 flex items-center justify-center shadow-2xl">
                 <i class="fas fa-fingerprint text-3xl text-white"></i>
             </div>
-            <h2 class="text-2xl font-black mb-1">SPEI Ops</h2>
-            <p class="text-slate-400 text-xs mb-8 text-center">Operación Pagos Electrónicos</p>
+            <h2 class="text-3xl font-black mb-1">SPEI Ops</h2>
+            <p class="text-slate-400 text-sm mb-10 text-center font-medium uppercase tracking-widest">Operación Pagos Electrónicos</p>
             
-            <div class="w-full max-w-[260px] space-y-4">
+            <div class="w-full max-w-[280px] space-y-4">
                 <input type="text" id="emp-number-input" placeholder="No. de Empleado" 
-                    class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 text-center text-lg font-bold text-white outline-none focus:ring-2 focus:ring-blue-500">
-                <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-black text-base shadow-xl active:scale-95 transition-all text-white disabled:opacity-50" disabled>
-                    ESPERANDO RED...
+                    class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 text-center text-xl font-bold text-white outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all text-white disabled:opacity-50" disabled>
+                    INGRESAR
                 </button>
-                <p id="error-emp" class="text-red-400 text-[9px] text-center opacity-0 font-black tracking-widest uppercase">Número no registrado</p>
+                <p id="error-emp" class="text-red-400 text-[9px] text-center opacity-0 font-black tracking-widest uppercase">Acceso Denegado</p>
             </div>
         </div>
 
-        <!-- Alerta de Inactividad -->
-        <div id="timeout-modal" class="hidden-ui">
-            <div class="w-full max-w-xs bg-white p-6 rounded-[2rem] shadow-2xl text-center">
-                <h3 class="text-lg font-black text-slate-800 mb-2">¿Seguimos ahí?</h3>
-                <p class="text-xs text-slate-500 mb-6">Sesión inactiva por 5 min. Cerramos pronto.</p>
-                <div class="flex gap-2">
-                    <button id="timeout-logout-btn" class="flex-1 bg-slate-100 text-slate-500 py-3 rounded-xl font-bold text-xs">SALIR</button>
-                    <button id="timeout-extend-btn" class="flex-[2] bg-blue-600 text-white py-3 rounded-xl font-bold text-xs uppercase">Seguir</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Interface Principal -->
-        <div class="app-container blur-md shadow-2xl" id="app-content">
-            <header class="bg-slate-900 text-white p-5 pt-8 shadow-xl flex items-center justify-between shrink-0">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10"><i class="fas fa-university text-blue-400 text-lg"></i></div>
+        <!-- Interface de la Aplicación -->
+        <div class="app-container blur-md" id="app-content">
+            <header class="bg-slate-900 text-white p-6 pt-10 shadow-xl flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10 shadow-inner">
+                        <i class="fas fa-university text-blue-400 text-xl"></i>
+                    </div>
                     <div>
-                        <h1 class="font-extrabold text-sm tracking-tight leading-none mb-1">SPEI Ops</h1>
-                        <span class="text-[7px] font-black uppercase tracking-widest text-slate-400">Gerencia Operativa</span>
+                        <h1 class="font-extrabold text-lg tracking-tight leading-none mb-1">SPEI Ops</h1>
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                            <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">Soporte Activo</span>
+                        </div>
                     </div>
                 </div>
-                <div id="admin-controls" class="hidden flex items-center gap-3">
-                    <button id="open-settings-btn" class="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center"><i class="fas fa-cog text-xs"></i></button>
+                
+                <div id="admin-controls" class="hidden flex items-center gap-4">
+                    <button id="open-settings-btn" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10 hover:bg-white/20 transition-all"><i class="fas fa-tools text-sm text-white"></i></button>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="mode-toggle" class="sr-only peer">
-                        <div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 text-white"></div>
+                        <div class="w-10 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 text-white"></div>
                     </label>
                 </div>
             </header>
 
             <main id="chat-box" class="chat-container"></main>
 
-            <footer class="bg-white p-5 border-t border-slate-100 shrink-0 pb-10">
+            <footer class="bg-white p-6 border-t border-slate-100 shrink-0 pb-12">
                 <div id="suggestions" class="flex flex-wrap gap-2 mb-4"></div>
-                <form id="chat-form" class="flex gap-2 items-center">
-                    <div class="flex-1 bg-slate-100 rounded-2xl flex items-center px-5 border border-transparent focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 transition-all">
-                        <input type="text" id="user-input" placeholder="Consultar manual..." class="w-full bg-transparent border-none py-4 text-sm font-semibold outline-none" autocomplete="off">
+                <form id="chat-form" class="flex gap-3 items-center">
+                    <div class="flex-1 bg-slate-100 rounded-3xl flex items-center px-6 border border-transparent focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 transition-all shadow-inner">
+                        <input type="text" id="user-input" placeholder="Realiza una consulta técnica..." class="w-full bg-transparent border-none py-4 text-sm font-semibold outline-none" autocomplete="off">
                     </div>
                     <button type="submit" class="bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-all">
-                        <i class="fas fa-paper-plane"></i>
+                        <i class="fas fa-paper-plane text-lg"></i>
                     </button>
                 </form>
-                <div class="flex justify-between items-center mt-5">
-                    <p id="footer-username" class="text-[8px] font-black text-slate-400 uppercase tracking-widest italic">Iniciando...</p>
-                    <button id="logout-btn" class="text-[8px] font-black text-slate-400 uppercase underline">Salir</button>
+                <div class="flex justify-between items-center mt-6">
+                    <p id="footer-username" class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Cargando...</p>
+                    <button id="logout-btn" class="text-[9px] font-black text-slate-400 uppercase underline hover:text-red-500">Cerrar Sesión</button>
                 </div>
             </footer>
         </div>
 
-        <!-- Panel Admin -->
-        <div id="settings-modal" class="hidden-ui system-overlay">
-            <div class="w-full max-w-sm bg-white p-6 rounded-[2.5rem] shadow-2xl flex flex-col max-h-[85vh]">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-lg font-black text-slate-800 uppercase italic">Admin</h2>
-                    <button id="close-settings-btn" class="bg-slate-100 p-2 rounded-full text-slate-500"><i class="fas fa-times"></i></button>
+        <!-- Modal Admin -->
+        <div id="settings-modal" class="hidden-ui system-overlay overlay" style="z-index: 10005;">
+            <div class="w-full max-w-4xl bg-white p-8 rounded-[3rem] shadow-2xl flex flex-col max-h-[85vh]">
+                <div class="flex justify-between items-center mb-8 text-slate-800">
+                    <h2 class="text-2xl font-black uppercase italic">Administración de Conocimiento</h2>
+                    <button id="close-settings-btn" class="bg-slate-100 p-3 rounded-full text-slate-400"><i class="fas fa-times text-lg"></i></button>
                 </div>
-                <div class="flex gap-4 border-b mb-6">
-                    <button id="tab-kb-btn" class="tab-btn active pb-2 text-[9px] font-black uppercase">Manuales</button>
-                    <button id="tab-users-btn" class="tab-btn pb-2 text-[9px] font-black uppercase">Mi Equipo</button>
+                <div class="flex gap-8 border-b border-slate-100 mb-8">
+                    <button id="tab-kb-btn" class="tab-btn active pb-3 text-xs font-black uppercase tracking-widest text-slate-400">Manuales</button>
+                    <button id="tab-users-btn" class="tab-btn pb-3 text-xs font-black uppercase tracking-widest text-slate-400">Equipo</button>
                 </div>
-                <div class="overflow-y-auto flex-1 space-y-6">
+                
+                <div class="overflow-y-auto flex-1 space-y-6 px-2">
                     <div id="tab-kb">
-                        <div class="bg-slate-50 p-4 rounded-3xl space-y-3 mb-4 border border-slate-100">
-                            <input type="text" id="entry-title" placeholder="Título..." class="w-full p-3 rounded-xl text-xs font-bold border border-slate-200">
-                            <textarea id="entry-content" placeholder="Escribe aquí el manual operativo..." class="w-full h-24 p-3 rounded-xl text-xs font-medium border border-slate-200"></textarea>
-                            <div class="flex gap-2">
-                                <button id="save-entry-btn" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold text-xs shadow-md">Guardar</button>
-                                <button id="file-trigger" class="bg-slate-800 text-white px-5 rounded-xl"><i class="fas fa-paperclip"></i></button>
+                        <div class="bg-slate-50 p-6 rounded-3xl space-y-4 mb-6 border border-slate-100 shadow-sm">
+                            <div class="flex gap-3">
+                                <select id="entry-category" class="bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold outline-none flex-1 text-slate-600">
+                                    <option value="Procesos">Categoría: Procesos</option>
+                                    <option value="Servidores">Categoría: Servidores</option>
+                                    <option value="Seguridad">Categoría: Seguridad</option>
+                                    <option value="Contactos">Categoría: Contactos</option>
+                                </select>
+                                <input type="text" id="entry-title" placeholder="Título del procedimiento..." class="flex-[2] bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none text-slate-800">
+                            </div>
+                            <textarea id="entry-content" placeholder="Escribe el contenido detallado aquí..." class="w-full h-40 bg-white border border-slate-200 rounded-xl p-4 text-sm font-medium outline-none text-slate-700"></textarea>
+                            <div class="flex gap-3">
+                                <input type="hidden" id="editing-id">
+                                <button id="save-entry-btn" class="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest transition-all">Guardar Manual</button>
+                                <button id="file-trigger" class="bg-slate-800 text-white px-6 rounded-2xl"><i class="fas fa-file-upload text-lg"></i></button>
                                 <input type="file" id="file-selector" class="hidden" multiple accept=".pdf,.xlsx,.txt">
                             </div>
                         </div>
-                        <div id="knowledge-list" class="space-y-2"></div>
+                        <div id="knowledge-list" class="space-y-4"></div>
                     </div>
+                    
                     <div id="tab-users" class="hidden">
-                        <div class="bg-blue-50 p-4 rounded-3xl space-y-2 mb-4 border border-blue-100">
-                            <input type="text" id="new-user-name" placeholder="Nombre" class="w-full p-3 rounded-xl text-xs font-bold">
-                            <input type="text" id="new-user-id" placeholder="Empleado" class="w-full p-3 rounded-xl text-xs font-bold">
-                            <select id="new-user-role" class="w-full p-3 rounded-xl text-xs font-bold border border-blue-200 bg-white">
-                                <option value="user">Rol: Usuario</option>
-                                <option value="admin">Rol: Administrador</option>
+                        <div class="bg-blue-50 p-6 rounded-3xl space-y-3 mb-6 border border-blue-100 shadow-sm">
+                            <div class="grid grid-cols-2 gap-3">
+                                <input type="text" id="new-user-name" placeholder="Nombre completo" class="w-full p-4 rounded-2xl text-sm font-bold border border-blue-100 text-slate-800">
+                                <input type="text" id="new-user-id" placeholder="No. Empleado" class="w-full p-4 rounded-2xl text-sm font-bold border border-blue-100 text-slate-800">
+                            </div>
+                            <select id="new-user-role" class="w-full p-4 rounded-2xl text-sm font-bold border border-blue-100 bg-white text-slate-600">
+                                <option value="user">Rol: Usuario Operativo</option>
+                                <option value="admin">Rol: Administrador Maestro</option>
                             </select>
-                            <button id="add-user-btn" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-xs mt-2 shadow-md">Autorizar</button>
+                            <button id="add-user-btn" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs mt-2 shadow-lg uppercase tracking-widest">Autorizar Acceso</button>
                         </div>
-                        <div id="user-registry-list" class="space-y-2"></div>
+                        <div id="user-registry-list" class="space-y-3"></div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aviso Inactividad -->
+        <div id="timeout-modal" class="overlay hidden-ui" style="background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(12px); z-index: 10000;">
+            <div class="w-full max-w-sm bg-white p-8 rounded-[2.5rem] shadow-2xl text-center text-slate-800">
+                <h3 class="text-xl font-black mb-2">¿Sigues ahí?</h3>
+                <p class="text-sm text-slate-500 mb-8 font-medium">Por seguridad la sesión está por cerrar.</p>
+                <div class="flex gap-3">
+                    <button id="timeout-logout-btn" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold text-sm">SALIR</button>
+                    <button id="timeout-extend-btn" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-bold text-sm shadow-lg">CONTINUAR</button>
                 </div>
             </div>
         </div>
@@ -284,14 +319,13 @@
                         employeeRegistry = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                         if (employeeRegistry.length === 0) seedAdmin();
                         
-                        // CARGA INICIAL
                         if (!isDataLoaded) {
                             isDataLoaded = true;
                             const btn = document.getElementById('login-btn');
-                            btn.innerText = "INGRESAR";
+                            btn.innerText = "INGRESAR AL SISTEMA";
                             btn.disabled = false;
 
-                            const saved = localStorage.getItem('spei_ops_production_vfinal_stable');
+                            const saved = localStorage.getItem('spei_ops_prod_v5');
                             if (saved) {
                                 const savedUser = JSON.parse(saved);
                                 const updated = employeeRegistry.find(u => u.empNumber === savedUser.empNumber);
@@ -301,7 +335,6 @@
                                 document.getElementById('lock-screen').classList.remove('hidden-ui');
                             }
                         } else if (currentUser) {
-                            // Si solo es una actualización de datos (como contador), solo refrescamos la referencia
                             const updated = employeeRegistry.find(u => u.empNumber === currentUser.empNumber);
                             if (updated) currentUser = updated;
                         }
@@ -327,7 +360,7 @@
         }
 
         function logout() {
-            localStorage.removeItem('spei_ops_production_vfinal_stable');
+            localStorage.removeItem('spei_ops_prod_v5');
             location.reload();
         }
 
@@ -345,13 +378,12 @@
         document.getElementById('login-btn').onclick = async () => {
             const input = document.getElementById('emp-number-input').value.trim();
             if (input === "682930") await seedAdmin();
-
             const user = employeeRegistry.find(u => u.empNumber === input);
             if (user) {
                 currentUser = user;
-                localStorage.setItem('spei_ops_production_vfinal_stable', JSON.stringify(user));
+                localStorage.setItem('spei_ops_prod_v5', JSON.stringify(user));
                 enterApp();
-                addMessage(`Bienvenido, ${user.name}. He sincronizado el conocimiento de Operación. ¿Cómo puedo apoyarte?`);
+                addMessage(`Bienvenido, ${user.name}. He sincronizado la documentación técnica. ¿Cómo puedo ayudarte?`);
             } else {
                 document.getElementById('error-emp').style.opacity = "1";
                 setTimeout(() => document.getElementById('error-emp').style.opacity = "0", 2500);
@@ -360,18 +392,81 @@
 
         document.getElementById('logout-btn').onclick = logout;
         document.getElementById('timeout-logout-btn').onclick = logout;
-        document.getElementById('timeout-extend-btn').onclick = () => { resetInactivityTimer(); notify("Sesión renovada."); };
+        document.getElementById('timeout-extend-btn').onclick = () => { resetInactivityTimer(); notify("Sesión renovada"); };
         document.getElementById('open-settings-btn').onclick = () => document.getElementById('settings-modal').classList.remove('hidden-ui');
-        document.getElementById('close-settings-btn').onclick = () => document.getElementById('settings-modal').classList.add('hidden-ui');
+        document.getElementById('close-settings-btn').onclick = () => {
+             document.getElementById('settings-modal').classList.add('hidden-ui');
+             clearForm();
+        };
         document.getElementById('file-trigger').onclick = () => document.getElementById('file-selector').click();
 
         document.getElementById('mode-toggle').onchange = (e) => {
             isInternalMode = e.target.checked;
             document.getElementById('chat-header').className = isInternalMode 
-                ? "bg-emerald-900 text-white p-5 pt-8 shadow-xl flex items-center justify-between shrink-0"
-                : "bg-slate-900 text-white p-5 pt-8 shadow-xl flex items-center justify-between shrink-0";
+                ? "bg-emerald-900 text-white p-6 pt-10 shadow-xl flex items-center justify-between shrink-0"
+                : "bg-slate-900 text-white p-6 pt-10 shadow-xl flex items-center justify-between shrink-0";
             notify(isInternalMode ? "Modo Administración" : "Soporte Operativo");
         };
+
+        // GESTIÓN DE DATOS CON EDICIÓN (REPARADO)
+        document.getElementById('save-entry-btn').onclick = async () => {
+            const cat = document.getElementById('entry-category').value;
+            const title = document.getElementById('entry-title').value.trim();
+            const content = document.getElementById('entry-content').value.trim();
+            const editId = document.getElementById('editing-id').value;
+            if (!title || !content) return notify("Faltan datos", true);
+            try {
+                const id = editId || Date.now().toString();
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), { 
+                    category: cat, title, content, date: new Date().toLocaleDateString() 
+                }, { merge: true });
+                notify(editId ? "Actualizado" : "Guardado");
+                clearForm();
+            } catch (err) { notify("Fallo al guardar", true); }
+        };
+
+        function clearForm() {
+            document.getElementById('entry-title').value = "";
+            document.getElementById('entry-content').value = "";
+            document.getElementById('editing-id').value = "";
+            document.getElementById('save-entry-btn').innerText = "Guardar Manual";
+            document.getElementById('save-entry-btn').className = "flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest";
+        }
+
+        window.editEntry = (id) => {
+            const e = knowledgeBase.find(x => x.id === id);
+            if (!e) return;
+            document.getElementById('entry-category').value = e.category || "Procesos";
+            document.getElementById('entry-title').value = e.title;
+            document.getElementById('entry-content').value = e.content;
+            document.getElementById('editing-id').value = id;
+            document.getElementById('save-entry-btn').innerText = "Confirmar Edición";
+            document.getElementById('save-entry-btn').className = "flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest";
+            notify("Modo Edición Activo");
+        };
+
+        window.deleteEntry = async (id) => {
+            if (confirm("¿Borrar permanentemente?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id));
+        };
+
+        function renderEntries() {
+            document.getElementById('knowledge-list').innerHTML = knowledgeBase.map(e => `
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 mb-3 shadow-sm">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[8px] bg-slate-100 text-slate-500 px-2 py-1 rounded-full font-black uppercase tracking-tighter">${e.category || 'Manual'}</span>
+                            <span class="text-[8px] text-slate-300 font-bold">${e.date}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editEntry('${e.id}')" class="text-blue-400 hover:text-blue-600"><i class="fas fa-pen text-xs"></i></button>
+                            <button onclick="deleteEntry('${e.id}')" class="text-slate-200 hover:text-red-500"><i class="fas fa-trash text-xs"></i></button>
+                        </div>
+                    </div>
+                    <h4 class="text-sm font-black text-slate-800 uppercase mb-2">${e.title}</h4>
+                    <p class="text-[11px] text-slate-500 font-medium whitespace-pre-wrap leading-relaxed">${e.content}</p>
+                </div>
+            `).join('');
+        }
 
         document.getElementById('add-user-btn').onclick = async () => {
             const name = document.getElementById('new-user-name').value.trim();
@@ -381,41 +476,15 @@
             try {
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', num), { name, empNumber: num, role: role, queries: 0 });
                 document.getElementById('new-user-name').value = ""; document.getElementById('new-user-id').value = "";
-                notify("Empleado registrado");
-            } catch (err) { notify("Error al guardar", true); }
+                notify("Miembro autorizado");
+            } catch (err) { notify("Error", true); }
         };
-
-        document.getElementById('save-entry-btn').onclick = async () => {
-            const title = document.getElementById('entry-title').value.trim();
-            const content = document.getElementById('entry-content').value.trim();
-            if (!title || !content) return notify("Faltan datos", true);
-            try {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', Date.now().toString()), { 
-                    category: "Proceso", title, content, date: new Date().toLocaleDateString() 
-                });
-                document.getElementById('entry-title').value = ""; document.getElementById('entry-content').value = "";
-                notify("Manual actualizado");
-            } catch (err) { notify("Fallo al guardar", true); }
-        };
-
-        window.deleteEntry = async (id) => {
-            if (confirm("¿Borrar permanentemente?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id));
-        };
-
-        function renderEntries() {
-            document.getElementById('knowledge-list').innerHTML = knowledgeBase.map(e => `
-                <div class="bg-white p-3 rounded-2xl border mb-2 flex justify-between items-start gap-3 shadow-sm">
-                    <div class="flex-1"><h4 class="text-[10px] font-black text-slate-800">${e.title}</h4><p class="text-[8px] text-slate-400 line-clamp-1">${e.content}</p></div>
-                    <button onclick="deleteEntry('${e.id}')" class="text-slate-300 hover:text-red-500 p-1"><i class="fas fa-trash text-[10px]"></i></button>
-                </div>
-            `).join('');
-        }
 
         function renderUsers() {
             document.getElementById('user-registry-list').innerHTML = employeeRegistry.map(u => `
-                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border mb-2">
-                    <div class="text-[10px] font-bold text-slate-800">${u.name} <span class="text-[7px] opacity-40 uppercase">[${u.role}]</span></div>
-                    <div class="text-[10px] font-black text-blue-600">${u.queries || 0}</div>
+                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-2">
+                    <div class="text-[11px] font-bold text-slate-800">${u.name} <span class="text-[8px] opacity-40 uppercase tracking-widest">[${u.role}]</span></div>
+                    <div class="text-[10px] font-black text-blue-600 bg-blue-100 px-3 py-1 rounded-full">${u.queries || 0} q</div>
                 </div>
             `).join('');
         }
@@ -423,7 +492,7 @@
         document.getElementById('file-selector').onchange = async (e) => {
             const files = e.target.files;
             if (!files.length) return;
-            notify("Procesando documentos...");
+            notify("Leyendo archivos...");
             for (let file of files) {
                 const ext = file.name.split('.').pop().toLowerCase();
                 let text = "";
@@ -432,9 +501,9 @@
                         const data = await file.arrayBuffer();
                         const pdf = await pdfjsLib.getDocument({ data }).promise;
                         for (let i=1; i<=pdf.numPages; i++) {
-                            const page = await pdf.getPage(i);
-                            const content = await page.getTextContent();
-                            text += content.items.map(s => s.str).join(' ') + '\n';
+                            const p = await pdf.getPage(i);
+                            const c = await p.getTextContent();
+                            text += c.items.map(s => s.str).join(' ') + '\n';
                         }
                     } else if (['xlsx','csv'].includes(ext)) {
                         const data = await file.arrayBuffer();
@@ -443,24 +512,33 @@
                     } else if (ext === 'txt') text = await file.text();
                     
                     if (text) {
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', "file_" + Date.now()), {
+                        const id = "file_" + Date.now();
+                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), {
                             category: "Archivo", title: file.name, content: text, date: new Date().toLocaleDateString()
                         });
                     }
-                } catch (err) { notify("Fallo en archivo", true); }
+                } catch (err) { notify("Error en archivo", true); }
             }
-            notify("Carga finalizada");
+            notify("Finalizado");
         };
 
+        // PARSER PARA ICONOS
+        function formatBotResponse(text) {
+            // Reemplaza ### Título por un encabezado con icono de libro
+            return text.replace(/###\s*(.*?)(\n|$)/g, '<div class="bot-header"><i class="fas fa-book-open text-blue-500 text-[14px]"></i> $1</div>')
+                       .replace(/\n/g, '<br>');
+        }
+
         async function fetchGemini(q) {
-            const kb = knowledgeBase.map(e => `[${e.title}]: ${e.content}`).join('\n\n');
+            const kb = knowledgeBase.map(e => `[MANUAL ${e.category}]: ${e.content}`).join('\n\n');
+            const rules = `REGLA DE ORO: Si la respuesta está en los manuales proporcionados, responde ÚNICAMENTE el texto exacto del manual. No agregues introducciones ("De acuerdo a..."), resúmenes ni despedidas. Sé 100% fiel al texto guardado. Usa ### para títulos y LaTeX para matemáticas.`;
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [...chatHistory, { role: "user", parts: [{ text: q }] }],
-                        systemInstruction: { parts: [{ text: `Asistente SPEI Ops. Tu base es: ${kb}. Responde conciso. Usa LaTeX ($$formula$$) para matemáticas. Cierra preguntando si desean profundizar o finalizar.` }] }
+                        systemInstruction: { parts: [{ text: `Asistente Técnico SPEI Ops. Tu base de datos es: ${kb}. ${rules}` }] }
                     })
                 });
                 const data = await res.json();
@@ -469,11 +547,10 @@
                 if (chatHistory.length > 10) chatHistory.splice(0, 2);
                 
                 if (!isInternalMode && currentUser) {
-                    const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'team', currentUser.empNumber);
-                    await updateDoc(userRef, { queries: (currentUser.queries || 0) + 1 });
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', currentUser.empNumber), { queries: (currentUser.queries || 0) + 1 });
                 }
                 return text;
-            } catch (e) { return "Error técnico. Verifique conexión."; }
+            } catch (e) { return "Error técnico operativo."; }
         }
 
         document.getElementById('chat-form').onsubmit = async (e) => {
@@ -482,7 +559,7 @@
             if (!v) return;
             document.getElementById('user-input').value = "";
             addMessage(v, true);
-            const l = document.createElement('div'); l.id = "loader"; l.className = "p-4 bg-white border rounded-2xl w-fit bot-bubble animate-pulse text-xs italic"; l.innerText = "Calculando...";
+            const l = document.createElement('div'); l.id = "loader"; l.className = "p-5 bg-white border rounded-3xl w-fit bot-bubble animate-pulse text-[11px] font-bold text-slate-400 italic"; l.innerText = "Consultando manual oficial...";
             document.getElementById('chat-box').appendChild(l);
             const res = await fetchGemini(v);
             if (document.getElementById('loader')) document.getElementById('loader').remove();
@@ -492,15 +569,16 @@
 
         function addMessage(text, isUser = false) {
             const div = document.createElement('div');
-            div.className = `flex flex-col gap-1 message-appear ${isUser ? 'items-end ml-auto' : 'items-start'} max-w-[92%]`;
+            div.className = `flex flex-col gap-2 message-appear ${isUser ? 'items-end ml-auto' : 'items-start'} max-w-[95%]`;
             const color = isUser ? 'bg-blue-600 text-white user-bubble' : 'bg-white text-slate-800 bot-bubble';
             
-            div.innerHTML = `<div class="${color} px-5 py-4 text-[13px] leading-[1.6] rounded-[1.8rem] ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} shadow-sm">${text.replace(/\n/g, '<br>')}</div><span class="text-[8px] text-slate-400 mx-4 font-black uppercase tracking-widest">${isUser ? currentUser.name : 'SPEI Ops'}</span>`;
+            const formattedContent = isUser ? text.replace(/\n/g, '<br>') : formatBotResponse(text);
+            
+            div.innerHTML = `<div class="${color} px-6 py-5 text-[14.5px] leading-[1.8] rounded-[2rem] ${isUser ? 'rounded-tr-none shadow-lg' : 'rounded-tl-none shadow-sm'}">${formattedContent}</div><span class="text-[9px] text-slate-400 mx-5 font-black uppercase tracking-widest">${isUser ? currentUser.name : 'Asistente SPEI'}</span>`;
             
             document.getElementById('chat-box').appendChild(div);
             document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
             
-            // RENDERIZAR FÓRMULAS TRAS AÑADIR MENSAJE
             if (!isUser && window.MathJax) {
                 MathJax.typesetPromise();
             }
