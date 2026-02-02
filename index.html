@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SPEI Ops - Sistema Operativo</title>
+    <title>SPEI Ops - Gestión Operativa</title>
     
-    <!-- Metadatos de App Móvil -->
+    <!-- Metadatos PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SPEI Ops">
@@ -20,32 +20,28 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- CONFIGURACIÓN DE FIREBASE (DANIEL: PEGA TUS DATOS AQUÍ) ---
-        let firebaseConfig = {
+        // ================================================================
+        // CONFIGURACIÓN DE FIREBASE (CREDENCIALES DE DANIEL INTEGRADAS)
+        // ================================================================
+        const firebaseConfig = {
             apiKey: "AIzaSyDPi5pcDL6OL2zCJK_0n3A_RdDGt3U3LVQ",
             authDomain: "chatbot-8d0a3.firebaseapp.com",
-            projectId: "hatbot-8d0a3",
+            projectId: "chatbot-8d0a3",
             storageBucket: "chatbot-8d0a3.firebasestorage.app",
             messagingSenderId: "390359131739",
             appId: "1:390359131739:web:23373d0ba69b4719bb417e"
         };
-
-        // Verificación para entorno de prueba Gemini
-        try { if(typeof __firebase_config !== 'undefined') firebaseConfig = JSON.parse(__firebase_config); } catch(e){}
+        // ================================================================
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'spei-ops-app';
+        const appId = "spei-ops-app";
 
-        // Exportar a window para que el HTML pueda ver las funciones (Corregido: Incluidas funciones de Auth)
-        window.fb = { 
-            auth, db, appId, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, query,
-            signInAnonymously, onAuthStateChanged, signInWithCustomToken 
-        };
+        window.fb = { auth, db, appId, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, signInAnonymously, onAuthStateChanged };
     </script>
 
     <style>
@@ -54,8 +50,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         html, body {
-            height: 100dvh;
-            width: 100vw;
+            height: 100dvh; width: 100vw;
             background-color: #0f172a;
             font-family: 'Plus Jakarta Sans', sans-serif;
             overflow: hidden;
@@ -63,135 +58,126 @@
         }
 
         .app-shell {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            display: flex;
-            justify-content: center;
-            background-color: #0f172a;
-            z-index: 100;
+            width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
         }
 
         .app-container {
             width: 100%;
-            max-width: 50rem;
+            max-width: 32rem; 
             height: 100%;
             display: flex;
             flex-direction: column;
             background: #f8fafc;
             position: relative;
+            box-shadow: 0 0 80px rgba(0,0,0,0.4);
         }
 
         .chat-container {
             flex: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding: 1.5rem;
+            padding: 1.25rem;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1.25rem;
             background-image: radial-gradient(#e2e8f0 1.2px, transparent 1.2px);
-            background-size: 30px 30px;
+            background-size: 24px 24px;
         }
 
-        .system-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            color: white;
-            padding: 2rem;
+        .overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column; color: white; padding: 2rem;
             background: #0f172a;
+            transition: all 0.4s ease;
         }
 
         #timeout-modal {
-            position: fixed;
-            inset: 0;
-            z-index: 10000;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1.5rem;
+            position: absolute; inset: 0; z-index: 10000;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center; padding: 1.5rem;
         }
 
         .hidden-ui { display: none !important; }
-        .tab-btn.active { color: #3b82f6; border-bottom: 3px solid #3b82f6; }
         .user-bubble { box-shadow: 0 4px 15px -3px rgba(37, 99, 235, 0.3); }
         .bot-bubble { border: 1px solid #f1f5f9; box-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.04); }
+        
+        .tab-btn.active { color: #3b82f6; border-bottom: 3px solid #3b82f6; }
+
+        /* Notificaciones */
+        #toast {
+            position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%);
+            z-index: 10001; padding: 1rem 1.5rem; border-radius: 1rem;
+            font-size: 0.8rem; font-weight: 800; text-transform: uppercase;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transition: all 0.3s ease; opacity: 0; pointer-events: none;
+        }
+        #toast.show { opacity: 1; top: 2.5rem; }
     </style>
 </head>
 <body>
 
+    <div id="toast"></div>
+
     <div class="app-shell">
         <!-- Pantalla de Carga -->
-        <div id="loading-overlay" class="system-overlay">
+        <div id="loading-overlay" class="overlay">
             <div class="w-14 h-14 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-            <p class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Iniciando Sincronización</p>
+            <p id="loading-text" class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 text-center text-white">Sincronizando con la Nube...</p>
         </div>
 
         <!-- Pantalla de Login -->
-        <div id="lock-screen" class="system-overlay hidden-ui">
-            <div class="w-20 h-20 bg-blue-600 rounded-[2rem] mb-8 flex items-center justify-center shadow-2xl">
-                <i class="fas fa-fingerprint text-3xl text-white"></i>
+        <div id="lock-screen" class="overlay hidden-ui">
+            <div class="w-20 h-20 bg-blue-600 rounded-[2.5rem] mb-8 flex items-center justify-center shadow-2xl">
+                <i class="fas fa-id-badge text-3xl text-white"></i>
             </div>
             <h2 class="text-3xl font-black mb-1 text-white">SPEI Ops</h2>
             <p class="text-slate-400 text-sm mb-10 text-center font-medium">Operación Pagos Electrónicos</p>
             
-            <div class="w-full max-w-[300px] space-y-4">
+            <div class="w-full max-w-[280px] space-y-4">
                 <input type="text" id="emp-number-input" placeholder="No. de Empleado" 
-                    class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 text-center text-xl font-bold text-white transition-all focus:ring-2 focus:ring-blue-500 outline-none">
-                <button onclick="checkEmployeeAccess()" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all text-white">
+                    class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 text-center text-xl font-bold text-white outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all text-white">
                     INGRESAR
                 </button>
-                <p id="error-emp" class="text-red-400 text-[10px] text-center opacity-0 font-black tracking-widest uppercase mt-4">Acceso Denegado</p>
+                <p id="error-emp" class="text-red-400 text-[10px] text-center opacity-0 font-black tracking-widest uppercase">Número no registrado</p>
             </div>
-            <p class="mt-20 text-slate-500 text-[9px] uppercase tracking-[0.4em] font-black">Creado por Daniel Anzaldo</p>
+            <p class="mt-20 text-slate-500 text-[9px] uppercase tracking-[0.4em] font-black italic">Daniel Anzaldo • 2025</p>
         </div>
 
-        <!-- Aviso de Inactividad -->
+        <!-- Aviso Inactividad -->
         <div id="timeout-modal" class="hidden-ui">
             <div class="w-full max-w-sm bg-white p-8 rounded-[2.5rem] shadow-2xl text-center">
                 <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-6">
                     <i class="fas fa-hourglass-half text-2xl animate-pulse"></i>
                 </div>
-                <h3 class="text-xl font-black text-slate-800 mb-2">¿Continuar sesión?</h3>
-                <p class="text-sm text-slate-500 mb-8">Has estado inactivo por 5 minutos. Por seguridad, la sesión se cerrará pronto.</p>
+                <h3 class="text-xl font-black text-slate-800 mb-2">¿Continuar?</h3>
+                <p class="text-sm text-slate-500 mb-8">Sesión inactiva por 5 min. Cerramos pronto.</p>
                 <div class="flex gap-3">
-                    <button onclick="logout()" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold text-sm">SALIR</button>
-                    <button onclick="extendSession()" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-bold text-sm shadow-lg shadow-blue-200">SÍ, CONTINUAR</button>
+                    <button id="timeout-logout-btn" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold text-xs">SALIR</button>
+                    <button id="timeout-extend-btn" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-bold text-xs uppercase shadow-lg">Seguir</button>
                 </div>
             </div>
         </div>
 
-        <!-- Aplicación Principal -->
+        <!-- Interface Principal -->
         <div class="app-container blur-md" id="app-content">
-            <header id="chat-header" class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-5 pt-10 shadow-2xl flex items-center justify-between shrink-0">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10">
-                        <i class="fas fa-university text-blue-400 text-xl"></i>
-                    </div>
+            <header class="bg-slate-900 text-white p-5 pt-8 shadow-xl flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10"><i class="fas fa-bolt text-blue-400 text-lg"></i></div>
                     <div>
-                        <h1 id="header-title" class="font-extrabold text-base tracking-tight leading-none mb-1">Operación Pagos</h1>
-                        <div class="flex items-center gap-1.5">
-                            <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                            <span id="header-subtitle" class="text-[8px] font-black uppercase tracking-widest text-slate-400">Soporte Activo</span>
-                        </div>
+                        <h1 class="font-extrabold text-sm tracking-tight leading-none mb-1">SPEI Ops</h1>
+                        <span class="text-[7px] font-black uppercase tracking-widest text-slate-400">Gerencia Operativa</span>
                     </div>
                 </div>
-                
                 <div id="admin-controls" class="hidden flex items-center gap-3">
-                    <button id="settings-btn" onclick="toggleSettings()" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10"><i class="fas fa-database text-sm text-white"></i></button>
-                    <div class="flex flex-col items-center">
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="mode-toggle" class="sr-only peer" onchange="toggleAdminView()">
-                            <div class="w-10 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
-                        </label>
-                        <span class="text-[6px] font-black uppercase mt-1 opacity-50">Admin</span>
-                    </div>
+                    <button id="open-settings-btn" class="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center"><i class="fas fa-cog text-xs"></i></button>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="mode-toggle" class="sr-only peer">
+                        <div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
                 </div>
             </header>
 
@@ -200,67 +186,49 @@
             <footer class="bg-white p-5 border-t border-slate-100 shrink-0 pb-10">
                 <div id="suggestions" class="flex flex-wrap gap-2 mb-4"></div>
                 <form id="chat-form" class="flex gap-2 items-center">
-                    <div class="flex-1 bg-slate-100 rounded-3xl flex items-center px-6 border border-transparent focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 transition-all">
-                        <input type="text" id="user-input" placeholder="Hacer una consulta..." class="w-full bg-transparent border-none py-4 text-sm font-semibold outline-none" autocomplete="off">
+                    <div class="flex-1 bg-slate-100 rounded-2xl flex items-center px-6 border border-transparent focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 transition-all">
+                        <input type="text" id="user-input" placeholder="Consultar manual..." class="w-full bg-transparent border-none py-4 text-sm font-semibold outline-none" autocomplete="off">
                     </div>
-                    <button type="submit" id="send-btn" class="bg-blue-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-all">
-                        <i class="fas fa-paper-plane text-lg text-white"></i>
+                    <button type="submit" class="bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-all">
+                        <i class="fas fa-paper-plane"></i>
                     </button>
                 </form>
                 <div class="flex justify-between items-center mt-5">
-                    <div class="flex items-center gap-2">
-                        <p id="footer-username" class="text-[8px] font-black text-slate-400 uppercase tracking-widest italic">Sesión no iniciada</p>
-                        <span id="role-badge" class="hidden text-[7px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest"></span>
-                    </div>
-                    <button onclick="logout()" class="text-[8px] font-black text-slate-400 uppercase underline hover:text-red-500 transition-colors">Cerrar Sesión</button>
+                    <p id="footer-username" class="text-[8px] font-black text-slate-400 uppercase tracking-widest italic">Cargando...</p>
+                    <button id="logout-btn" class="text-[8px] font-black text-slate-400 uppercase underline hover:text-red-500">Salir</button>
                 </div>
             </footer>
         </div>
 
-        <!-- Modal Admin -->
-        <div id="settings-modal" class="hidden-ui">
-            <div class="w-full max-w-2xl bg-white p-6 rounded-[2.5rem] shadow-2xl flex flex-col max-h-[85vh]">
+        <!-- Panel Admin -->
+        <div id="settings-modal" class="hidden-ui system-overlay">
+            <div class="w-full max-w-sm bg-white p-6 rounded-[2.5rem] shadow-2xl flex flex-col max-h-[85vh]">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-black text-slate-800 uppercase italic">Gestión Central</h2>
-                    <button onclick="toggleSettings()" class="bg-slate-100 p-2.5 rounded-full text-slate-400"><i class="fas fa-times"></i></button>
+                    <h2 class="text-lg font-black text-slate-800 uppercase italic">Administración</h2>
+                    <button id="close-settings-btn" class="bg-slate-100 p-2 rounded-full text-slate-500"><i class="fas fa-times"></i></button>
                 </div>
-                <div class="flex gap-6 border-b border-slate-100 mb-6">
-                    <button onclick="switchTab('tab-kb')" id="btn-tab-kb" class="tab-btn active pb-3 text-[10px] font-black uppercase tracking-wider">Manuales</button>
-                    <button onclick="switchTab('tab-users')" id="btn-tab-users" class="tab-btn pb-3 text-[10px] font-black uppercase tracking-wider">Mi Equipo</button>
+                <div class="flex gap-4 border-b mb-6">
+                    <button id="tab-kb-btn" class="tab-btn active pb-2 text-[9px] font-black uppercase">Manuales</button>
+                    <button id="tab-users-btn" class="tab-btn pb-2 text-[9px] font-black uppercase">Mi Equipo</button>
                 </div>
                 <div class="overflow-y-auto flex-1 space-y-6">
-                    <div id="tab-kb" class="space-y-4">
-                        <div class="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-4">
-                            <div class="flex gap-2 flex-wrap">
-                                <select id="entry-category" class="bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold flex-1">
-                                    <option value="Procesos">Procesos</option>
-                                    <option value="Servidores">Servidores</option>
-                                    <option value="Contactos">Contactos</option>
-                                </select>
-                                <input type="text" id="entry-title" placeholder="Título..." class="flex-[2] bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold">
-                            </div>
-                            <textarea id="entry-content" placeholder="Contenido técnico..." class="w-full h-24 bg-white border border-slate-200 rounded-xl p-4 text-xs font-medium"></textarea>
+                    <div id="tab-kb">
+                        <div class="bg-slate-50 p-4 rounded-3xl space-y-3 mb-4 border border-slate-100">
+                            <input type="text" id="entry-title" placeholder="Título..." class="w-full p-3 rounded-xl text-xs font-bold border border-slate-200 outline-none">
+                            <textarea id="entry-content" placeholder="Escribe aquí el manual..." class="w-full h-24 p-3 rounded-xl text-xs font-medium border border-slate-200 outline-none"></textarea>
                             <div class="flex gap-2">
-                                <button onclick="addManualEntry()" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold text-xs shadow-lg">Publicar</button>
-                                <button type="button" onclick="document.getElementById('file-selector').click()" class="bg-slate-800 text-white px-5 rounded-xl hover:bg-slate-700">
-                                    <i class="fas fa-paperclip"></i>
-                                </button>
+                                <button id="save-entry-btn" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold text-xs shadow-md">Guardar</button>
+                                <button id="file-trigger" class="bg-slate-800 text-white px-5 rounded-xl"><i class="fas fa-paperclip"></i></button>
                                 <input type="file" id="file-selector" class="hidden" multiple accept=".pdf,.xlsx,.txt">
                             </div>
                         </div>
                         <div id="knowledge-list" class="space-y-2"></div>
                     </div>
-                    <div id="tab-users" class="hidden space-y-4">
-                        <div class="bg-blue-50 p-5 rounded-3xl border border-blue-100 space-y-4">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-                                <input type="text" id="new-user-name" placeholder="Nombre" class="bg-white border border-blue-200 rounded-xl px-4 py-3 text-xs font-bold">
-                                <input type="text" id="new-user-id" placeholder="Empleado" class="bg-white border border-blue-200 rounded-xl px-4 py-3 text-xs font-bold">
-                                <select id="new-user-role" class="bg-white border border-blue-200 rounded-xl px-4 py-3 text-xs font-bold">
-                                    <option value="user">Usuario</option>
-                                    <option value="admin">Admin</option>
-                                </select>
-                            </div>
-                            <button onclick="registerEmployee()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black text-xs">Autorizar</button>
+                    <div id="tab-users" class="hidden">
+                        <div class="bg-blue-50 p-4 rounded-3xl space-y-2 mb-4 border border-blue-100">
+                            <input type="text" id="new-user-name" placeholder="Nombre completo" class="w-full p-3 rounded-xl text-xs font-bold">
+                            <input type="text" id="new-user-id" placeholder="Número empleado" class="w-full p-3 rounded-xl text-xs font-bold">
+                            <button id="add-user-btn" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-xs shadow-md">Registrar</button>
                         </div>
                         <div id="user-registry-list" class="space-y-2"></div>
                     </div>
@@ -270,62 +238,48 @@
     </div>
 
     <script type="module">
-        const apiKey = ""; // API Key de Gemini
         const SESSION_LIMIT = 5 * 60 * 1000;
         const WARNING_LIMIT = 30 * 1000;
 
-        let inactivityTimer = null;
-        let warningTimer = null;
-        let isInternalMode = false;
-        let knowledgeBase = [];
-        let employeeRegistry = [];
-        let currentUser = null;
-        let chatHistory = [];
+        let inactivityTimer, warningTimer, currentUser, isInternalMode = false;
+        let knowledgeBase = [], employeeRegistry = [];
+        let chatHistory = [], isDataLoaded = false;
 
-        const chatBox = document.getElementById('chat-box');
-        // Destructurando desde window.fb (Corregido: Incluidas funciones necesarias)
-        const { auth, db, appId, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, query, signInAnonymously, onAuthStateChanged, signInWithCustomToken } = window.fb;
+        const { auth, db, appId, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, signInAnonymously, onAuthStateChanged } = window.fb;
+
+        function notify(msg, isError = false) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.className = isError ? 'show bg-red-600 text-white' : 'show bg-emerald-600 text-white';
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
 
         async function initApp() {
             try {
-                // Manejo de autenticación robusto
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
+                await signInAnonymously(auth);
                 onAuthStateChanged(auth, async (user) => {
                     if (!user) return;
 
                     onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'knowledge'), (snap) => {
-                        knowledgeBase = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        knowledgeBase = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                         renderEntries();
                     });
 
                     onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'team'), (snap) => {
-                        employeeRegistry = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        employeeRegistry = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                         if (employeeRegistry.length === 0) seedAdmin();
-                        renderUsers();
-                        if (currentUser) {
+                        isDataLoaded = true;
+                        
+                        const saved = localStorage.getItem('spei_ops_session_stable_v3');
+                        if (saved && !currentUser) {
+                            currentUser = JSON.parse(saved);
                             const updated = employeeRegistry.find(u => u.empNumber === currentUser.empNumber);
-                            if (updated) { currentUser = updated; setupIdentity(); }
-                        }
+                            if (updated) { currentUser = updated; enterApp(); } else { logout(); }
+                        } else { showLogin(); }
+                        renderUsers();
                     });
-
-                    const saved = localStorage.getItem('spei_ops_vfinal_stable');
-                    if (saved) {
-                        currentUser = JSON.parse(saved);
-                        setupIdentity();
-                        document.getElementById('loading-overlay').classList.add('hidden-ui');
-                        document.getElementById('app-content').classList.remove('blur-md');
-                        resetInactivityTimer();
-                    } else {
-                        document.getElementById('loading-overlay').classList.add('hidden-ui');
-                        document.getElementById('lock-screen').classList.remove('hidden-ui');
-                    }
                 });
-            } catch (err) { console.error(err); }
+            } catch (err) { notify("Error de conexión", true); }
         }
 
         async function seedAdmin() {
@@ -334,211 +288,174 @@
             });
         }
 
-        // SESIÓN
+        function showLogin() {
+            document.getElementById('loading-overlay').classList.add('hidden-ui');
+            document.getElementById('lock-screen').classList.remove('hidden-ui');
+        }
+
+        function enterApp() {
+            document.getElementById('loading-overlay').classList.add('hidden-ui');
+            document.getElementById('lock-screen').classList.add('hidden-ui');
+            document.getElementById('app-content').classList.remove('blur-md');
+            document.getElementById('footer-username').innerText = currentUser.name;
+            if (currentUser.role === 'admin') document.getElementById('admin-controls').classList.remove('hidden');
+            resetInactivityTimer();
+        }
+
+        function logout() {
+            localStorage.removeItem('spei_ops_session_stable_v3');
+            location.reload();
+        }
+
         function resetInactivityTimer() {
             if (!currentUser) return;
             clearTimeout(inactivityTimer);
             clearTimeout(warningTimer);
             document.getElementById('timeout-modal').classList.add('hidden-ui');
-            inactivityTimer = setTimeout(() => showTimeoutWarning(), SESSION_LIMIT);
+            inactivityTimer = setTimeout(() => {
+                document.getElementById('timeout-modal').classList.remove('hidden-ui');
+                warningTimer = setTimeout(logout, WARNING_LIMIT);
+            }, SESSION_LIMIT);
         }
 
-        function showTimeoutWarning() {
-            document.getElementById('timeout-modal').classList.remove('hidden-ui');
-            warningTimer = setTimeout(() => logout(), WARNING_LIMIT);
-        }
-
-        window.extendSession = () => { resetInactivityTimer(); addSystemMessage("Sesión extendida."); };
-
-        window.checkEmployeeAccess = function() {
+        document.getElementById('login-btn').onclick = () => {
+            if (!isDataLoaded) return notify("Cargando...", false);
             const input = document.getElementById('emp-number-input').value.trim();
             const user = employeeRegistry.find(u => u.empNumber === input);
             if (user) {
                 currentUser = user;
-                localStorage.setItem('spei_ops_vfinal_stable', JSON.stringify(user));
-                setupIdentity();
-                document.getElementById('lock-screen').classList.add('hidden-ui');
-                document.getElementById('app-content').classList.remove('blur-md');
-                // Saludo personalizado con nombre
-                addMessage(`Bienvenido al sistema SPEI Ops, ${user.name}. He sincronizado el manual operativo. ¿En qué puedo apoyarte?`);
-                resetInactivityTimer();
+                localStorage.setItem('spei_ops_session_stable_v3', JSON.stringify(user));
+                enterApp();
+                addMessage(`Bienvenido, ${user.name}. He sincronizado el conocimiento de Operación. ¿En qué puedo apoyarte?`);
             } else {
-                const err = document.getElementById('error-emp');
-                err.style.opacity = "1";
-                setTimeout(() => err.style.opacity = "0", 2500);
+                document.getElementById('error-emp').style.opacity = "1";
+                setTimeout(() => document.getElementById('error-emp').style.opacity = "0", 2500);
             }
         };
 
-        function setupIdentity() {
-            if (!currentUser) return;
-            document.getElementById('footer-username').innerText = currentUser.name;
-            const badge = document.getElementById('role-badge');
-            if (badge) {
-                badge.classList.remove('hidden');
-                if (currentUser.role === 'admin') {
-                    badge.innerText = "Admin";
-                    badge.className = "bg-blue-100 text-blue-600 text-[7px] px-2 py-0.5 rounded-full font-black uppercase";
-                    document.getElementById('admin-controls')?.classList.remove('hidden');
-                } else {
-                    badge.innerText = "Equipo";
-                    badge.className = "bg-slate-100 text-slate-500 text-[7px] px-2 py-0.5 rounded-full font-black uppercase";
-                    document.getElementById('admin-controls')?.classList.add('hidden');
-                }
-            }
-        }
+        document.getElementById('logout-btn').onclick = logout;
+        document.getElementById('timeout-logout-btn').onclick = logout;
+        document.getElementById('timeout-extend-btn').onclick = () => { resetInactivityTimer(); notify("Sesión renovada."); };
+        document.getElementById('open-settings-btn').onclick = () => document.getElementById('settings-modal').classList.remove('hidden-ui');
+        document.getElementById('close-settings-btn').onclick = () => document.getElementById('settings-modal').classList.add('hidden-ui');
+        document.getElementById('file-trigger').onclick = () => document.getElementById('file-selector').click();
 
-        window.toggleAdminView = function() {
-            const toggle = document.getElementById('mode-toggle');
-            if (toggle.checked) enableStaffMode();
-            else disableStaffMode();
+        document.getElementById('mode-toggle').onchange = (e) => {
+            isInternalMode = e.target.checked;
+            document.getElementById('chat-header').classList.toggle('bg-emerald-900', isInternalMode);
+            document.getElementById('chat-header').classList.toggle('bg-slate-900', !isInternalMode);
         };
 
-        function enableStaffMode() {
-            isInternalMode = true;
-            document.getElementById('chat-header').className = "bg-gradient-to-br from-emerald-900 to-slate-900 text-white p-5 pt-10 shadow-2xl flex items-center justify-between shrink-0";
-            document.getElementById('header-subtitle').innerText = 'MODO ADMINISTRADOR';
-            document.getElementById('send-btn').className = "bg-emerald-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg";
-            addSystemMessage("Administración Sincronizada");
-        }
-
-        function disableStaffMode() {
-            isInternalMode = false;
-            document.getElementById('chat-header').className = "bg-gradient-to-br from-slate-900 to-slate-800 text-white p-5 pt-10 shadow-2xl flex items-center justify-between shrink-0";
-            document.getElementById('header-subtitle').innerText = 'SESIÓN ACTIVA';
-            document.getElementById('send-btn').className = "bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg";
-        }
-
-        window.logout = function() {
-            clearTimeout(inactivityTimer);
-            clearTimeout(warningTimer);
-            localStorage.removeItem('spei_ops_vfinal_stable');
-            location.reload();
-        };
-
-        // GESTIÓN
-        window.addManualEntry = async function() {
-            const cat = document.getElementById('entry-category').value;
+        document.getElementById('save-entry-btn').onclick = async () => {
             const title = document.getElementById('entry-title').value.trim();
             const content = document.getElementById('entry-content').value.trim();
-            if (!title || !content) return;
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', Date.now().toString()), { category: cat, title, content, date: new Date().toLocaleDateString() });
-            document.getElementById('entry-title').value = ""; document.getElementById('entry-content').value = "";
+            if (!title || !content) return notify("Faltan datos", true);
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', Date.now().toString()), { 
+                    category: "Proceso", title, content, date: new Date().toLocaleDateString() 
+                });
+                document.getElementById('entry-title').value = ""; document.getElementById('entry-content').value = "";
+                notify("Guardado con éxito");
+            } catch (err) { notify("Error de permisos", true); }
         };
 
-        window.registerEmployee = async function() {
+        document.getElementById('add-user-btn').onclick = async () => {
             const name = document.getElementById('new-user-name').value.trim();
             const num = document.getElementById('new-user-id').value.trim();
-            const role = document.getElementById('new-user-role').value;
-            if (!name || !num) return;
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', num), { name, empNumber: num, role: role, queries: 0 });
-            document.getElementById('new-user-name').value = ""; document.getElementById('new-user-id').value = "";
+            if (!name || !num) return notify("Faltan datos", true);
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', num), { name, empNumber: num, role: 'user', queries: 0 });
+                document.getElementById('new-user-name').value = ""; document.getElementById('new-user-id').value = "";
+                notify("Empleado registrado");
+            } catch (err) { notify("Error", true); }
         };
 
-        window.deleteEntry = async (id) => await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id));
+        window.deleteEntry = async (id) => {
+            if (confirm("¿Borrar?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id));
+        };
 
         function renderEntries() {
-            const list = document.getElementById('knowledge-list');
-            if (!knowledgeBase.length) { list.innerHTML = `<div class='text-center p-6 text-slate-300 text-[10px] font-bold uppercase'>Sin Datos</div>`; return; }
-            list.innerHTML = knowledgeBase.map(e => `
-                <div class="p-3 rounded-2xl bg-white border border-slate-100 mb-2 flex justify-between items-start gap-4 shadow-sm">
-                    <div class="flex-1">
-                        <span class="text-[6px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full font-black uppercase">${e.category}</span>
-                        <h4 class="text-[10px] font-black text-slate-800 mt-1">${e.title}</h4>
-                        <p class="text-[8px] text-slate-400 line-clamp-1">${e.content}</p>
-                    </div>
-                    <button onclick="deleteEntry('${e.id}')" class="text-slate-300 hover:text-red-500 p-1"><i class="fas fa-trash text-[10px]"></i></button>
+            document.getElementById('knowledge-list').innerHTML = knowledgeBase.map(e => `
+                <div class="bg-white p-3 rounded-2xl border mb-2 flex justify-between items-start gap-3">
+                    <div class="flex-1"><h4 class="text-[10px] font-black text-slate-800">${e.title}</h4><p class="text-[8px] text-slate-400 line-clamp-1">${e.content}</p></div>
+                    <button onclick="deleteEntry('${e.id}')" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash text-[10px]"></i></button>
                 </div>
             `).join('');
         }
 
         function renderUsers() {
-            const list = document.getElementById('user-registry-list');
-            list.innerHTML = employeeRegistry.map(u => `
-                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100 mb-2">
-                    <div class="text-[10px] font-bold text-slate-800">${u.name} <span class="text-[8px] opacity-40 font-normal">(${u.empNumber})</span></div>
+            document.getElementById('user-registry-list').innerHTML = employeeRegistry.map(u => `
+                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border mb-2">
+                    <div class="text-[10px] font-bold text-slate-800">${u.name} <span class="text-[8px] opacity-40">(${u.empNumber})</span></div>
                     <div class="text-[10px] font-black text-blue-600">${u.queries || 0}</div>
                 </div>
             `).join('');
         }
 
-        // PROCESADOR DE ARCHIVOS
-        const fileSelector = document.getElementById('file-selector');
-        fileSelector.addEventListener('change', async (e) => {
+        document.getElementById('file-selector').onchange = async (e) => {
             const files = e.target.files;
             if (!files.length) return;
-            addSystemMessage("Procesando documentos...");
+            notify("Procesando documentos...");
             for (let file of files) {
                 const ext = file.name.split('.').pop().toLowerCase();
                 let text = "";
                 try {
-                    if (ext === 'pdf') text = await extractTextFromPDF(file);
-                    else if (['xlsx', 'xls', 'csv'].includes(ext)) text = await extractTextFromExcel(file);
-                    else if (ext === 'txt') text = await file.text();
+                    if (ext === 'pdf') {
+                        const data = await file.arrayBuffer();
+                        const pdf = await pdfjsLib.getDocument({ data }).promise;
+                        for (let i=1; i<=pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            const content = await page.getTextContent();
+                            text += content.items.map(s => s.str).join(' ') + '\n';
+                        }
+                    } else if (['xlsx','csv'].includes(ext)) {
+                        const data = await file.arrayBuffer();
+                        const wb = XLSX.read(new Uint8Array(data), {type: 'array'});
+                        wb.SheetNames.forEach(n => text += XLSX.utils.sheet_to_txt(wb.Sheets[n]) + "\n");
+                    } else if (ext === 'txt') text = await file.text();
                     
                     if (text) {
-                        const id = Date.now().toString() + Math.random().toString(36).substr(2, 4);
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), { 
-                            category: "Documento", title: file.name, content: text, date: new Date().toLocaleDateString() 
+                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', "file_" + Date.now()), {
+                            category: "Archivo", title: file.name, content: text, date: new Date().toLocaleDateString()
                         });
                     }
-                } catch (err) { addMessage("Error procesando: " + file.name); }
+                } catch (err) { notify("Error en: " + file.name, true); }
             }
-            addSystemMessage("Carga finalizada.");
-        });
+            notify("Carga finalizada");
+        };
 
-        async function extractTextFromPDF(file) {
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            let fullText = "";
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const content = await page.getTextContent();
-                fullText += content.items.map(s => s.str).join(' ') + '\n';
-            }
-            return fullText;
-        }
-
-        function extractTextFromExcel(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
-                    let text = "";
-                    workbook.SheetNames.forEach(n => text += XLSX.utils.sheet_to_txt(workbook.Sheets[n]) + '\n');
-                    resolve(text);
-                };
-                reader.readAsArrayBuffer(file);
-            });
-        }
-
-        // IA
-        async function fetchGemini(queryText) {
-            const formattedKB = knowledgeBase.map(e => `[${e.category}] ${e.title}: ${e.content}`).join('\n\n');
-            const sysPrompt = `Asistente SPEI Ops. Datos: ${formattedKB}. REGLAS: 1. ESPAÑOL Y MUY CONCISO. 2. NO NOMBRES PERSONALES. 3. CIERRE OBLIGATORIO: "¿Deseas profundizar en algún detalle o podemos dar por finalizada la duda?"`;
+        async function fetchGemini(q) {
+            const kb = knowledgeBase.map(e => `[${e.title}]: ${e.content}`).join('\n\n');
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [...chatHistory, { role: "user", parts: [{ text: queryText }] }], systemInstruction: { parts: [{ text: sysPrompt }] } })
+                    body: JSON.stringify({
+                        contents: [...chatHistory, { role: "user", parts: [{ text: q }] }],
+                        systemInstruction: { parts: [{ text: `Asistente SPEI Ops. Base: ${kb}. Responde conciso en español. Cierra con seguimiento.` }] }
+                    })
                 });
                 const data = await res.json();
-                const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "No hay información disponible.";
-                chatHistory.push({ role: "user", parts: [{ text: queryText }] }, { role: "model", parts: [{ text: responseText }] });
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta.";
+                chatHistory.push({ role: "user", parts: [{ text: q }] }, { role: "model", parts: [{ text }] });
                 if (chatHistory.length > 10) chatHistory.splice(0, 2);
-                
                 if (!isInternalMode && currentUser) {
                     await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', currentUser.empNumber), { queries: (currentUser.queries || 0) + 1 });
                 }
-                return responseText;
-            } catch (e) { return "Error técnico en la red operativa."; }
+                return text;
+            } catch (e) { return "Error técnico."; }
         }
 
-        window.handleQuery = async function(q) {
-            addMessage(q, true);
-            document.getElementById('user-input').value = '';
-            showLoading();
-            const res = await fetchGemini(q);
-            removeLoading();
+        document.getElementById('chat-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const v = document.getElementById('user-input').value.trim();
+            if (!v) return;
+            document.getElementById('user-input').value = "";
+            addMessage(v, true);
+            const l = document.createElement('div'); l.id = "loader"; l.className = "p-5 bg-white border rounded-3xl w-fit bot-bubble animate-pulse"; l.innerText = "...";
+            document.getElementById('chat-box').appendChild(l);
+            const res = await fetchGemini(v);
+            if (document.getElementById('loader')) document.getElementById('loader').remove();
             addMessage(res);
             resetInactivityTimer();
         };
@@ -547,32 +464,21 @@
             const div = document.createElement('div');
             div.className = `flex flex-col gap-1.5 message-appear ${isUser ? 'items-end ml-auto' : 'items-start'} max-w-[92%]`;
             const color = isUser ? 'bg-blue-600 text-white user-bubble' : 'bg-white text-slate-800 bot-bubble';
-            div.innerHTML = `<div class="${color} px-5 py-4 text-[13px] leading-[1.6] rounded-[2rem] ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} shadow-sm">${text.replace(/\n/g, '<br>')}</div><span class="text-[8px] text-slate-400 mx-4 font-black uppercase tracking-widest">${isUser ? (currentUser?.name || 'Tú') : 'Asistente'}</span>`;
-            chatBox.appendChild(div); chatBox.scrollTop = chatBox.scrollHeight;
+            div.innerHTML = `<div class="${color} px-5 py-4 text-[13px] leading-[1.6] rounded-[1.8rem] ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} shadow-sm">${text.replace(/\n/g, '<br>')}</div><span class="text-[8px] text-slate-400 mx-4 font-black uppercase tracking-widest">${isUser ? currentUser.name : 'SPEI Ops'}</span>`;
+            document.getElementById('chat-box').appendChild(div);
+            document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
         }
 
-        function showLoading() {
-            const l = document.createElement('div'); l.id = "loader"; l.className = "flex gap-2 p-5 bg-white border border-slate-50 rounded-3xl w-fit ml-2 bot-bubble";
-            l.innerHTML = `<div class='w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce'></div>`.repeat(3);
-            chatBox.appendChild(l); chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function removeLoading() { if (document.getElementById('loader')) document.getElementById('loader').remove(); }
-        function addSystemMessage(t) {
-            const div = document.createElement('div'); div.className = "text-center my-4 message-appear";
-            div.innerHTML = `<span class="text-[8px] bg-slate-200/40 px-3 py-1.5 rounded-full text-slate-500 font-black uppercase border border-slate-100 tracking-tighter">${t}</span>`;
-            chatBox.appendChild(div);
-        }
-
-        window.switchTab = (id) => {
-            document.getElementById('tab-kb').classList.add('hidden'); document.getElementById('tab-users').classList.add('hidden');
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.remove('hidden'); document.getElementById('btn-' + id).classList.add('active');
+        document.getElementById('tab-kb-btn').onclick = () => {
+            document.getElementById('tab-kb').classList.remove('hidden'); document.getElementById('tab-users').classList.add('hidden');
+            document.getElementById('tab-kb-btn').classList.add('active'); document.getElementById('tab-users-btn').classList.remove('active');
+        };
+        document.getElementById('tab-users-btn').onclick = () => {
+            document.getElementById('tab-kb').classList.add('hidden'); document.getElementById('tab-users').classList.remove('hidden');
+            document.getElementById('tab-kb-btn').classList.remove('active'); document.getElementById('tab-users-btn').classList.add('active');
         };
 
-        window.toggleSettings = () => document.getElementById('settings-modal').classList.toggle('hidden-ui');
-        document.getElementById('chat-form').onsubmit = (e) => { e.preventDefault(); const v = document.getElementById('user-input').value.trim(); if (v) handleQuery(v); };
-
+        ['mousedown', 'keydown', 'touchstart'].forEach(e => window.addEventListener(e, resetInactivityTimer));
         initApp();
     </script>
 </body>
