@@ -15,17 +15,31 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Librerías de Procesamiento -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- RENDERIZADOR DE MATEMÁTICAS (NUEVO) -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                enableMenu: false
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // ================================================================
-        // CONFIGURACIÓN DE FIREBASE (PROYECTO: chatbot-8d0a3)
-        // ================================================================
+        // CONFIGURACIÓN DE FIREBASE (DANIEL)
         const firebaseConfig = {
             apiKey: "AIzaSyDPi5pcDL6OL2zCJK_0n3A_RdDGt3U3LVQ",
             authDomain: "chatbot-8d0a3.firebaseapp.com",
@@ -34,7 +48,6 @@
             messagingSenderId: "390359131739",
             appId: "1:390359131739:web:23373d0ba69b4719bb417e"
         };
-        // ================================================================
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -105,6 +118,9 @@
         
         .tab-btn.active { color: #3b82f6; border-bottom: 3px solid #3b82f6; }
         
+        /* Contenedor de Fórmulas */
+        .mjx-container { overflow-x: auto; max-width: 100%; padding: 0.5rem 0; }
+
         #toast {
             position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%);
             z-index: 10001; padding: 0.8rem 1.2rem; border-radius: 1rem;
@@ -123,13 +139,13 @@
         <!-- Pantalla de Carga -->
         <div id="loading-overlay" class="overlay">
             <div class="w-14 h-14 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-            <p id="loading-text" class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Sincronizando Nube...</p>
+            <p id="loading-text" class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Sincronizando Sistema...</p>
         </div>
 
         <!-- Pantalla de Login -->
         <div id="lock-screen" class="overlay hidden-ui">
-            <div class="w-16 h-16 bg-blue-600 rounded-[1.8rem] mb-6 flex items-center justify-center shadow-2xl">
-                <i class="fas fa-fingerprint text-2xl text-white"></i>
+            <div class="w-20 h-20 bg-blue-600 rounded-[1.8rem] mb-6 flex items-center justify-center shadow-2xl">
+                <i class="fas fa-fingerprint text-3xl text-white"></i>
             </div>
             <h2 class="text-2xl font-black mb-1">SPEI Ops</h2>
             <p class="text-slate-400 text-xs mb-8 text-center">Operación Pagos Electrónicos</p>
@@ -147,8 +163,8 @@
         <!-- Alerta de Inactividad -->
         <div id="timeout-modal" class="hidden-ui">
             <div class="w-full max-w-xs bg-white p-6 rounded-[2rem] shadow-2xl text-center">
-                <h3 class="text-lg font-black text-slate-800 mb-2">¿Continuamos?</h3>
-                <p class="text-xs text-slate-500 mb-6">Por seguridad, la sesión cerrará pronto por inactividad.</p>
+                <h3 class="text-lg font-black text-slate-800 mb-2">¿Seguimos ahí?</h3>
+                <p class="text-xs text-slate-500 mb-6">Sesión inactiva por 5 min. Cerramos pronto.</p>
                 <div class="flex gap-2">
                     <button id="timeout-logout-btn" class="flex-1 bg-slate-100 text-slate-500 py-3 rounded-xl font-bold text-xs">SALIR</button>
                     <button id="timeout-extend-btn" class="flex-[2] bg-blue-600 text-white py-3 rounded-xl font-bold text-xs uppercase">Seguir</button>
@@ -156,7 +172,7 @@
             </div>
         </div>
 
-        <!-- App Principal -->
+        <!-- Interface Principal -->
         <div class="app-container blur-md shadow-2xl" id="app-content">
             <header class="bg-slate-900 text-white p-5 pt-8 shadow-xl flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-3">
@@ -181,14 +197,14 @@
                 <div id="suggestions" class="flex flex-wrap gap-2 mb-4"></div>
                 <form id="chat-form" class="flex gap-2 items-center">
                     <div class="flex-1 bg-slate-100 rounded-2xl flex items-center px-5 border border-transparent focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 transition-all">
-                        <input type="text" id="user-input" placeholder="Preguntar al manual..." class="w-full bg-transparent border-none py-4 text-sm font-semibold outline-none" autocomplete="off">
+                        <input type="text" id="user-input" placeholder="Consultar manual..." class="w-full bg-transparent border-none py-4 text-sm font-semibold outline-none" autocomplete="off">
                     </div>
                     <button type="submit" class="bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-all">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </form>
                 <div class="flex justify-between items-center mt-5">
-                    <p id="footer-username" class="text-[8px] font-black text-slate-400 uppercase tracking-widest italic">Sesión Iniciada</p>
+                    <p id="footer-username" class="text-[8px] font-black text-slate-400 uppercase tracking-widest italic">Iniciando...</p>
                     <button id="logout-btn" class="text-[8px] font-black text-slate-400 uppercase underline">Salir</button>
                 </div>
             </footer>
@@ -209,7 +225,7 @@
                     <div id="tab-kb">
                         <div class="bg-slate-50 p-4 rounded-3xl space-y-3 mb-4 border border-slate-100">
                             <input type="text" id="entry-title" placeholder="Título..." class="w-full p-3 rounded-xl text-xs font-bold border border-slate-200">
-                            <textarea id="entry-content" placeholder="Contenido..." class="w-full h-24 p-3 rounded-xl text-xs font-medium border border-slate-200"></textarea>
+                            <textarea id="entry-content" placeholder="Escribe aquí el manual operativo..." class="w-full h-24 p-3 rounded-xl text-xs font-medium border border-slate-200"></textarea>
                             <div class="flex gap-2">
                                 <button id="save-entry-btn" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold text-xs shadow-md">Guardar</button>
                                 <button id="file-trigger" class="bg-slate-800 text-white px-5 rounded-xl"><i class="fas fa-paperclip"></i></button>
@@ -220,7 +236,7 @@
                     </div>
                     <div id="tab-users" class="hidden">
                         <div class="bg-blue-50 p-4 rounded-3xl space-y-2 mb-4 border border-blue-100">
-                            <input type="text" id="new-user-name" placeholder="Nombre completo" class="w-full p-3 rounded-xl text-xs font-bold">
+                            <input type="text" id="new-user-name" placeholder="Nombre" class="w-full p-3 rounded-xl text-xs font-bold">
                             <input type="text" id="new-user-id" placeholder="Empleado" class="w-full p-3 rounded-xl text-xs font-bold">
                             <select id="new-user-role" class="w-full p-3 rounded-xl text-xs font-bold border border-blue-200 bg-white">
                                 <option value="user">Rol: Usuario</option>
@@ -236,12 +252,7 @@
     </div>
 
     <script type="module">
-        // ================================================================
-        // DANIEL: KEY INTEGRADA EXITOSAMENTE
-        // ================================================================
         const apiKey = "AIzaSyAZBbCOgKN68qFX2ab_cegWOeV0lHAtMpA"; 
-        // ================================================================
-        
         const SESSION_LIMIT = 5 * 60 * 1000;
         const WARNING_LIMIT = 30 * 1000;
 
@@ -273,19 +284,26 @@
                         employeeRegistry = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                         if (employeeRegistry.length === 0) seedAdmin();
                         
-                        isDataLoaded = true;
-                        const btn = document.getElementById('login-btn');
-                        btn.innerText = "INGRESAR";
-                        btn.disabled = false;
+                        // CARGA INICIAL
+                        if (!isDataLoaded) {
+                            isDataLoaded = true;
+                            const btn = document.getElementById('login-btn');
+                            btn.innerText = "INGRESAR";
+                            btn.disabled = false;
 
-                        const saved = localStorage.getItem('spei_ops_production_final');
-                        if (saved && !currentUser) {
-                            currentUser = JSON.parse(saved);
+                            const saved = localStorage.getItem('spei_ops_production_vfinal_stable');
+                            if (saved) {
+                                const savedUser = JSON.parse(saved);
+                                const updated = employeeRegistry.find(u => u.empNumber === savedUser.empNumber);
+                                if (updated) { currentUser = updated; enterApp(); } else { logout(); }
+                            } else {
+                                document.getElementById('loading-overlay').classList.add('hidden-ui');
+                                document.getElementById('lock-screen').classList.remove('hidden-ui');
+                            }
+                        } else if (currentUser) {
+                            // Si solo es una actualización de datos (como contador), solo refrescamos la referencia
                             const updated = employeeRegistry.find(u => u.empNumber === currentUser.empNumber);
-                            if (updated) { currentUser = updated; enterApp(); } else { logout(); }
-                        } else {
-                            document.getElementById('loading-overlay').classList.add('hidden-ui');
-                            document.getElementById('lock-screen').classList.remove('hidden-ui');
+                            if (updated) currentUser = updated;
                         }
                         renderUsers();
                     });
@@ -309,7 +327,7 @@
         }
 
         function logout() {
-            localStorage.removeItem('spei_ops_production_final');
+            localStorage.removeItem('spei_ops_production_vfinal_stable');
             location.reload();
         }
 
@@ -331,9 +349,9 @@
             const user = employeeRegistry.find(u => u.empNumber === input);
             if (user) {
                 currentUser = user;
-                localStorage.setItem('spei_ops_production_final', JSON.stringify(user));
+                localStorage.setItem('spei_ops_production_vfinal_stable', JSON.stringify(user));
                 enterApp();
-                addMessage(`Bienvenido al sistema SPEI Ops, ${user.name}. He sincronizado el manual operativo. ¿En qué puedo apoyarte?`);
+                addMessage(`Bienvenido, ${user.name}. He sincronizado el conocimiento de Operación. ¿Cómo puedo apoyarte?`);
             } else {
                 document.getElementById('error-emp').style.opacity = "1";
                 setTimeout(() => document.getElementById('error-emp').style.opacity = "0", 2500);
@@ -363,8 +381,8 @@
             try {
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', num), { name, empNumber: num, role: role, queries: 0 });
                 document.getElementById('new-user-name').value = ""; document.getElementById('new-user-id').value = "";
-                notify("Miembro registrado con éxito");
-            } catch (err) { notify("Error al guardar en nube", true); }
+                notify("Empleado registrado");
+            } catch (err) { notify("Error al guardar", true); }
         };
 
         document.getElementById('save-entry-btn').onclick = async () => {
@@ -376,8 +394,8 @@
                     category: "Proceso", title, content, date: new Date().toLocaleDateString() 
                 });
                 document.getElementById('entry-title').value = ""; document.getElementById('entry-content').value = "";
-                notify("Manual actualizado con éxito");
-            } catch (err) { notify("Error de permisos en Firebase", true); }
+                notify("Manual actualizado");
+            } catch (err) { notify("Fallo al guardar", true); }
         };
 
         window.deleteEntry = async (id) => {
@@ -396,7 +414,7 @@
         function renderUsers() {
             document.getElementById('user-registry-list').innerHTML = employeeRegistry.map(u => `
                 <div class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border mb-2">
-                    <div class="text-[10px] font-bold text-slate-800">${u.name} <span class="text-[7px] opacity-40 uppercase tracking-widest">[${u.role}]</span></div>
+                    <div class="text-[10px] font-bold text-slate-800">${u.name} <span class="text-[7px] opacity-40 uppercase">[${u.role}]</span></div>
                     <div class="text-[10px] font-black text-blue-600">${u.queries || 0}</div>
                 </div>
             `).join('');
@@ -429,9 +447,9 @@
                             category: "Archivo", title: file.name, content: text, date: new Date().toLocaleDateString()
                         });
                     }
-                } catch (err) { notify("Fallo en lectura de archivo", true); }
+                } catch (err) { notify("Fallo en archivo", true); }
             }
-            notify("Carga de archivos finalizada");
+            notify("Carga finalizada");
         };
 
         async function fetchGemini(q) {
@@ -442,18 +460,20 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [...chatHistory, { role: "user", parts: [{ text: q }] }],
-                        systemInstruction: { parts: [{ text: `Asistente Técnico SPEI Ops. Tu base de datos operativa es: ${kb}. Responde de forma muy concisa en español. Cierra siempre preguntando si desean profundizar o dar por finalizada la duda.` }] }
+                        systemInstruction: { parts: [{ text: `Asistente SPEI Ops. Tu base es: ${kb}. Responde conciso. Usa LaTeX ($$formula$$) para matemáticas. Cierra preguntando si desean profundizar o finalizar.` }] }
                     })
                 });
                 const data = await res.json();
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "No hay información disponible sobre ese tema.";
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta.";
                 chatHistory.push({ role: "user", parts: [{ text: q }] }, { role: "model", parts: [{ text }] });
                 if (chatHistory.length > 10) chatHistory.splice(0, 2);
+                
                 if (!isInternalMode && currentUser) {
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', currentUser.empNumber), { queries: (currentUser.queries || 0) + 1 });
+                    const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'team', currentUser.empNumber);
+                    await updateDoc(userRef, { queries: (currentUser.queries || 0) + 1 });
                 }
                 return text;
-            } catch (e) { return "Error técnico de conexión. Verifique la API Key."; }
+            } catch (e) { return "Error técnico. Verifique conexión."; }
         }
 
         document.getElementById('chat-form').onsubmit = async (e) => {
@@ -462,7 +482,7 @@
             if (!v) return;
             document.getElementById('user-input').value = "";
             addMessage(v, true);
-            const l = document.createElement('div'); l.id = "loader"; l.className = "p-5 bg-white border rounded-[1.5rem] w-fit bot-bubble animate-pulse text-xs italic"; l.innerText = "Consultando manual...";
+            const l = document.createElement('div'); l.id = "loader"; l.className = "p-4 bg-white border rounded-2xl w-fit bot-bubble animate-pulse text-xs italic"; l.innerText = "Calculando...";
             document.getElementById('chat-box').appendChild(l);
             const res = await fetchGemini(v);
             if (document.getElementById('loader')) document.getElementById('loader').remove();
@@ -472,11 +492,18 @@
 
         function addMessage(text, isUser = false) {
             const div = document.createElement('div');
-            div.className = `flex flex-col gap-1.5 message-appear ${isUser ? 'items-end ml-auto' : 'items-start'} max-w-[92%]`;
+            div.className = `flex flex-col gap-1 message-appear ${isUser ? 'items-end ml-auto' : 'items-start'} max-w-[92%]`;
             const color = isUser ? 'bg-blue-600 text-white user-bubble' : 'bg-white text-slate-800 bot-bubble';
-            div.innerHTML = `<div class="${color} px-5 py-4 text-[13px] leading-[1.6] rounded-[1.8rem] ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} shadow-sm">${text.replace(/\n/g, '<br>')}</div><span class="text-[8px] text-slate-400 mx-4 font-black uppercase tracking-widest">${isUser ? currentUser.name : 'Asistente Virtual'}</span>`;
+            
+            div.innerHTML = `<div class="${color} px-5 py-4 text-[13px] leading-[1.6] rounded-[1.8rem] ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} shadow-sm">${text.replace(/\n/g, '<br>')}</div><span class="text-[8px] text-slate-400 mx-4 font-black uppercase tracking-widest">${isUser ? currentUser.name : 'SPEI Ops'}</span>`;
+            
             document.getElementById('chat-box').appendChild(div);
             document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+            
+            // RENDERIZAR FÓRMULAS TRAS AÑADIR MENSAJE
+            if (!isUser && window.MathJax) {
+                MathJax.typesetPromise();
+            }
         }
 
         document.getElementById('tab-kb-btn').onclick = () => {
