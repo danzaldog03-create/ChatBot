@@ -21,10 +21,10 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ================================================================
-        // CONFIGURACIÓN DE FIREBASE (CREDENCIALES DE DANIEL INTEGRADAS)
+        // CONFIGURACIÓN DE FIREBASE (PROYECTO: chatbot-8d0a3)
         // ================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyDPi5pcDL6OL2zCJK_0n3A_RdDGt3U3LVQ",
@@ -39,9 +39,9 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = "spei-ops-app";
+        const appId = "chatbot-8d0a3"; 
 
-        window.fb = { auth, db, appId, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, signInAnonymously, onAuthStateChanged };
+        window.fb = { auth, db, appId, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, deleteDoc, signInAnonymously, onAuthStateChanged };
     </script>
 
     <style>
@@ -64,7 +64,7 @@
 
         .app-container {
             width: 100%;
-            max-width: 32rem; 
+            max-width: 30rem;
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -90,7 +90,6 @@
             display: flex; align-items: center; justify-content: center;
             flex-direction: column; color: white; padding: 2rem;
             background: #0f172a;
-            transition: all 0.4s ease;
         }
 
         #timeout-modal {
@@ -105,16 +104,15 @@
         .bot-bubble { border: 1px solid #f1f5f9; box-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.04); }
         
         .tab-btn.active { color: #3b82f6; border-bottom: 3px solid #3b82f6; }
-
-        /* Notificaciones */
+        
         #toast {
             position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%);
-            z-index: 10001; padding: 1rem 1.5rem; border-radius: 1rem;
-            font-size: 0.8rem; font-weight: 800; text-transform: uppercase;
+            z-index: 10001; padding: 0.8rem 1.2rem; border-radius: 1rem;
+            font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             transition: all 0.3s ease; opacity: 0; pointer-events: none;
         }
-        #toast.show { opacity: 1; top: 2.5rem; }
+        #toast.show { opacity: 1; top: 2rem; }
     </style>
 </head>
 <body>
@@ -125,48 +123,44 @@
         <!-- Pantalla de Carga -->
         <div id="loading-overlay" class="overlay">
             <div class="w-14 h-14 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-            <p id="loading-text" class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 text-center text-white">Sincronizando con la Nube...</p>
+            <p id="loading-text" class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Sincronizando Nube...</p>
         </div>
 
         <!-- Pantalla de Login -->
         <div id="lock-screen" class="overlay hidden-ui">
-            <div class="w-20 h-20 bg-blue-600 rounded-[2.5rem] mb-8 flex items-center justify-center shadow-2xl">
-                <i class="fas fa-id-badge text-3xl text-white"></i>
+            <div class="w-16 h-16 bg-blue-600 rounded-[1.8rem] mb-6 flex items-center justify-center shadow-2xl">
+                <i class="fas fa-fingerprint text-2xl text-white"></i>
             </div>
-            <h2 class="text-3xl font-black mb-1 text-white">SPEI Ops</h2>
-            <p class="text-slate-400 text-sm mb-10 text-center font-medium">Operación Pagos Electrónicos</p>
+            <h2 class="text-2xl font-black mb-1">SPEI Ops</h2>
+            <p class="text-slate-400 text-xs mb-8 text-center">Operación Pagos Electrónicos</p>
             
-            <div class="w-full max-w-[280px] space-y-4">
+            <div class="w-full max-w-[260px] space-y-4">
                 <input type="text" id="emp-number-input" placeholder="No. de Empleado" 
-                    class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 text-center text-xl font-bold text-white outline-none focus:ring-2 focus:ring-blue-500">
-                <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all text-white">
-                    INGRESAR
+                    class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 text-center text-lg font-bold text-white outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-black text-base shadow-xl active:scale-95 transition-all text-white disabled:opacity-50" disabled>
+                    ESPERANDO RED...
                 </button>
-                <p id="error-emp" class="text-red-400 text-[10px] text-center opacity-0 font-black tracking-widest uppercase">Número no registrado</p>
+                <p id="error-emp" class="text-red-400 text-[9px] text-center opacity-0 font-black tracking-widest uppercase">Número no registrado</p>
             </div>
-            <p class="mt-20 text-slate-500 text-[9px] uppercase tracking-[0.4em] font-black italic">Daniel Anzaldo • 2025</p>
         </div>
 
-        <!-- Aviso Inactividad -->
+        <!-- Alerta de Inactividad -->
         <div id="timeout-modal" class="hidden-ui">
-            <div class="w-full max-w-sm bg-white p-8 rounded-[2.5rem] shadow-2xl text-center">
-                <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <i class="fas fa-hourglass-half text-2xl animate-pulse"></i>
-                </div>
-                <h3 class="text-xl font-black text-slate-800 mb-2">¿Continuar?</h3>
-                <p class="text-sm text-slate-500 mb-8">Sesión inactiva por 5 min. Cerramos pronto.</p>
-                <div class="flex gap-3">
-                    <button id="timeout-logout-btn" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold text-xs">SALIR</button>
-                    <button id="timeout-extend-btn" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-bold text-xs uppercase shadow-lg">Seguir</button>
+            <div class="w-full max-w-xs bg-white p-6 rounded-[2rem] shadow-2xl text-center">
+                <h3 class="text-lg font-black text-slate-800 mb-2">¿Continuamos?</h3>
+                <p class="text-xs text-slate-500 mb-6">Por seguridad, la sesión cerrará pronto por inactividad.</p>
+                <div class="flex gap-2">
+                    <button id="timeout-logout-btn" class="flex-1 bg-slate-100 text-slate-500 py-3 rounded-xl font-bold text-xs">SALIR</button>
+                    <button id="timeout-extend-btn" class="flex-[2] bg-blue-600 text-white py-3 rounded-xl font-bold text-xs uppercase">Seguir</button>
                 </div>
             </div>
         </div>
 
-        <!-- Interface Principal -->
-        <div class="app-container blur-md" id="app-content">
+        <!-- App Principal -->
+        <div class="app-container blur-md shadow-2xl" id="app-content">
             <header class="bg-slate-900 text-white p-5 pt-8 shadow-xl flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10"><i class="fas fa-bolt text-blue-400 text-lg"></i></div>
+                    <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10"><i class="fas fa-university text-blue-400 text-lg"></i></div>
                     <div>
                         <h1 class="font-extrabold text-sm tracking-tight leading-none mb-1">SPEI Ops</h1>
                         <span class="text-[7px] font-black uppercase tracking-widest text-slate-400">Gerencia Operativa</span>
@@ -176,7 +170,7 @@
                     <button id="open-settings-btn" class="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center"><i class="fas fa-cog text-xs"></i></button>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="mode-toggle" class="sr-only peer">
-                        <div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 text-white"></div>
                     </label>
                 </div>
             </header>
@@ -186,16 +180,16 @@
             <footer class="bg-white p-5 border-t border-slate-100 shrink-0 pb-10">
                 <div id="suggestions" class="flex flex-wrap gap-2 mb-4"></div>
                 <form id="chat-form" class="flex gap-2 items-center">
-                    <div class="flex-1 bg-slate-100 rounded-2xl flex items-center px-6 border border-transparent focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 transition-all">
-                        <input type="text" id="user-input" placeholder="Consultar manual..." class="w-full bg-transparent border-none py-4 text-sm font-semibold outline-none" autocomplete="off">
+                    <div class="flex-1 bg-slate-100 rounded-2xl flex items-center px-5 border border-transparent focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 transition-all">
+                        <input type="text" id="user-input" placeholder="Preguntar al manual..." class="w-full bg-transparent border-none py-4 text-sm font-semibold outline-none" autocomplete="off">
                     </div>
                     <button type="submit" class="bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-all">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </form>
                 <div class="flex justify-between items-center mt-5">
-                    <p id="footer-username" class="text-[8px] font-black text-slate-400 uppercase tracking-widest italic">Cargando...</p>
-                    <button id="logout-btn" class="text-[8px] font-black text-slate-400 uppercase underline hover:text-red-500">Salir</button>
+                    <p id="footer-username" class="text-[8px] font-black text-slate-400 uppercase tracking-widest italic">Sesión Iniciada</p>
+                    <button id="logout-btn" class="text-[8px] font-black text-slate-400 uppercase underline">Salir</button>
                 </div>
             </footer>
         </div>
@@ -204,7 +198,7 @@
         <div id="settings-modal" class="hidden-ui system-overlay">
             <div class="w-full max-w-sm bg-white p-6 rounded-[2.5rem] shadow-2xl flex flex-col max-h-[85vh]">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-lg font-black text-slate-800 uppercase italic">Administración</h2>
+                    <h2 class="text-lg font-black text-slate-800 uppercase italic">Admin</h2>
                     <button id="close-settings-btn" class="bg-slate-100 p-2 rounded-full text-slate-500"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="flex gap-4 border-b mb-6">
@@ -214,8 +208,8 @@
                 <div class="overflow-y-auto flex-1 space-y-6">
                     <div id="tab-kb">
                         <div class="bg-slate-50 p-4 rounded-3xl space-y-3 mb-4 border border-slate-100">
-                            <input type="text" id="entry-title" placeholder="Título..." class="w-full p-3 rounded-xl text-xs font-bold border border-slate-200 outline-none">
-                            <textarea id="entry-content" placeholder="Escribe aquí el manual..." class="w-full h-24 p-3 rounded-xl text-xs font-medium border border-slate-200 outline-none"></textarea>
+                            <input type="text" id="entry-title" placeholder="Título..." class="w-full p-3 rounded-xl text-xs font-bold border border-slate-200">
+                            <textarea id="entry-content" placeholder="Contenido..." class="w-full h-24 p-3 rounded-xl text-xs font-medium border border-slate-200"></textarea>
                             <div class="flex gap-2">
                                 <button id="save-entry-btn" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold text-xs shadow-md">Guardar</button>
                                 <button id="file-trigger" class="bg-slate-800 text-white px-5 rounded-xl"><i class="fas fa-paperclip"></i></button>
@@ -227,8 +221,12 @@
                     <div id="tab-users" class="hidden">
                         <div class="bg-blue-50 p-4 rounded-3xl space-y-2 mb-4 border border-blue-100">
                             <input type="text" id="new-user-name" placeholder="Nombre completo" class="w-full p-3 rounded-xl text-xs font-bold">
-                            <input type="text" id="new-user-id" placeholder="Número empleado" class="w-full p-3 rounded-xl text-xs font-bold">
-                            <button id="add-user-btn" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-xs shadow-md">Registrar</button>
+                            <input type="text" id="new-user-id" placeholder="Empleado" class="w-full p-3 rounded-xl text-xs font-bold">
+                            <select id="new-user-role" class="w-full p-3 rounded-xl text-xs font-bold border border-blue-200 bg-white">
+                                <option value="user">Rol: Usuario</option>
+                                <option value="admin">Rol: Administrador</option>
+                            </select>
+                            <button id="add-user-btn" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-xs mt-2 shadow-md">Autorizar</button>
                         </div>
                         <div id="user-registry-list" class="space-y-2"></div>
                     </div>
@@ -238,6 +236,12 @@
     </div>
 
     <script type="module">
+        // ================================================================
+        // DANIEL: KEY INTEGRADA EXITOSAMENTE
+        // ================================================================
+        const apiKey = "AIzaSyAZBbCOgKN68qFX2ab_cegWOeV0lHAtMpA"; 
+        // ================================================================
+        
         const SESSION_LIMIT = 5 * 60 * 1000;
         const WARNING_LIMIT = 30 * 1000;
 
@@ -245,12 +249,12 @@
         let knowledgeBase = [], employeeRegistry = [];
         let chatHistory = [], isDataLoaded = false;
 
-        const { auth, db, appId, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, signInAnonymously, onAuthStateChanged } = window.fb;
+        const { auth, db, appId, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, getDoc, signInAnonymously, onAuthStateChanged } = window.fb;
 
         function notify(msg, isError = false) {
             const t = document.getElementById('toast');
             t.innerText = msg;
-            t.className = isError ? 'show bg-red-600 text-white' : 'show bg-emerald-600 text-white';
+            t.className = `show ${isError ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white'}`;
             setTimeout(() => t.classList.remove('show'), 3000);
         }
 
@@ -268,29 +272,31 @@
                     onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'team'), (snap) => {
                         employeeRegistry = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                         if (employeeRegistry.length === 0) seedAdmin();
-                        isDataLoaded = true;
                         
-                        const saved = localStorage.getItem('spei_ops_session_stable_v3');
+                        isDataLoaded = true;
+                        const btn = document.getElementById('login-btn');
+                        btn.innerText = "INGRESAR";
+                        btn.disabled = false;
+
+                        const saved = localStorage.getItem('spei_ops_production_final');
                         if (saved && !currentUser) {
                             currentUser = JSON.parse(saved);
                             const updated = employeeRegistry.find(u => u.empNumber === currentUser.empNumber);
                             if (updated) { currentUser = updated; enterApp(); } else { logout(); }
-                        } else { showLogin(); }
+                        } else {
+                            document.getElementById('loading-overlay').classList.add('hidden-ui');
+                            document.getElementById('lock-screen').classList.remove('hidden-ui');
+                        }
                         renderUsers();
                     });
                 });
-            } catch (err) { notify("Error de conexión", true); }
+            } catch (err) { notify("Error de red", true); }
         }
 
         async function seedAdmin() {
             await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', '682930'), {
                 name: "Daniel Anzaldo", empNumber: "682930", role: "admin", queries: 0
-            });
-        }
-
-        function showLogin() {
-            document.getElementById('loading-overlay').classList.add('hidden-ui');
-            document.getElementById('lock-screen').classList.remove('hidden-ui');
+            }, { merge: true });
         }
 
         function enterApp() {
@@ -303,7 +309,7 @@
         }
 
         function logout() {
-            localStorage.removeItem('spei_ops_session_stable_v3');
+            localStorage.removeItem('spei_ops_production_final');
             location.reload();
         }
 
@@ -318,15 +324,16 @@
             }, SESSION_LIMIT);
         }
 
-        document.getElementById('login-btn').onclick = () => {
-            if (!isDataLoaded) return notify("Cargando...", false);
+        document.getElementById('login-btn').onclick = async () => {
             const input = document.getElementById('emp-number-input').value.trim();
+            if (input === "682930") await seedAdmin();
+
             const user = employeeRegistry.find(u => u.empNumber === input);
             if (user) {
                 currentUser = user;
-                localStorage.setItem('spei_ops_session_stable_v3', JSON.stringify(user));
+                localStorage.setItem('spei_ops_production_final', JSON.stringify(user));
                 enterApp();
-                addMessage(`Bienvenido, ${user.name}. He sincronizado el conocimiento de Operación. ¿En qué puedo apoyarte?`);
+                addMessage(`Bienvenido al sistema SPEI Ops, ${user.name}. He sincronizado el manual operativo. ¿En qué puedo apoyarte?`);
             } else {
                 document.getElementById('error-emp').style.opacity = "1";
                 setTimeout(() => document.getElementById('error-emp').style.opacity = "0", 2500);
@@ -342,8 +349,22 @@
 
         document.getElementById('mode-toggle').onchange = (e) => {
             isInternalMode = e.target.checked;
-            document.getElementById('chat-header').classList.toggle('bg-emerald-900', isInternalMode);
-            document.getElementById('chat-header').classList.toggle('bg-slate-900', !isInternalMode);
+            document.getElementById('chat-header').className = isInternalMode 
+                ? "bg-emerald-900 text-white p-5 pt-8 shadow-xl flex items-center justify-between shrink-0"
+                : "bg-slate-900 text-white p-5 pt-8 shadow-xl flex items-center justify-between shrink-0";
+            notify(isInternalMode ? "Modo Administración" : "Soporte Operativo");
+        };
+
+        document.getElementById('add-user-btn').onclick = async () => {
+            const name = document.getElementById('new-user-name').value.trim();
+            const num = document.getElementById('new-user-id').value.trim();
+            const role = document.getElementById('new-user-role').value;
+            if (!name || !num) return notify("Faltan datos", true);
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', num), { name, empNumber: num, role: role, queries: 0 });
+                document.getElementById('new-user-name').value = ""; document.getElementById('new-user-id').value = "";
+                notify("Miembro registrado con éxito");
+            } catch (err) { notify("Error al guardar en nube", true); }
         };
 
         document.getElementById('save-entry-btn').onclick = async () => {
@@ -355,30 +376,19 @@
                     category: "Proceso", title, content, date: new Date().toLocaleDateString() 
                 });
                 document.getElementById('entry-title').value = ""; document.getElementById('entry-content').value = "";
-                notify("Guardado con éxito");
-            } catch (err) { notify("Error de permisos", true); }
-        };
-
-        document.getElementById('add-user-btn').onclick = async () => {
-            const name = document.getElementById('new-user-name').value.trim();
-            const num = document.getElementById('new-user-id').value.trim();
-            if (!name || !num) return notify("Faltan datos", true);
-            try {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', num), { name, empNumber: num, role: 'user', queries: 0 });
-                document.getElementById('new-user-name').value = ""; document.getElementById('new-user-id').value = "";
-                notify("Empleado registrado");
-            } catch (err) { notify("Error", true); }
+                notify("Manual actualizado con éxito");
+            } catch (err) { notify("Error de permisos en Firebase", true); }
         };
 
         window.deleteEntry = async (id) => {
-            if (confirm("¿Borrar?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id));
+            if (confirm("¿Borrar permanentemente?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id));
         };
 
         function renderEntries() {
             document.getElementById('knowledge-list').innerHTML = knowledgeBase.map(e => `
-                <div class="bg-white p-3 rounded-2xl border mb-2 flex justify-between items-start gap-3">
+                <div class="bg-white p-3 rounded-2xl border mb-2 flex justify-between items-start gap-3 shadow-sm">
                     <div class="flex-1"><h4 class="text-[10px] font-black text-slate-800">${e.title}</h4><p class="text-[8px] text-slate-400 line-clamp-1">${e.content}</p></div>
-                    <button onclick="deleteEntry('${e.id}')" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash text-[10px]"></i></button>
+                    <button onclick="deleteEntry('${e.id}')" class="text-slate-300 hover:text-red-500 p-1"><i class="fas fa-trash text-[10px]"></i></button>
                 </div>
             `).join('');
         }
@@ -386,7 +396,7 @@
         function renderUsers() {
             document.getElementById('user-registry-list').innerHTML = employeeRegistry.map(u => `
                 <div class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border mb-2">
-                    <div class="text-[10px] font-bold text-slate-800">${u.name} <span class="text-[8px] opacity-40">(${u.empNumber})</span></div>
+                    <div class="text-[10px] font-bold text-slate-800">${u.name} <span class="text-[7px] opacity-40 uppercase tracking-widest">[${u.role}]</span></div>
                     <div class="text-[10px] font-black text-blue-600">${u.queries || 0}</div>
                 </div>
             `).join('');
@@ -419,9 +429,9 @@
                             category: "Archivo", title: file.name, content: text, date: new Date().toLocaleDateString()
                         });
                     }
-                } catch (err) { notify("Error en: " + file.name, true); }
+                } catch (err) { notify("Fallo en lectura de archivo", true); }
             }
-            notify("Carga finalizada");
+            notify("Carga de archivos finalizada");
         };
 
         async function fetchGemini(q) {
@@ -432,18 +442,18 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [...chatHistory, { role: "user", parts: [{ text: q }] }],
-                        systemInstruction: { parts: [{ text: `Asistente SPEI Ops. Base: ${kb}. Responde conciso en español. Cierra con seguimiento.` }] }
+                        systemInstruction: { parts: [{ text: `Asistente Técnico SPEI Ops. Tu base de datos operativa es: ${kb}. Responde de forma muy concisa en español. Cierra siempre preguntando si desean profundizar o dar por finalizada la duda.` }] }
                     })
                 });
                 const data = await res.json();
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta.";
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "No hay información disponible sobre ese tema.";
                 chatHistory.push({ role: "user", parts: [{ text: q }] }, { role: "model", parts: [{ text }] });
                 if (chatHistory.length > 10) chatHistory.splice(0, 2);
                 if (!isInternalMode && currentUser) {
                     await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', currentUser.empNumber), { queries: (currentUser.queries || 0) + 1 });
                 }
                 return text;
-            } catch (e) { return "Error técnico."; }
+            } catch (e) { return "Error técnico de conexión. Verifique la API Key."; }
         }
 
         document.getElementById('chat-form').onsubmit = async (e) => {
@@ -452,7 +462,7 @@
             if (!v) return;
             document.getElementById('user-input').value = "";
             addMessage(v, true);
-            const l = document.createElement('div'); l.id = "loader"; l.className = "p-5 bg-white border rounded-3xl w-fit bot-bubble animate-pulse"; l.innerText = "...";
+            const l = document.createElement('div'); l.id = "loader"; l.className = "p-5 bg-white border rounded-[1.5rem] w-fit bot-bubble animate-pulse text-xs italic"; l.innerText = "Consultando manual...";
             document.getElementById('chat-box').appendChild(l);
             const res = await fetchGemini(v);
             if (document.getElementById('loader')) document.getElementById('loader').remove();
@@ -464,7 +474,7 @@
             const div = document.createElement('div');
             div.className = `flex flex-col gap-1.5 message-appear ${isUser ? 'items-end ml-auto' : 'items-start'} max-w-[92%]`;
             const color = isUser ? 'bg-blue-600 text-white user-bubble' : 'bg-white text-slate-800 bot-bubble';
-            div.innerHTML = `<div class="${color} px-5 py-4 text-[13px] leading-[1.6] rounded-[1.8rem] ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} shadow-sm">${text.replace(/\n/g, '<br>')}</div><span class="text-[8px] text-slate-400 mx-4 font-black uppercase tracking-widest">${isUser ? currentUser.name : 'SPEI Ops'}</span>`;
+            div.innerHTML = `<div class="${color} px-5 py-4 text-[13px] leading-[1.6] rounded-[1.8rem] ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} shadow-sm">${text.replace(/\n/g, '<br>')}</div><span class="text-[8px] text-slate-400 mx-4 font-black uppercase tracking-widest">${isUser ? currentUser.name : 'Asistente Virtual'}</span>`;
             document.getElementById('chat-box').appendChild(div);
             document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
         }
