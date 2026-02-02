@@ -15,7 +15,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Librerías -->
+    <!-- Librerías de Apoyo -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
@@ -35,7 +35,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, getDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDPi5pcDL6OL2zCJK_0n3A_RdDGt3U3LVQ",
@@ -51,7 +51,7 @@
         const db = getFirestore(app);
         const appId = "chatbot-8d0a3"; 
 
-        window.fb = { auth, db, appId, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, deleteDoc, signInAnonymously, onAuthStateChanged };
+        window.fb = { auth, db, appId, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, deleteDoc, query, signInAnonymously, onAuthStateChanged };
     </script>
 
     <style>
@@ -75,21 +75,18 @@
 
         .app-container {
             width: 100%;
-            max-width: 58rem; /* Ancho optimizado para Desktop */
+            max-width: 65rem; /* Ancho ampliado para mejor visualización de manuales */
             height: 100%;
             display: flex;
             flex-direction: column;
             background: #f8fafc;
             position: relative;
             border-radius: 2rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
             overflow: hidden;
         }
 
-        @media (max-width: 768px) {
-            .app-shell { padding: 0; }
-            .app-container { border-radius: 0; max-width: 100%; }
-        }
+        @media (max-width: 1024px) { .app-container { max-width: 100%; border-radius: 0; } .app-shell { padding: 0; } }
 
         .chat-container {
             flex: 1;
@@ -99,8 +96,8 @@
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
-            background-image: radial-gradient(#e2e8f0 1.5px, transparent 1.2px);
-            background-size: 30px 30px;
+            background-image: radial-gradient(#e2e8f0 1.2px, transparent 1.2px);
+            background-size: 24px 24px;
         }
 
         .overlay {
@@ -111,40 +108,39 @@
         }
 
         .hidden-ui { display: none !important; }
-        .user-bubble { box-shadow: 0 4px 15px -3px rgba(37, 99, 235, 0.3); }
-        .bot-bubble { border: 1px solid #f1f5f9; box-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.04); }
+        .user-bubble { box-shadow: 0 4px 15px -3px rgba(37, 99, 235, 0.4); }
+        .bot-bubble { border: 1px solid #f1f5f9; box-shadow: 0 4px 12px -1px rgba(0, 0, 0, 0.05); }
         
         .tab-btn.active { color: #3b82f6; border-bottom: 3px solid #3b82f6; }
         
-        .mjx-container { 
-            overflow-x: auto; 
-            max-width: 100%; 
-            padding: 1rem 0;
-            display: block !important;
-        }
-
-        /* Estilo para los títulos con iconos que reemplazan a ### */
+        /* Formato de Títulos del Bot */
         .bot-header {
             display: flex;
             align-items: center;
             gap: 0.75rem;
             font-weight: 800;
-            color: #0f172a;
+            color: #1e293b;
             margin-top: 1.25rem;
-            margin-bottom: 0.75rem;
-            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
             border-bottom: 2px solid #3b82f6;
             padding-bottom: 0.4rem;
         }
 
         #toast {
             position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%);
-            z-index: 10001; padding: 0.8rem 1.2rem; border-radius: 1rem;
+            z-index: 10001; padding: 0.8rem 1.5rem; border-radius: 1rem;
             font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             transition: all 0.3s ease; opacity: 0; pointer-events: none;
         }
         #toast.show { opacity: 1; top: 2.5rem; }
+
+        /* Estilo para listas administrativas */
+        .admin-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .admin-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -5px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
@@ -154,29 +150,29 @@
     <div class="app-shell">
         <!-- Pantalla de Carga -->
         <div id="loading-overlay" class="overlay">
-            <div class="w-14 h-14 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-            <p id="loading-text" class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Sincronizando Sistema...</p>
+            <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
+            <p id="loading-text" class="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Sincronizando con SPEI Cloud...</p>
         </div>
 
-        <!-- Pantalla de Login -->
+        <!-- Login -->
         <div id="lock-screen" class="overlay hidden-ui">
             <div class="w-20 h-20 bg-blue-600 rounded-[2.2rem] mb-8 flex items-center justify-center shadow-2xl">
                 <i class="fas fa-fingerprint text-3xl text-white"></i>
             </div>
             <h2 class="text-3xl font-black mb-1">SPEI Ops</h2>
-            <p class="text-slate-400 text-sm mb-10 text-center font-medium uppercase tracking-widest">Operación Pagos Electrónicos</p>
+            <p class="text-slate-400 text-sm mb-10 text-center font-medium uppercase tracking-[0.2em]">Operación Pagos Electrónicos</p>
             
             <div class="w-full max-w-[280px] space-y-4">
                 <input type="text" id="emp-number-input" placeholder="No. de Empleado" 
-                    class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 text-center text-xl font-bold text-white outline-none focus:ring-2 focus:ring-blue-500">
+                    class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 text-center text-xl font-bold text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all">
                 <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all text-white disabled:opacity-50" disabled>
-                    INGRESAR
+                    ACCEDER
                 </button>
-                <p id="error-emp" class="text-red-400 text-[9px] text-center opacity-0 font-black tracking-widest uppercase">Acceso Denegado</p>
+                <p id="error-emp" class="text-red-400 text-[9px] text-center opacity-0 font-black tracking-widest uppercase">Número no registrado</p>
             </div>
         </div>
 
-        <!-- Interface de la Aplicación -->
+        <!-- Interface Principal -->
         <div class="app-container blur-md" id="app-content">
             <header class="bg-slate-900 text-white p-6 pt-10 shadow-xl flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-4">
@@ -187,16 +183,16 @@
                         <h1 class="font-extrabold text-lg tracking-tight leading-none mb-1">SPEI Ops</h1>
                         <div class="flex items-center gap-1.5">
                             <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                            <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">Soporte Activo</span>
+                            <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">Sistema Activo</span>
                         </div>
                     </div>
                 </div>
                 
                 <div id="admin-controls" class="hidden flex items-center gap-4">
-                    <button id="open-settings-btn" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10 hover:bg-white/20 transition-all"><i class="fas fa-tools text-sm text-white"></i></button>
+                    <button id="open-settings-btn" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10 hover:bg-white/20 transition-all"><i class="fas fa-database text-sm text-white"></i></button>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="mode-toggle" class="sr-only peer">
-                        <div class="w-10 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 text-white"></div>
+                        <div class="w-10 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
                     </label>
                 </div>
             </header>
@@ -205,67 +201,72 @@
 
             <footer class="bg-white p-6 border-t border-slate-100 shrink-0 pb-12">
                 <div id="suggestions" class="flex flex-wrap gap-2 mb-4"></div>
-                <form id="chat-form" class="flex gap-3 items-center">
+                <form id="chat-form" class="flex gap-4 items-center">
                     <div class="flex-1 bg-slate-100 rounded-3xl flex items-center px-6 border border-transparent focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 transition-all shadow-inner">
                         <input type="text" id="user-input" placeholder="Realiza una consulta técnica..." class="w-full bg-transparent border-none py-4 text-sm font-semibold outline-none" autocomplete="off">
                     </div>
-                    <button type="submit" class="bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-all">
+                    <button type="submit" class="bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200 active:scale-90 transition-all">
                         <i class="fas fa-paper-plane text-lg"></i>
                     </button>
                 </form>
                 <div class="flex justify-between items-center mt-6">
-                    <p id="footer-username" class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Cargando...</p>
-                    <button id="logout-btn" class="text-[9px] font-black text-slate-400 uppercase underline hover:text-red-500">Cerrar Sesión</button>
+                    <p id="footer-username" class="text-[9px] font-black text-slate-400 uppercase tracking-widest italic">Iniciando sesión...</p>
+                    <button id="logout-btn" class="text-[9px] font-black text-slate-400 uppercase underline hover:text-red-500 transition-colors">Salir del Sistema</button>
                 </div>
             </footer>
         </div>
 
-        <!-- Modal Admin -->
+        <!-- Panel Admin -->
         <div id="settings-modal" class="hidden-ui system-overlay overlay" style="z-index: 10005;">
-            <div class="w-full max-w-4xl bg-white p-8 rounded-[3rem] shadow-2xl flex flex-col max-h-[85vh]">
+            <div class="w-full max-w-5xl bg-white p-8 rounded-[3rem] shadow-2xl flex flex-col max-h-[90vh]">
                 <div class="flex justify-between items-center mb-8 text-slate-800">
                     <h2 class="text-2xl font-black uppercase italic">Administración de Conocimiento</h2>
-                    <button id="close-settings-btn" class="bg-slate-100 p-3 rounded-full text-slate-400"><i class="fas fa-times text-lg"></i></button>
+                    <button id="close-settings-btn" class="bg-slate-100 p-3 rounded-full text-slate-400 hover:bg-slate-200"><i class="fas fa-times text-lg"></i></button>
                 </div>
+                
                 <div class="flex gap-8 border-b border-slate-100 mb-8">
-                    <button id="tab-kb-btn" class="tab-btn active pb-3 text-xs font-black uppercase tracking-widest text-slate-400">Manuales</button>
-                    <button id="tab-users-btn" class="tab-btn pb-3 text-xs font-black uppercase tracking-widest text-slate-400">Equipo</button>
+                    <button id="tab-kb-btn" class="tab-btn active pb-3 text-xs font-black uppercase tracking-widest text-slate-400">Base de Manuales</button>
+                    <button id="tab-users-btn" class="tab-btn pb-3 text-xs font-black uppercase tracking-widest text-slate-400">Equipo Autorizado</button>
                 </div>
                 
                 <div class="overflow-y-auto flex-1 space-y-6 px-2">
                     <div id="tab-kb">
-                        <div class="bg-slate-50 p-6 rounded-3xl space-y-4 mb-6 border border-slate-100 shadow-sm">
-                            <div class="flex gap-3">
-                                <select id="entry-category" class="bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold outline-none flex-1 text-slate-600">
+                        <div class="bg-slate-50 p-6 rounded-3xl space-y-4 mb-8 border border-slate-200 shadow-sm">
+                            <div class="flex flex-wrap gap-4">
+                                <select id="entry-category" class="bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold outline-none flex-1 min-w-[200px] text-slate-700">
                                     <option value="Procesos">Categoría: Procesos</option>
                                     <option value="Servidores">Categoría: Servidores</option>
                                     <option value="Seguridad">Categoría: Seguridad</option>
                                     <option value="Contactos">Categoría: Contactos</option>
+                                    <option value="Codi">Categoría: CoDi</option>
                                 </select>
-                                <input type="text" id="entry-title" placeholder="Título del procedimiento..." class="flex-[2] bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none text-slate-800">
+                                <input type="text" id="entry-title" placeholder="Título del procedimiento..." class="flex-[2] min-w-[300px] bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none text-slate-800">
                             </div>
-                            <textarea id="entry-content" placeholder="Escribe el contenido detallado aquí..." class="w-full h-40 bg-white border border-slate-200 rounded-xl p-4 text-sm font-medium outline-none text-slate-700"></textarea>
-                            <div class="flex gap-3">
+                            <textarea id="entry-content" placeholder="Escribe aquí toda la información técnica..." class="w-full h-48 bg-white border border-slate-200 rounded-xl p-5 text-sm font-medium outline-none text-slate-700 leading-relaxed"></textarea>
+                            <div class="flex gap-4">
                                 <input type="hidden" id="editing-id">
-                                <button id="save-entry-btn" class="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest transition-all">Guardar Manual</button>
-                                <button id="file-trigger" class="bg-slate-800 text-white px-6 rounded-2xl"><i class="fas fa-file-upload text-lg"></i></button>
+                                <button id="save-entry-btn" class="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest hover:bg-emerald-700 transition-all">Guardar en Base de Datos</button>
+                                <button id="file-trigger" class="bg-slate-800 text-white px-8 rounded-2xl hover:bg-slate-700 transition-colors"><i class="fas fa-file-import text-lg"></i></button>
                                 <input type="file" id="file-selector" class="hidden" multiple accept=".pdf,.xlsx,.txt">
                             </div>
                         </div>
+                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 px-2">Contenido Sincronizado</h3>
                         <div id="knowledge-list" class="space-y-4"></div>
                     </div>
                     
                     <div id="tab-users" class="hidden">
-                        <div class="bg-blue-50 p-6 rounded-3xl space-y-3 mb-6 border border-blue-100 shadow-sm">
-                            <div class="grid grid-cols-2 gap-3">
-                                <input type="text" id="new-user-name" placeholder="Nombre completo" class="w-full p-4 rounded-2xl text-sm font-bold border border-blue-100 text-slate-800">
-                                <input type="text" id="new-user-id" placeholder="No. Empleado" class="w-full p-4 rounded-2xl text-sm font-bold border border-blue-100 text-slate-800">
+                        <div class="bg-blue-50 p-6 rounded-3xl space-y-4 mb-8 border border-blue-100 shadow-sm">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <input type="text" id="new-user-name" placeholder="Nombre completo del colaborador" class="w-full p-4 rounded-2xl text-sm font-bold border border-blue-100 text-slate-800 outline-none">
+                                <input type="text" id="new-user-id" placeholder="Número de empleado" class="w-full p-4 rounded-2xl text-sm font-bold border border-blue-100 text-slate-800 outline-none">
                             </div>
-                            <select id="new-user-role" class="w-full p-4 rounded-2xl text-sm font-bold border border-blue-100 bg-white text-slate-600">
-                                <option value="user">Rol: Usuario Operativo</option>
-                                <option value="admin">Rol: Administrador Maestro</option>
-                            </select>
-                            <button id="add-user-btn" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs mt-2 shadow-lg uppercase tracking-widest">Autorizar Acceso</button>
+                            <div class="flex gap-4">
+                                <select id="new-user-role" class="flex-1 p-4 rounded-2xl text-sm font-bold border border-blue-100 bg-white text-slate-600 outline-none">
+                                    <option value="user">Rol: Usuario Operativo</option>
+                                    <option value="admin">Rol: Administrador Maestro</option>
+                                </select>
+                                <button id="add-user-btn" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest hover:bg-blue-700 transition-all">Autorizar Nuevo Miembro</button>
+                            </div>
                         </div>
                         <div id="user-registry-list" class="space-y-3"></div>
                     </div>
@@ -274,13 +275,13 @@
         </div>
 
         <!-- Aviso Inactividad -->
-        <div id="timeout-modal" class="overlay hidden-ui" style="background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(12px); z-index: 10000;">
-            <div class="w-full max-w-sm bg-white p-8 rounded-[2.5rem] shadow-2xl text-center text-slate-800">
-                <h3 class="text-xl font-black mb-2">¿Sigues ahí?</h3>
-                <p class="text-sm text-slate-500 mb-8 font-medium">Por seguridad la sesión está por cerrar.</p>
+        <div id="timeout-modal" class="overlay hidden-ui" style="background: rgba(15, 23, 42, 0.97); backdrop-filter: blur(12px); z-index: 10000;">
+            <div class="w-full max-w-sm bg-white p-8 rounded-[3rem] shadow-2xl text-center text-slate-800">
+                <h3 class="text-xl font-black mb-2 italic text-blue-600">¿Sigues ahí?</h3>
+                <p class="text-sm text-slate-500 mb-8 font-medium">Por seguridad la sesión está por cerrar tras 5 minutos de inactividad.</p>
                 <div class="flex gap-3">
                     <button id="timeout-logout-btn" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold text-sm">SALIR</button>
-                    <button id="timeout-extend-btn" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-bold text-sm shadow-lg">CONTINUAR</button>
+                    <button id="timeout-extend-btn" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-bold text-sm shadow-lg uppercase tracking-widest">Continuar</button>
                 </div>
             </div>
         </div>
@@ -310,11 +311,13 @@
                 onAuthStateChanged(auth, async (user) => {
                     if (!user) return;
 
+                    // Sincronización Manuales (Actualizado para mostrar todo)
                     onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'knowledge'), (snap) => {
                         knowledgeBase = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                         renderEntries();
                     });
 
+                    // Sincronización Equipo
                     onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'team'), (snap) => {
                         employeeRegistry = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                         if (employeeRegistry.length === 0) seedAdmin();
@@ -325,7 +328,7 @@
                             btn.innerText = "INGRESAR AL SISTEMA";
                             btn.disabled = false;
 
-                            const saved = localStorage.getItem('spei_ops_prod_v5');
+                            const saved = localStorage.getItem('spei_ops_production_v7');
                             if (saved) {
                                 const savedUser = JSON.parse(saved);
                                 const updated = employeeRegistry.find(u => u.empNumber === savedUser.empNumber);
@@ -360,7 +363,7 @@
         }
 
         function logout() {
-            localStorage.removeItem('spei_ops_prod_v5');
+            localStorage.removeItem('spei_ops_production_v7');
             location.reload();
         }
 
@@ -381,9 +384,9 @@
             const user = employeeRegistry.find(u => u.empNumber === input);
             if (user) {
                 currentUser = user;
-                localStorage.setItem('spei_ops_prod_v5', JSON.stringify(user));
+                localStorage.setItem('spei_ops_production_v7', JSON.stringify(user));
                 enterApp();
-                addMessage(`Bienvenido, ${user.name}. He sincronizado la documentación técnica. ¿Cómo puedo ayudarte?`);
+                addMessage(`Bienvenido, ${user.name}. He sincronizado la base de conocimiento operativa. ¿Cómo puedo apoyarte?`);
             } else {
                 document.getElementById('error-emp').style.opacity = "1";
                 setTimeout(() => document.getElementById('error-emp').style.opacity = "0", 2500);
@@ -405,31 +408,31 @@
             document.getElementById('chat-header').className = isInternalMode 
                 ? "bg-emerald-900 text-white p-6 pt-10 shadow-xl flex items-center justify-between shrink-0"
                 : "bg-slate-900 text-white p-6 pt-10 shadow-xl flex items-center justify-between shrink-0";
-            notify(isInternalMode ? "Modo Administración" : "Soporte Operativo");
+            notify(isInternalMode ? "Modo Administración Activo" : "Soporte Operativo Activo");
         };
 
-        // GESTIÓN DE DATOS CON EDICIÓN (REPARADO)
+        // GESTIÓN DE DATOS CON EDICIÓN (REPARADO Y SIN RECORTES)
         document.getElementById('save-entry-btn').onclick = async () => {
             const cat = document.getElementById('entry-category').value;
             const title = document.getElementById('entry-title').value.trim();
             const content = document.getElementById('entry-content').value.trim();
             const editId = document.getElementById('editing-id').value;
-            if (!title || !content) return notify("Faltan datos", true);
+            if (!title || !content) return notify("Completa todos los campos", true);
             try {
                 const id = editId || Date.now().toString();
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), { 
-                    category: cat, title, content, date: new Date().toLocaleDateString() 
+                    category: cat, title: title, content: content, date: new Date().toLocaleDateString() 
                 }, { merge: true });
-                notify(editId ? "Actualizado" : "Guardado");
+                notify(editId ? "Manual Actualizado" : "Manual Guardado con Éxito");
                 clearForm();
-            } catch (err) { notify("Fallo al guardar", true); }
+            } catch (err) { notify("Error al guardar en la nube", true); }
         };
 
         function clearForm() {
             document.getElementById('entry-title').value = "";
             document.getElementById('entry-content').value = "";
             document.getElementById('editing-id').value = "";
-            document.getElementById('save-entry-btn').innerText = "Guardar Manual";
+            document.getElementById('save-entry-btn').innerText = "Guardar en Base de Datos";
             document.getElementById('save-entry-btn').className = "flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest";
         }
 
@@ -442,28 +445,32 @@
             document.getElementById('editing-id').value = id;
             document.getElementById('save-entry-btn').innerText = "Confirmar Edición";
             document.getElementById('save-entry-btn').className = "flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest";
-            notify("Modo Edición Activo");
+            notify("Cargando para edición");
+            document.querySelector('.overflow-y-auto').scrollTop = 0;
         };
 
         window.deleteEntry = async (id) => {
-            if (confirm("¿Borrar permanentemente?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id));
+            if (confirm("¿Borrar este manual permanentemente?")) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id));
+                notify("Registro eliminado");
+            }
         };
 
         function renderEntries() {
             document.getElementById('knowledge-list').innerHTML = knowledgeBase.map(e => `
-                <div class="bg-white p-6 rounded-2xl border border-slate-100 mb-3 shadow-sm">
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="flex items-center gap-2">
-                            <span class="text-[8px] bg-slate-100 text-slate-500 px-2 py-1 rounded-full font-black uppercase tracking-tighter">${e.category || 'Manual'}</span>
-                            <span class="text-[8px] text-slate-300 font-bold">${e.date}</span>
+                <div class="admin-card bg-white p-6 rounded-3xl border border-slate-100 mb-4 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="text-[9px] bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-black uppercase tracking-tighter">${e.category || 'General'}</span>
+                            <span class="text-[9px] text-slate-300 font-bold">${e.date}</span>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="editEntry('${e.id}')" class="text-blue-400 hover:text-blue-600"><i class="fas fa-pen text-xs"></i></button>
-                            <button onclick="deleteEntry('${e.id}')" class="text-slate-200 hover:text-red-500"><i class="fas fa-trash text-xs"></i></button>
+                            <button onclick="editEntry('${e.id}')" class="text-blue-500 hover:bg-blue-50 w-9 h-9 rounded-full transition-all flex items-center justify-center"><i class="fas fa-pen text-sm"></i></button>
+                            <button onclick="deleteEntry('${e.id}')" class="text-red-300 hover:bg-red-50 w-9 h-9 rounded-full transition-all flex items-center justify-center"><i class="fas fa-trash text-sm"></i></button>
                         </div>
                     </div>
-                    <h4 class="text-sm font-black text-slate-800 uppercase mb-2">${e.title}</h4>
-                    <p class="text-[11px] text-slate-500 font-medium whitespace-pre-wrap leading-relaxed">${e.content}</p>
+                    <h4 class="text-sm font-black text-slate-800 uppercase mb-3">${e.title}</h4>
+                    <p class="text-[12px] text-slate-600 font-medium whitespace-pre-wrap leading-relaxed">${e.content}</p>
                 </div>
             `).join('');
         }
@@ -472,19 +479,19 @@
             const name = document.getElementById('new-user-name').value.trim();
             const num = document.getElementById('new-user-id').value.trim();
             const role = document.getElementById('new-user-role').value;
-            if (!name || !num) return notify("Faltan datos", true);
+            if (!name || !num) return notify("Faltan datos de usuario", true);
             try {
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', num), { name, empNumber: num, role: role, queries: 0 });
                 document.getElementById('new-user-name').value = ""; document.getElementById('new-user-id').value = "";
-                notify("Miembro autorizado");
-            } catch (err) { notify("Error", true); }
+                notify("Colaborador autorizado");
+            } catch (err) { notify("Error al registrar", true); }
         };
 
         function renderUsers() {
             document.getElementById('user-registry-list').innerHTML = employeeRegistry.map(u => `
-                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-2">
-                    <div class="text-[11px] font-bold text-slate-800">${u.name} <span class="text-[8px] opacity-40 uppercase tracking-widest">[${u.role}]</span></div>
-                    <div class="text-[10px] font-black text-blue-600 bg-blue-100 px-3 py-1 rounded-full">${u.queries || 0} q</div>
+                <div class="flex items-center justify-between p-5 bg-slate-50 rounded-3xl border border-slate-100 mb-2">
+                    <div class="text-[12px] font-bold text-slate-800">${u.name} <span class="text-[9px] opacity-40 uppercase tracking-[0.1em] ml-2">[${u.role}]</span></div>
+                    <div class="text-[11px] font-black text-blue-600 bg-blue-100 px-4 py-1 rounded-full">${u.queries || 0} consultas</div>
                 </div>
             `).join('');
         }
@@ -492,7 +499,7 @@
         document.getElementById('file-selector').onchange = async (e) => {
             const files = e.target.files;
             if (!files.length) return;
-            notify("Leyendo archivos...");
+            notify("Analizando documentos...");
             for (let file of files) {
                 const ext = file.name.split('.').pop().toLowerCase();
                 let text = "";
@@ -501,9 +508,9 @@
                         const data = await file.arrayBuffer();
                         const pdf = await pdfjsLib.getDocument({ data }).promise;
                         for (let i=1; i<=pdf.numPages; i++) {
-                            const p = await pdf.getPage(i);
-                            const c = await p.getTextContent();
-                            text += c.items.map(s => s.str).join(' ') + '\n';
+                            const page = await pdf.getPage(i);
+                            const content = await page.getTextContent();
+                            text += content.items.map(s => s.str).join(' ') + '\n';
                         }
                     } else if (['xlsx','csv'].includes(ext)) {
                         const data = await file.arrayBuffer();
@@ -512,45 +519,54 @@
                     } else if (ext === 'txt') text = await file.text();
                     
                     if (text) {
-                        const id = "file_" + Date.now();
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), {
+                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', "file_" + Date.now()), {
                             category: "Archivo", title: file.name, content: text, date: new Date().toLocaleDateString()
                         });
                     }
-                } catch (err) { notify("Error en archivo", true); }
+                } catch (err) { notify("Fallo en lectura de archivo", true); }
             }
-            notify("Finalizado");
+            notify("Documentos cargados con éxito");
         };
 
         // PARSER PARA ICONOS
         function formatBotResponse(text) {
             // Reemplaza ### Título por un encabezado con icono de libro
-            return text.replace(/###\s*(.*?)(\n|$)/g, '<div class="bot-header"><i class="fas fa-book-open text-blue-500 text-[14px]"></i> $1</div>')
+            return text.replace(/###\s*(.*?)(\n|$)/g, '<div class="bot-header"><i class="fas fa-book-open text-blue-500 text-[16px]"></i> $1</div>')
                        .replace(/\n/g, '<br>');
         }
 
         async function fetchGemini(q) {
-            const kb = knowledgeBase.map(e => `[MANUAL ${e.category}]: ${e.content}`).join('\n\n');
-            const rules = `REGLA DE ORO: Si la respuesta está en los manuales proporcionados, responde ÚNICAMENTE el texto exacto del manual. No agregues introducciones ("De acuerdo a..."), resúmenes ni despedidas. Sé 100% fiel al texto guardado. Usa ### para títulos y LaTeX para matemáticas.`;
+            // Unificamos toda la base de datos para que Gemini lea todo
+            const kb = knowledgeBase.map(e => `[CATEGORÍA ${e.category} - TEMA: ${e.title}]: ${e.content}`).join('\n\n');
+            
+            const rules = `REGLA ESTRICTA DE RESPUESTA:
+            1. Analiza TODA la base de conocimiento proporcionada abajo.
+            2. Si la respuesta está en los manuales, responde ÚNICAMENTE el texto técnico encontrado.
+            3. NO agregues frases como "Según el manual", "He encontrado" o "Espero que esto ayude".
+            4. Si la información está en varias secciones, intégralas de forma clara.
+            5. Usa ### para los títulos y LaTeX para matemáticas.
+            6. Si no hay información, di: "Esa información no se encuentra registrada en el manual operativo actualmente."`;
+
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [...chatHistory, { role: "user", parts: [{ text: q }] }],
-                        systemInstruction: { parts: [{ text: `Asistente Técnico SPEI Ops. Tu base de datos es: ${kb}. ${rules}` }] }
+                        systemInstruction: { parts: [{ text: `Eres el Asistente Técnico SPEI Ops de Daniel. Base de datos operativa: ${kb}. ${rules}` }] }
                     })
                 });
                 const data = await res.json();
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta.";
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "No hay respuesta disponible.";
                 chatHistory.push({ role: "user", parts: [{ text: q }] }, { role: "model", parts: [{ text }] });
                 if (chatHistory.length > 10) chatHistory.splice(0, 2);
                 
                 if (!isInternalMode && currentUser) {
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', currentUser.empNumber), { queries: (currentUser.queries || 0) + 1 });
+                    const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'team', currentUser.empNumber);
+                    await updateDoc(userRef, { queries: (currentUser.queries || 0) + 1 });
                 }
                 return text;
-            } catch (e) { return "Error técnico operativo."; }
+            } catch (e) { return "Fallo técnico en la conexión con la red operativa."; }
         }
 
         document.getElementById('chat-form').onsubmit = async (e) => {
@@ -559,7 +575,7 @@
             if (!v) return;
             document.getElementById('user-input').value = "";
             addMessage(v, true);
-            const l = document.createElement('div'); l.id = "loader"; l.className = "p-5 bg-white border rounded-3xl w-fit bot-bubble animate-pulse text-[11px] font-bold text-slate-400 italic"; l.innerText = "Consultando manual oficial...";
+            const l = document.createElement('div'); l.id = "loader"; l.className = "p-5 bg-white border rounded-[1.8rem] w-fit bot-bubble animate-pulse text-[11px] font-black text-slate-400 italic shadow-sm"; l.innerText = "Consultando Manuales Oficiales...";
             document.getElementById('chat-box').appendChild(l);
             const res = await fetchGemini(v);
             if (document.getElementById('loader')) document.getElementById('loader').remove();
@@ -574,7 +590,7 @@
             
             const formattedContent = isUser ? text.replace(/\n/g, '<br>') : formatBotResponse(text);
             
-            div.innerHTML = `<div class="${color} px-6 py-5 text-[14.5px] leading-[1.8] rounded-[2rem] ${isUser ? 'rounded-tr-none shadow-lg' : 'rounded-tl-none shadow-sm'}">${formattedContent}</div><span class="text-[9px] text-slate-400 mx-5 font-black uppercase tracking-widest">${isUser ? currentUser.name : 'Asistente SPEI'}</span>`;
+            div.innerHTML = `<div class="${color} px-6 py-5 text-[15px] leading-[1.8] rounded-[2rem] ${isUser ? 'rounded-tr-none shadow-lg' : 'rounded-tl-none'}">${formattedContent}</div><span class="text-[10px] text-slate-400 mx-6 font-black uppercase tracking-widest">${isUser ? currentUser.name : 'Asistente SPEI'}</span>`;
             
             document.getElementById('chat-box').appendChild(div);
             document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
