@@ -15,11 +15,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Librerías de Apoyo -->
+    <!-- Librerías -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    <!-- MathJax para Fórmulas Matemáticas -->
+    <!-- MathJax para Fórmulas -->
     <script>
         window.MathJax = {
             tex: {
@@ -35,7 +35,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, getDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDPi5pcDL6OL2zCJK_0n3A_RdDGt3U3LVQ",
@@ -51,18 +51,19 @@
         const db = getFirestore(app);
         const appId = "chatbot-8d0a3"; 
 
-        window.fb = { auth, db, appId, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, deleteDoc, query, signInAnonymously, onAuthStateChanged };
+        window.fb = { auth, db, appId, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, deleteDoc, signInAnonymously, onAuthStateChanged };
     </script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        /* Importamos INTER para una estética mucho más limpia y profesional */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         html, body {
             height: 100dvh; width: 100vw;
             background-color: #0f172a;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Inter', sans-serif;
             overflow: hidden;
             position: fixed;
         }
@@ -75,20 +76,20 @@
 
         .app-container {
             width: 100%;
-            max-width: 62rem; /* Ancho optimizado para visualización profesional */
+            max-width: 58rem; /* Ancho profesional para PC */
             height: 100%;
             display: flex;
             flex-direction: column;
-            background: #f8fafc;
+            background: #fdfdfd;
             position: relative;
-            border-radius: 2rem;
-            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.7);
+            border-radius: 1.5rem;
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.7);
             overflow: hidden;
         }
 
-        @media (max-width: 1024px) { 
-            .app-container { max-width: 100%; border-radius: 0; } 
-            .app-shell { padding: 0; } 
+        @media (max-width: 768px) {
+            .app-shell { padding: 0; }
+            .app-container { border-radius: 0; max-width: 100%; }
         }
 
         .chat-container {
@@ -98,9 +99,10 @@
             padding: 2rem;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
-            background-image: radial-gradient(#e2e8f0 1.2px, transparent 1.2px);
-            background-size: 24px 24px;
+            gap: 2rem;
+            background-color: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 0.8px, transparent 0.8px);
+            background-size: 20px 20px;
         }
 
         .overlay {
@@ -111,30 +113,38 @@
         }
 
         .hidden-ui { display: none !important; }
-        .user-bubble { box-shadow: 0 4px 15px -3px rgba(37, 99, 235, 0.4); }
-        .bot-bubble { border: 1px solid #f1f5f9; box-shadow: 0 4px 12px -1px rgba(0, 0, 0, 0.05); }
         
-        .tab-btn.active { color: #3b82f6; border-bottom: 3px solid #3b82f6; }
+        /* Burbujas Modernas */
+        .user-bubble { 
+            background: #2563eb;
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+            border-radius: 1.5rem 1.5rem 0 1.5rem;
+        }
         
-        .mjx-container { 
-            overflow-x: auto; 
-            max-width: 100%; 
-            padding: 0.5rem 0;
-            display: block !important;
+        .bot-bubble { 
+            background: white;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border-radius: 1.5rem 1.5rem 1.5rem 0;
         }
 
-        /* Títulos elegantes para el Bot */
+        .tab-btn.active { color: #2563eb; border-bottom: 3px solid #2563eb; }
+        
+        /* Títulos con Iconos */
         .bot-header {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.8rem;
             font-weight: 800;
             color: #0f172a;
             margin-top: 1.5rem;
-            margin-bottom: 0.5rem;
-            font-size: 1.15rem;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
             border-bottom: 2px solid #3b82f6;
-            padding-bottom: 0.4rem;
+            padding-bottom: 0.5rem;
+            letter-spacing: -0.02em;
         }
 
         #toast {
@@ -148,7 +158,9 @@
 
         .manual-text-admin {
             white-space: pre-wrap;
-            line-height: 1.7;
+            line-height: 1.6;
+            font-size: 0.85rem;
+            color: #475569;
         }
     </style>
 </head>
@@ -157,17 +169,19 @@
     <div id="toast"></div>
 
     <div class="app-shell">
+        <!-- Pantalla de Carga -->
         <div id="loading-overlay" class="overlay">
-            <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-            <p class="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Sincronizando SPEI Cloud...</p>
+            <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
+            <p class="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500">Conectando Terminal</p>
         </div>
 
+        <!-- Login -->
         <div id="lock-screen" class="overlay hidden-ui">
             <div class="w-20 h-20 bg-blue-600 rounded-[2.2rem] mb-8 flex items-center justify-center shadow-2xl">
                 <i class="fas fa-fingerprint text-3xl text-white"></i>
             </div>
             <h2 class="text-3xl font-black mb-1">SPEI Ops</h2>
-            <p class="text-slate-400 text-sm mb-10 text-center font-medium uppercase tracking-[0.2em]">Operación Pagos Electrónicos</p>
+            <p class="text-slate-400 text-sm mb-10 text-center font-medium uppercase tracking-[0.3em]">Operación Central de Pagos</p>
             
             <div class="w-full max-w-[280px] space-y-4">
                 <input type="text" id="emp-number-input" placeholder="No. de Empleado" 
@@ -178,26 +192,27 @@
             </div>
         </div>
 
-        <div class="app-container blur-md" id="app-content">
+        <!-- Aplicación Principal -->
+        <div class="app-container blur-md shadow-2xl" id="app-content">
             <header class="bg-slate-900 text-white p-6 pt-10 shadow-xl flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10 shadow-inner">
-                        <i class="fas fa-university text-blue-400 text-xl"></i>
+                    <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center border border-blue-500/30 shadow-lg">
+                        <i class="fas fa-university text-white text-xl"></i>
                     </div>
                     <div>
-                        <h1 class="font-extrabold text-lg tracking-tight leading-none mb-1 text-white">SPEI Ops</h1>
+                        <h1 class="font-extrabold text-lg tracking-tight leading-none mb-1">SPEI Ops</h1>
                         <div class="flex items-center gap-1.5">
                             <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                            <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">En Línea</span>
+                            <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">Terminal Activa</span>
                         </div>
                     </div>
                 </div>
                 
                 <div id="admin-controls" class="hidden flex items-center gap-4 text-white">
-                    <button id="open-settings-btn" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10 hover:bg-white/20 transition-all"><i class="fas fa-cog text-sm"></i></button>
+                    <button id="open-settings-btn" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10 hover:bg-white/20 transition-all shadow-sm"><i class="fas fa-layer-group text-sm"></i></button>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="mode-toggle" class="sr-only peer">
-                        <div class="w-10 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <div class="w-10 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
                     </label>
                 </div>
             </header>
@@ -205,53 +220,52 @@
             <main id="chat-box" class="chat-container"></main>
 
             <footer class="bg-white p-6 border-t border-slate-100 shrink-0 pb-12">
-                <div id="suggestions" class="flex flex-wrap gap-2 mb-4"></div>
                 <form id="chat-form" class="flex gap-4 items-center">
-                    <div class="flex-1 bg-slate-100 rounded-3xl flex items-center px-6 border border-transparent focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 transition-all shadow-inner">
-                        <input type="text" id="user-input" placeholder="Realiza una consulta técnica..." class="w-full bg-transparent border-none py-4 text-sm font-semibold outline-none" autocomplete="off">
+                    <div class="flex-1 bg-slate-50 rounded-3xl flex items-center px-6 border border-slate-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 transition-all shadow-sm">
+                        <input type="text" id="user-input" placeholder="Realiza una consulta técnica..." class="w-full bg-transparent border-none py-4 text-[15px] font-medium text-slate-700 outline-none" autocomplete="off">
                     </div>
                     <button type="submit" class="bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200 active:scale-90 transition-all">
                         <i class="fas fa-paper-plane text-lg"></i>
                     </button>
                 </form>
                 <div class="flex justify-between items-center mt-6">
-                    <p id="footer-username" class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Iniciando...</p>
-                    <button id="logout-btn" class="text-[10px] font-black text-slate-400 uppercase underline hover:text-red-500">Cerrar Sesión</button>
+                    <p id="footer-username" class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Cargando identidad...</p>
+                    <button id="logout-btn" class="text-[10px] font-black text-slate-400 uppercase underline hover:text-red-500 transition-colors">Salir del Sistema</button>
                 </div>
             </footer>
         </div>
 
         <!-- Panel Admin -->
         <div id="settings-modal" class="hidden-ui system-overlay overlay" style="z-index: 10005;">
-            <div class="w-full max-w-5xl bg-white p-8 rounded-[3rem] shadow-2xl flex flex-col max-h-[92vh]">
-                <div class="flex justify-between items-center mb-8 text-slate-800">
-                    <h2 class="text-2xl font-black uppercase italic">Base de Conocimiento</h2>
-                    <button id="close-settings-btn" class="bg-slate-100 p-3 rounded-full text-slate-400 hover:bg-slate-200"><i class="fas fa-times text-lg"></i></button>
+            <div class="w-full max-w-5xl bg-white p-8 rounded-[2.5rem] shadow-2xl flex flex-col max-h-[92vh] text-slate-800">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-2xl font-black uppercase italic tracking-tighter">Administración de Conocimiento</h2>
+                    <button id="close-settings-btn" class="bg-slate-100 p-3 rounded-full text-slate-400 hover:bg-slate-200 transition-all"><i class="fas fa-times text-lg"></i></button>
                 </div>
                 
                 <div class="flex gap-8 border-b border-slate-100 mb-8">
-                    <button id="tab-kb-btn" class="tab-btn active pb-3 text-xs font-black uppercase tracking-widest text-slate-400">Manuales</button>
-                    <button id="tab-users-btn" class="tab-btn pb-3 text-xs font-black uppercase tracking-widest text-slate-400">Equipo</button>
+                    <button id="tab-kb-btn" class="tab-btn active pb-3 text-xs font-black uppercase tracking-widest">Base de Manuales</button>
+                    <button id="tab-users-btn" class="tab-btn pb-3 text-xs font-black uppercase tracking-widest">Mi Equipo</button>
                 </div>
                 
                 <div class="overflow-y-auto flex-1 space-y-6 px-2">
                     <div id="tab-kb">
-                        <div class="bg-slate-50 p-6 rounded-3xl space-y-4 mb-8 border border-slate-200 shadow-sm text-slate-800">
+                        <div class="bg-slate-50 p-6 rounded-3xl space-y-4 mb-8 border border-slate-100 shadow-sm">
                             <div class="flex flex-wrap gap-4">
-                                <select id="entry-category" class="bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold outline-none flex-1 min-w-[180px]">
-                                    <option value="Procesos">Procesos</option>
-                                    <option value="Servidores">Servidores</option>
-                                    <option value="Seguridad">Seguridad</option>
-                                    <option value="Contactos">Contactos</option>
-                                    <option value="Codi">CoDi</option>
+                                <select id="entry-category" class="bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold outline-none flex-1 min-w-[180px] text-slate-600 shadow-sm">
+                                    <option value="Procesos">Categoría: Procesos</option>
+                                    <option value="Servidores">Categoría: Servidores</option>
+                                    <option value="Seguridad">Categoría: Seguridad</option>
+                                    <option value="Contactos">Categoría: Contactos</option>
+                                    <option value="Codi">Categoría: CoDi</option>
                                 </select>
-                                <input type="text" id="entry-title" placeholder="Título..." class="flex-[2] min-w-[280px] bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold">
+                                <input type="text" id="entry-title" placeholder="Título del procedimiento..." class="flex-[2] min-w-[280px] bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none text-slate-800 shadow-sm">
                             </div>
-                            <textarea id="entry-content" placeholder="Contenido técnico..." class="w-full h-56 bg-white border border-slate-200 rounded-xl p-5 text-sm font-medium outline-none leading-relaxed"></textarea>
-                            <div class="flex gap-4">
+                            <textarea id="entry-content" placeholder="Escribe el contenido detallado aquí..." class="w-full h-56 bg-white border border-slate-200 rounded-xl p-5 text-sm font-medium outline-none text-slate-700 leading-relaxed shadow-sm"></textarea>
+                            <div class="flex gap-3">
                                 <input type="hidden" id="editing-id">
-                                <button id="save-entry-btn" class="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest hover:bg-emerald-700">Guardar Manual</button>
-                                <button id="file-trigger" class="bg-slate-800 text-white px-8 rounded-2xl"><i class="fas fa-file-import text-lg"></i></button>
+                                <button id="save-entry-btn" class="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest transition-all hover:bg-emerald-700">Guardar Manual</button>
+                                <button id="file-trigger" class="bg-slate-800 text-white px-6 rounded-2xl hover:bg-slate-700 transition-colors shadow-lg"><i class="fas fa-file-upload text-lg"></i></button>
                                 <input type="file" id="file-selector" class="hidden" multiple accept=".pdf,.xlsx,.txt">
                             </div>
                         </div>
@@ -259,16 +273,16 @@
                     </div>
                     
                     <div id="tab-users" class="hidden">
-                        <div class="bg-blue-50 p-6 rounded-3xl space-y-4 mb-8 border border-blue-100 shadow-sm text-slate-800">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <input type="text" id="new-user-name" placeholder="Nombre completo" class="w-full p-4 rounded-2xl text-sm font-bold border border-blue-100">
-                                <input type="text" id="new-user-id" placeholder="No. Empleado" class="w-full p-4 rounded-2xl text-sm font-bold border border-blue-100">
+                        <div class="bg-blue-50 p-6 rounded-3xl space-y-3 mb-6 border border-blue-100 shadow-sm">
+                            <div class="grid grid-cols-2 gap-3">
+                                <input type="text" id="new-user-name" placeholder="Nombre completo" class="w-full p-4 rounded-2xl text-sm font-bold border border-blue-100 text-slate-800">
+                                <input type="text" id="new-user-id" placeholder="No. Empleado" class="w-full p-4 rounded-2xl text-sm font-bold border border-blue-100 text-slate-800">
                             </div>
                             <select id="new-user-role" class="w-full p-4 rounded-2xl text-sm font-bold border border-blue-100 bg-white text-slate-600">
-                                <option value="user">Usuario</option>
-                                <option value="admin">Administrador</option>
+                                <option value="user">Rol: Usuario Operativo</option>
+                                <option value="admin">Rol: Administrador Maestro</option>
                             </select>
-                            <button id="add-user-btn" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest">Autorizar Acceso</button>
+                            <button id="add-user-btn" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs mt-2 shadow-lg uppercase tracking-widest">Autorizar Acceso</button>
                         </div>
                         <div id="user-registry-list" class="space-y-3"></div>
                     </div>
@@ -276,13 +290,14 @@
             </div>
         </div>
 
+        <!-- Aviso Inactividad -->
         <div id="timeout-modal" class="overlay hidden-ui" style="background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(15px); z-index: 10000;">
             <div class="w-full max-w-sm bg-white p-10 rounded-[3rem] shadow-2xl text-center text-slate-800">
-                <h3 class="text-2xl font-black mb-3 text-blue-600">¿Continuamos?</h3>
-                <p class="text-sm text-slate-500 mb-10 font-medium">Por seguridad la sesión cerrará pronto.</p>
+                <h3 class="text-2xl font-black mb-3 italic text-blue-600 tracking-tighter">¿Sigues ahí?</h3>
+                <p class="text-sm text-slate-500 mb-10 font-medium">Por seguridad, tu sesión cerrará pronto por inactividad prolongada.</p>
                 <div class="flex gap-3">
                     <button id="timeout-logout-btn" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold text-sm">SALIR</button>
-                    <button id="timeout-extend-btn" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-bold text-sm shadow-lg">SEGUIR</button>
+                    <button id="timeout-extend-btn" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-bold text-sm shadow-lg uppercase tracking-widest">Continuar</button>
                 </div>
             </div>
         </div>
@@ -324,10 +339,10 @@
                         if (!isDataLoaded) {
                             isDataLoaded = true;
                             const btn = document.getElementById('login-btn');
-                            btn.innerText = "INGRESAR";
+                            btn.innerText = "INGRESAR AL SISTEMA";
                             btn.disabled = false;
 
-                            const saved = localStorage.getItem('spei_ops_production_v15');
+                            const saved = localStorage.getItem('spei_ops_production_v25');
                             if (saved) {
                                 const savedUser = JSON.parse(saved);
                                 const updated = employeeRegistry.find(u => u.empNumber === savedUser.empNumber);
@@ -343,7 +358,7 @@
                         renderUsers();
                     });
                 });
-            } catch (err) { notify("Error de red", true); }
+            } catch (err) { notify("Fallo de red operativa", true); }
         }
 
         async function seedAdmin() {
@@ -362,7 +377,7 @@
         }
 
         function logout() {
-            localStorage.removeItem('spei_ops_production_v15');
+            localStorage.removeItem('spei_ops_production_v25');
             location.reload();
         }
 
@@ -383,9 +398,9 @@
             const user = employeeRegistry.find(u => u.empNumber === input);
             if (user) {
                 currentUser = user;
-                localStorage.setItem('spei_ops_production_v15', JSON.stringify(user));
+                localStorage.setItem('spei_ops_production_v25', JSON.stringify(user));
                 enterApp();
-                addMessage(`Bienvenido, ${user.name}. He sincronizado la documentación. ¿Cómo puedo apoyarte hoy?`);
+                addMessage(`Bienvenido al sistema SPEI Ops, ${user.name}. He sincronizado la documentación técnica. ¿Cómo puedo ayudarte?`);
             } else {
                 document.getElementById('error-emp').style.opacity = "1";
                 setTimeout(() => document.getElementById('error-emp').style.opacity = "0", 2500);
@@ -410,21 +425,21 @@
             notify(isInternalMode ? "ADMINISTRADOR" : "USUARIO");
         };
 
-        // GESTIÓN DE MANUALES
+        // GESTIÓN DE DATOS CON EDICIÓN
         document.getElementById('save-entry-btn').onclick = async () => {
             const cat = document.getElementById('entry-category').value;
             const title = document.getElementById('entry-title').value.trim();
             const content = document.getElementById('entry-content').value.trim();
             const editId = document.getElementById('editing-id').value;
-            if (!title || !content) return notify("Campos vacíos", true);
+            if (!title || !content) return notify("Faltan datos técnicos", true);
             try {
                 const id = editId || Date.now().toString();
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), { 
-                    category: cat, title, content, date: new Date().toLocaleDateString() 
+                    category: cat, title: title, content: content, date: new Date().toLocaleDateString() 
                 }, { merge: true });
-                notify(editId ? "Actualizado" : "Guardado");
+                notify(editId ? "Actualizado" : "Manual Guardado");
                 clearManualForm();
-            } catch (err) { notify("Error Nube", true); }
+            } catch (err) { notify("Error de nube", true); }
         };
 
         function clearManualForm() {
@@ -444,12 +459,12 @@
             document.getElementById('editing-id').value = id;
             document.getElementById('save-entry-btn').innerText = "Confirmar Cambios";
             document.getElementById('save-entry-btn').className = "flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest";
-            notify("Modo Edición");
+            notify("Modo Edición Activo");
             document.querySelector('#settings-modal .overflow-y-auto').scrollTop = 0;
         };
 
         window.deleteEntry = async (id) => {
-            if (confirm("¿Borrar definitivamente?")) {
+            if (confirm("¿Borrar definitivamente este manual?")) {
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id));
                 notify("Eliminado");
             }
@@ -457,19 +472,19 @@
 
         function renderEntries() {
             document.getElementById('knowledge-list').innerHTML = knowledgeBase.map(e => `
-                <div class="bg-white p-6 rounded-3xl border border-slate-100 mb-4 shadow-sm text-slate-800">
-                    <div class="flex justify-between items-start mb-4">
+                <div class="admin-card bg-white p-6 rounded-3xl border border-slate-100 mb-4 shadow-sm text-slate-800">
+                    <div class="flex justify-between items-start mb-4 border-b border-slate-50 pb-3">
                         <div class="flex items-center gap-3">
-                            <span class="text-[9px] bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-black uppercase">${e.category || 'General'}</span>
+                            <span class="text-[9px] bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-black uppercase tracking-tighter">${e.category || 'Manual'}</span>
                             <span class="text-[9px] text-slate-300 font-bold">${e.date}</span>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="editEntry('${e.id}')" class="text-blue-500 hover:bg-blue-50 w-9 h-9 rounded-full flex items-center justify-center border border-blue-50"><i class="fas fa-pen text-sm"></i></button>
-                            <button onclick="deleteEntry('${e.id}')" class="text-red-300 hover:bg-red-50 w-9 h-9 rounded-full flex items-center justify-center border border-red-50"><i class="fas fa-trash text-sm"></i></button>
+                            <button onclick="editEntry('${e.id}')" class="text-blue-500 hover:bg-blue-50 w-9 h-9 rounded-full flex items-center justify-center border border-blue-50 transition-all shadow-sm"><i class="fas fa-pen text-sm"></i></button>
+                            <button onclick="deleteEntry('${e.id}')" class="text-red-300 hover:bg-red-50 w-9 h-9 rounded-full flex items-center justify-center border border-red-50 transition-all shadow-sm"><i class="fas fa-trash text-sm"></i></button>
                         </div>
                     </div>
-                    <h4 class="text-sm font-black uppercase mb-3">${e.title}</h4>
-                    <p class="manual-text-admin text-[12px] text-slate-600 font-medium">${e.content}</p>
+                    <h4 class="text-sm font-black uppercase mb-3 tracking-tight">${e.title}</h4>
+                    <p class="manual-text-admin text-[12.5px] text-slate-600 font-medium">${e.content}</p>
                 </div>
             `).join('');
         }
@@ -482,13 +497,13 @@
             try {
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', num), { name, empNumber: num, role: role, queries: 0 });
                 document.getElementById('new-user-name').value = ""; document.getElementById('new-user-id').value = "";
-                notify("Acceso autorizado");
+                notify("Colaborador autorizado");
             } catch (err) { notify("Error", true); }
         };
 
         function renderUsers() {
             document.getElementById('user-registry-list').innerHTML = employeeRegistry.map(u => `
-                <div class="flex items-center justify-between p-5 bg-slate-50 rounded-2xl border border-slate-100 mb-2">
+                <div class="flex items-center justify-between p-5 bg-slate-50 rounded-3xl border border-slate-100 mb-2">
                     <div class="text-[12px] font-bold text-slate-800">${u.name} <span class="text-[9px] opacity-40 uppercase ml-2 font-black">[${u.role}]</span></div>
                     <div class="text-[11px] font-black text-blue-600 bg-blue-100 px-4 py-1 rounded-full">${u.queries || 0} q</div>
                 </div>
@@ -498,7 +513,7 @@
         document.getElementById('file-selector').onchange = async (e) => {
             const files = e.target.files;
             if (!files.length) return;
-            notify("Leyendo archivos...");
+            notify("Leyendo archivos operativos...");
             for (let file of files) {
                 const ext = file.name.split('.').pop().toLowerCase();
                 let text = "";
@@ -518,35 +533,40 @@
                     } else if (ext === 'txt') text = await file.text();
                     
                     if (text) {
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', "file_" + Date.now()), {
+                        const id = "file_" + Date.now();
+                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), {
                             category: "Archivo", title: file.name, content: text, date: new Date().toLocaleDateString()
                         });
                     }
-                } catch (err) { notify("Error en archivo", true); }
+                } catch (err) { notify("Fallo en archivo", true); }
             }
-            notify("Carga Completa");
+            notify("Sincronización completa");
         };
 
         // PARSER PARA ICONOS EN TÍTULOS
         function formatBotResponse(text) {
-            // Elimina etiquetas residuales que el bot pueda haber incluido por error
+            // Limpia metadatos residuales
             let clean = text.replace(/\[CATEGORÍA:.*?\| TEMA:.*?\]/g, "");
-            // Reemplaza ### Título por un encabezado con icono de libro
-            return clean.replace(/###\s*(.*?)(\n|$)/g, '<div class="bot-header"><i class="fas fa-book-open text-blue-500"></i> $1</div>')
-                       .replace(/\n/g, '<br>');
+            clean = clean.replace(/ID_INTERNO:.*?\n/g, "");
+            // Reemplaza ### Título por encabezado con icono de libro
+            return clean.replace(/###\s*(.*?)(\n|$)/g, '<div class="bot-header"><i class="fas fa-book-open text-blue-600"></i> $1</div>')
+                        .replace(/\n/g, '<br>');
         }
 
         async function fetchGemini(q) {
-            // Unificamos la base para que Gemini lea todo
-            const kb = knowledgeBase.map(e => `CONTENIDO: ${e.content}`).join('\n\n---\n\n');
+            // Unificamos la base para el RAG
+            const kb = knowledgeBase.map(e => `REGISTRO: ${e.title}\nCONTENIDO: ${e.content}`).join('\n\n---\n\n');
             
-            const systemPrompt = `INSTRUCCIÓN TÉCNICA PARA EL ASISTENTE SPEI OPS:
-            1. Tienes acceso a este manual: ${kb}.
-            2. Si el usuario pide información sobre un tema, responde ÚNICAMENTE el texto técnico encontrado en el manual.
-            3. QUEDA PROHIBIDO incluir etiquetas como "CONTENIDO:", "CATEGORÍA:", "TEMA:" o el título del manual en la respuesta.
-            4. Si el usuario pide un EJEMPLO, una ACLARACIÓN, o dice que "NO ENTIENDE", utiliza tu conocimiento para explicar el texto del manual de forma sencilla o dar un caso práctico relacionado.
-            5. Si la información no está en el manual, di únicamente: "Esa información no se encuentra en el manual operativo actualmente."
-            6. Usa LaTeX ($$formula$$) para matemáticas y ### para separar secciones.`;
+            const systemPrompt = `ACTÚA COMO ASISTENTE TÉCNICO SPEI OPS EXPERTO.
+            TU BASE DE CONOCIMIENTO ES: ${kb}.
+            
+            INSTRUCCIONES CRÍTICAS:
+            1. Si el usuario pide información sobre un tema del manual, transcribe ÚNICAMENTE el texto técnico encontrado.
+            2. NUNCA menciones etiquetas internas como "REGISTRO:", "CONTENIDO:", "CATEGORÍA:", etc.
+            3. Si el usuario dice "DAME UN EJEMPLO", "ACLÁRAME", "NO ENTIENDO" o "EXPLÍCAME", usa tu razonamiento para traducir el texto del manual a un lenguaje sencillo o genera un caso práctico realista basado estrictamente en el manual.
+            4. Si el dato no está en el manual, di únicamente: "Esa información no se encuentra registrada en el manual operativo actualmente."
+            5. Usa LaTeX ($$formula$$) para cualquier matemática y ### para los títulos de sección.
+            6. Respuestas directas, sin saludos redundantes ni despedidas fuera del contexto explicativo.`;
 
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
@@ -558,16 +578,17 @@
                     })
                 });
                 const data = await res.json();
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta.";
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta técnica.";
                 
                 chatHistory.push({ role: "user", parts: [{ text: q }] }, { role: "model", parts: [{ text }] });
                 if (chatHistory.length > 10) chatHistory.splice(0, 2);
                 
                 if (!isInternalMode && currentUser) {
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', currentUser.empNumber), { queries: (currentUser.queries || 0) + 1 });
+                    const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'team', currentUser.empNumber);
+                    await updateDoc(userRef, { queries: (currentUser.queries || 0) + 1 });
                 }
                 return text;
-            } catch (e) { return "Fallo en la red operativa."; }
+            } catch (e) { return "Error técnico en la red operativa."; }
         }
 
         document.getElementById('chat-form').onsubmit = async (e) => {
@@ -587,11 +608,11 @@
         function addMessage(text, isUser = false) {
             const div = document.createElement('div');
             div.className = `flex flex-col gap-2 message-appear ${isUser ? 'items-end ml-auto' : 'items-start'} max-w-[95%]`;
-            const color = isUser ? 'bg-blue-600 text-white user-bubble' : 'bg-white text-slate-800 bot-bubble';
+            const color = isUser ? 'user-bubble' : 'bot-bubble';
             
             const formattedContent = isUser ? text.replace(/\n/g, '<br>') : formatBotResponse(text);
             
-            div.innerHTML = `<div class="${color} px-7 py-6 text-[15.5px] leading-[1.8] rounded-[2.2rem] ${isUser ? 'rounded-tr-none shadow-lg' : 'rounded-tl-none'}">${formattedContent}</div><span class="text-[10px] text-slate-400 mx-6 font-black uppercase tracking-widest">${isUser ? currentUser.name : 'Asistente SPEI'}</span>`;
+            div.innerHTML = `<div class="${color} px-8 py-6 text-[15.5px] leading-[1.8] font-medium transition-all">${formattedContent}</div><span class="text-[9px] text-slate-400 mx-6 font-black uppercase tracking-widest">${isUser ? currentUser.name : 'SPEI Ops Assistant'}</span>`;
             
             document.getElementById('chat-box').appendChild(div);
             document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
