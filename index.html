@@ -75,7 +75,7 @@
 
         .app-container {
             width: 100%;
-            max-width: 60rem; /* Ancho optimizado para Desktop */
+            max-width: 64rem; /* Daniel: Ancho aumentado para aprovechar toda la pantalla en PC */
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -95,7 +95,7 @@
             flex: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding: 1.5rem;
+            padding: 2rem;
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
@@ -116,7 +116,6 @@
         
         .tab-btn.active { color: #3b82f6; border-bottom: 3px solid #3b82f6; }
         
-        /* Estilos de Fórmulas y Títulos Especiales */
         .mjx-container { 
             overflow-x: auto; 
             max-width: 100%; 
@@ -124,15 +123,16 @@
             display: block !important;
         }
 
+        /* Estilo para los títulos con iconos que reemplazan a ### */
         .bot-header {
             display: flex;
             align-items: center;
             gap: 0.75rem;
             font-weight: 800;
             color: #0f172a;
-            margin-top: 1.25rem;
-            margin-bottom: 0.5rem;
-            font-size: 1.1rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 1.15rem;
             border-bottom: 2px solid #3b82f6;
             padding-bottom: 0.4rem;
         }
@@ -160,7 +160,7 @@
         <!-- Pantalla de Carga Inicial -->
         <div id="loading-overlay" class="overlay">
             <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-            <p id="loading-text" class="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Sincronizando con SPEI Cloud...</p>
+            <p id="loading-text" class="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 text-center">Iniciando SPEI Ops Cloud...</p>
         </div>
 
         <!-- Pantalla de Login -->
@@ -175,9 +175,9 @@
                 <input type="text" id="emp-number-input" placeholder="No. de Empleado" 
                     class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 text-center text-xl font-bold text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all">
                 <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all text-white disabled:opacity-50" disabled>
-                    ACCEDER
+                    INGRESAR
                 </button>
-                <p id="error-emp" class="text-red-400 text-[9px] text-center opacity-0 font-black tracking-widest uppercase">Acceso Denegado</p>
+                <p id="error-emp" class="text-red-400 text-[9px] text-center opacity-0 font-black tracking-widest uppercase">Número no autorizado</p>
             </div>
         </div>
 
@@ -189,7 +189,7 @@
                         <i class="fas fa-university text-blue-400 text-xl"></i>
                     </div>
                     <div>
-                        <h1 class="font-extrabold text-lg tracking-tight leading-none mb-1">SPEI Ops</h1>
+                        <h1 class="font-extrabold text-lg tracking-tight leading-none mb-1 text-white">SPEI Ops</h1>
                         <div class="flex items-center gap-1.5">
                             <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
                             <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">Soporte Activo</span>
@@ -197,11 +197,11 @@
                     </div>
                 </div>
                 
-                <div id="admin-controls" class="hidden flex items-center gap-4">
-                    <button id="open-settings-btn" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10 hover:bg-white/20 transition-all"><i class="fas fa-tools text-sm text-white"></i></button>
+                <div id="admin-controls" class="hidden flex items-center gap-4 text-white">
+                    <button id="open-settings-btn" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10 hover:bg-white/20 transition-all"><i class="fas fa-tools text-sm"></i></button>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="mode-toggle" class="sr-only peer">
-                        <div class="w-10 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 text-white"></div>
+                        <div class="w-10 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
                     </label>
                 </div>
             </header>
@@ -219,8 +219,8 @@
                     </button>
                 </form>
                 <div class="flex justify-between items-center mt-6">
-                    <p id="footer-username" class="text-[9px] font-black text-slate-400 uppercase tracking-widest italic">Iniciando sesión...</p>
-                    <button id="logout-btn" class="text-[9px] font-black text-slate-400 uppercase underline hover:text-red-500 transition-colors">Salir del Sistema</button>
+                    <p id="footer-username" class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Iniciando sesión...</p>
+                    <button id="logout-btn" class="text-[10px] font-black text-slate-400 uppercase underline hover:text-red-500 transition-colors">Salir del Sistema</button>
                 </div>
             </footer>
         </div>
@@ -254,7 +254,7 @@
                             <textarea id="entry-content" placeholder="Escribe aquí toda la información técnica..." class="w-full h-56 bg-white border border-slate-200 rounded-xl p-5 text-sm font-medium outline-none text-slate-700 leading-relaxed"></textarea>
                             <div class="flex gap-4">
                                 <input type="hidden" id="editing-id">
-                                <button id="save-entry-btn" class="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest hover:bg-emerald-700 transition-all">Guardar en Base de Datos</button>
+                                <button id="save-entry-btn" class="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest hover:bg-emerald-700 transition-all">Guardar Manual</button>
                                 <button id="file-trigger" class="bg-slate-800 text-white px-8 rounded-2xl hover:bg-slate-700 transition-colors"><i class="fas fa-file-import text-lg"></i></button>
                                 <input type="file" id="file-selector" class="hidden" multiple accept=".pdf,.xlsx,.txt">
                             </div>
@@ -287,7 +287,7 @@
         <div id="timeout-modal" class="overlay hidden-ui" style="background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(15px); z-index: 10000;">
             <div class="w-full max-w-sm bg-white p-10 rounded-[3rem] shadow-2xl text-center text-slate-800">
                 <h3 class="text-2xl font-black mb-3 italic text-blue-600">¿Sigues ahí?</h3>
-                <p class="text-sm text-slate-500 mb-10 font-medium">Por seguridad, tu sesión cerrará pronto por inactividad prolongada.</p>
+                <p class="text-sm text-slate-500 mb-10 font-medium text-center">Por seguridad, tu sesión cerrará pronto por inactividad.</p>
                 <div class="flex gap-3">
                     <button id="timeout-logout-btn" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold text-sm">SALIR</button>
                     <button id="timeout-extend-btn" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-bold text-sm shadow-lg uppercase tracking-widest">Continuar</button>
@@ -297,7 +297,7 @@
     </div>
 
     <script type="module">
-        // Gemini API Key (Cerebro de la App)
+        // Gemini API Key de Daniel
         const apiKey = "AIzaSyAZBbCOgKN68qFX2ab_cegWOeV0lHAtMpA"; 
         
         const SESSION_LIMIT = 5 * 60 * 1000;
@@ -337,7 +337,7 @@
                             btn.innerText = "INGRESAR AL SISTEMA";
                             btn.disabled = false;
 
-                            const saved = localStorage.getItem('spei_ops_production_v10');
+                            const saved = localStorage.getItem('spei_ops_prod_vfinal_x1');
                             if (saved) {
                                 const savedUser = JSON.parse(saved);
                                 const updated = employeeRegistry.find(u => u.empNumber === savedUser.empNumber);
@@ -353,7 +353,7 @@
                         renderUsers();
                     });
                 });
-            } catch (err) { notify("Fallo crítico de red", true); }
+            } catch (err) { notify("Error de red", true); }
         }
 
         async function seedAdmin() {
@@ -372,7 +372,7 @@
         }
 
         function logout() {
-            localStorage.removeItem('spei_ops_production_v10');
+            localStorage.removeItem('spei_ops_prod_vfinal_x1');
             location.reload();
         }
 
@@ -393,7 +393,7 @@
             const user = employeeRegistry.find(u => u.empNumber === input);
             if (user) {
                 currentUser = user;
-                localStorage.setItem('spei_ops_production_v10', JSON.stringify(user));
+                localStorage.setItem('spei_ops_prod_vfinal_x1', JSON.stringify(user));
                 enterApp();
                 addMessage(`Bienvenido, ${user.name}. He sincronizado la base operativa. ¿En qué puedo apoyarte?`);
             } else {
@@ -417,7 +417,7 @@
             document.getElementById('chat-header').className = isInternalMode 
                 ? "bg-emerald-900 text-white p-6 pt-10 shadow-xl flex items-center justify-between shrink-0"
                 : "bg-slate-900 text-white p-6 pt-10 shadow-xl flex items-center justify-between shrink-0";
-            notify(isInternalMode ? "Administrador Activo" : "Usuario Operativo");
+            notify(isInternalMode ? "Modo Administración" : "Soporte Operativo");
         };
 
         // GESTIÓN DE DATOS (EDICIÓN Y VISIBILIDAD)
@@ -426,7 +426,7 @@
             const title = document.getElementById('entry-title').value.trim();
             const content = document.getElementById('entry-content').value.trim();
             const editId = document.getElementById('editing-id').value;
-            if (!title || !content) return notify("Completa todos los campos", true);
+            if (!title || !content) return notify("Faltan datos", true);
             try {
                 const id = editId || Date.now().toString();
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), { 
@@ -452,10 +452,10 @@
             document.getElementById('entry-title').value = e.title;
             document.getElementById('entry-content').value = e.content;
             document.getElementById('editing-id').value = id;
-            document.getElementById('save-entry-btn').innerText = "Confirmar Cambios";
+            document.getElementById('save-entry-btn').innerText = "Confirmar Edición";
             document.getElementById('save-entry-btn').className = "flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest";
             notify("Modo Edición");
-            document.querySelector('.overflow-y-auto').scrollTop = 0;
+            document.querySelector('#settings-modal .overflow-y-auto').scrollTop = 0;
         };
 
         window.deleteEntry = async (id) => {
@@ -470,12 +470,12 @@
                 <div class="admin-card bg-white p-6 rounded-3xl border border-slate-100 mb-4 shadow-sm">
                     <div class="flex justify-between items-start mb-4 border-b border-slate-50 pb-3">
                         <div class="flex items-center gap-3">
-                            <span class="text-[9px] bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-black uppercase tracking-tighter">${e.category || 'Sin Cat.'}</span>
+                            <span class="text-[9px] bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-black uppercase tracking-tighter">${e.category || 'Manual'}</span>
                             <span class="text-[9px] text-slate-300 font-bold">${e.date}</span>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="editEntry('${e.id}')" class="text-blue-500 hover:bg-blue-50 w-9 h-9 rounded-full transition-all flex items-center justify-center border border-blue-50"><i class="fas fa-pen text-sm"></i></button>
-                            <button onclick="deleteEntry('${e.id}')" class="text-red-300 hover:bg-red-50 w-9 h-9 rounded-full transition-all flex items-center justify-center border border-red-50"><i class="fas fa-trash text-sm"></i></button>
+                            <button onclick="editEntry('${e.id}')" class="text-blue-500 hover:bg-blue-50 w-9 h-9 rounded-full flex items-center justify-center border border-blue-50 transition-all"><i class="fas fa-pen text-sm"></i></button>
+                            <button onclick="deleteEntry('${e.id}')" class="text-red-300 hover:bg-red-50 w-9 h-9 rounded-full flex items-center justify-center border border-red-50 transition-all"><i class="fas fa-trash text-sm"></i></button>
                         </div>
                     </div>
                     <h4 class="text-sm font-black text-slate-800 uppercase mb-3">${e.title}</h4>
@@ -499,7 +499,7 @@
         function renderUsers() {
             document.getElementById('user-registry-list').innerHTML = employeeRegistry.map(u => `
                 <div class="flex items-center justify-between p-5 bg-slate-50 rounded-3xl border border-slate-100 mb-2">
-                    <div class="text-[12px] font-bold text-slate-800">${u.name} <span class="text-[9px] opacity-40 tracking-[0.1em] ml-2 font-black uppercase">[${u.role}]</span></div>
+                    <div class="text-[12px] font-bold text-slate-800">${u.name} <span class="text-[9px] opacity-40 uppercase tracking-[0.1em] ml-2 font-black uppercase">[${u.role}]</span></div>
                     <div class="text-[11px] font-black text-blue-600 bg-blue-100 px-4 py-1 rounded-full">${u.queries || 0} q</div>
                 </div>
             `).join('');
@@ -517,9 +517,9 @@
                         const data = await file.arrayBuffer();
                         const pdf = await pdfjsLib.getDocument({ data }).promise;
                         for (let i=1; i<=pdf.numPages; i++) {
-                            const page = await pdf.getPage(i);
-                            const content = await page.getTextContent();
-                            text += content.items.map(s => s.str).join(' ') + '\n';
+                            const p = await pdf.getPage(i);
+                            const c = await p.getTextContent();
+                            text += c.items.map(s => s.str).join(' ') + '\n';
                         }
                     } else if (['xlsx','csv'].includes(ext)) {
                         const data = await file.arrayBuffer();
@@ -528,7 +528,8 @@
                     } else if (ext === 'txt') text = await file.text();
                     
                     if (text) {
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', "file_" + Date.now()), {
+                        const id = "file_" + Date.now() + "_" + Math.floor(Math.random()*1000);
+                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), {
                             category: "Archivo", title: file.name, content: text, date: new Date().toLocaleDateString()
                         });
                     }
@@ -544,17 +545,17 @@
         }
 
         async function fetchGemini(q) {
-            // Unificar base de datos para que Gemini use todo el contexto
-            const kb = knowledgeBase.map(e => `[CATEGORÍA: ${e.category} | TEMA: ${e.title}]: ${e.content}`).join('\n\n');
+            // Unificamos la base de datos de manera que el bot sepa qué es contenido y qué es metadato
+            const kb = knowledgeBase.map(e => `ID_INTERNO: ${e.id}\nCONTENIDO: ${e.content}`).join('\n\n---\n\n');
             
-            const systemPrompt = `REGLA DE RESPUESTA CRÍTICA:
-            1. Analiza el siguiente manual técnico: ${kb}.
-            2. Si la respuesta está en el manual, limítate EXCLUSIVAMENTE a transcribir el texto técnico exacto.
-            3. NO uses introducciones como "He encontrado en el manual...", "Según los datos...", "Hola", "Espero que ayude".
-            4. Si la respuesta contiene varios puntos, júntalos.
-            5. Usa LaTeX ($$formula$$) para cualquier matemática.
-            6. Usa ### para los títulos.
-            7. Si no existe la información en el manual, di únicamente: "Esa información no se encuentra registrada en el manual operativo actualmente."`;
+            const systemPrompt = `INSTRUCCIÓN TÉCNICA CRÍTICA PARA EL ASISTENTE SPEI OPS:
+            1. Analiza el manual proporcionado: ${kb}.
+            2. Si la consulta se responde con el manual, tu respuesta debe ser ÚNICAMENTE la transcripción exacta del texto que aparece después de "CONTENIDO:".
+            3. QUEDA PROHIBIDO incluir etiquetas como "[CATEGORÍA: ...]", "ID_INTERNO:", o el título del manual en la respuesta final.
+            4. NO saludes, NO te despidas, NO expliques de dónde sacaste la información. 
+            5. Si la información está en varios registros, únelos de forma fluida pero mantén el texto técnico original.
+            6. Usa LaTeX ($$formula$$) para matemáticas y ### para separar secciones si el texto original lo requiere.
+            7. Si no encuentras la respuesta, di únicamente: "Información no registrada en el manual operativo."`;
 
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
@@ -566,7 +567,8 @@
                     })
                 });
                 const data = await res.json();
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "No hay respuesta disponible.";
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta.";
+                
                 chatHistory.push({ role: "user", parts: [{ text: q }] }, { role: "model", parts: [{ text }] });
                 if (chatHistory.length > 10) chatHistory.splice(0, 2);
                 
@@ -584,7 +586,7 @@
             if (!v) return;
             document.getElementById('user-input').value = "";
             addMessage(v, true);
-            const l = document.createElement('div'); l.id = "loader"; l.className = "p-5 bg-white border rounded-3xl w-fit bot-bubble animate-pulse text-[11px] font-black text-slate-400 italic shadow-sm"; l.innerText = "Sincronizando información...";
+            const l = document.createElement('div'); l.id = "loader"; l.className = "p-5 bg-white border rounded-3xl w-fit bot-bubble animate-pulse text-[11px] font-black text-slate-400 italic shadow-sm"; l.innerText = "Sincronizando información oficial...";
             document.getElementById('chat-box').appendChild(l);
             const res = await fetchGemini(v);
             if (document.getElementById('loader')) document.getElementById('loader').remove();
@@ -599,7 +601,7 @@
             
             const formattedContent = isUser ? text.replace(/\n/g, '<br>') : formatBotResponse(text);
             
-            div.innerHTML = `<div class="${color} px-6 py-5 text-[15px] leading-[1.8] rounded-[2rem] ${isUser ? 'rounded-tr-none shadow-lg' : 'rounded-tl-none'}">${formattedContent}</div><span class="text-[10px] text-slate-400 mx-6 font-black uppercase tracking-widest">${isUser ? currentUser.name : 'Asistente SPEI'}</span>`;
+            div.innerHTML = `<div class="${color} px-7 py-6 text-[15.5px] leading-[1.8] rounded-[2.2rem] ${isUser ? 'rounded-tr-none shadow-lg' : 'rounded-tl-none'}">${formattedContent}</div><span class="text-[10px] text-slate-400 mx-6 font-black uppercase tracking-widest">${isUser ? currentUser.name : 'Asistente SPEI'}</span>`;
             
             document.getElementById('chat-box').appendChild(div);
             document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
