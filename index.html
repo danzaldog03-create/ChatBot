@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SPEI Ops - Daniel Anzaldo</title>
+    <title>SPEI Ops - Gestión Operativa Central</title>
     
     <!-- Metadatos PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,14 +15,18 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Librerías -->
+    <!-- Librerías de Procesamiento -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    <!-- MathJax -->
+    <!-- MathJax para Fórmulas -->
     <script>
         window.MathJax = {
-            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']] },
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
             options: { enableMenu: false }
         };
     </script>
@@ -111,10 +115,18 @@
         
         .tab-btn.active { color: #2563eb; border-bottom: 3px solid #2563eb; }
         
-        /* Títulos estilizados */
+        /* Formato de Títulos del Bot con Iconos */
         .bot-header {
-            display: flex; align-items: center; gap: 0.8rem; font-weight: 800; color: #0f172a;
-            margin-top: 1.5rem; margin-bottom: 0.8rem; font-size: 1.15rem; border-bottom: 2px solid #3b82f6; padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-top: 1.8rem;
+            margin-bottom: 0.8rem;
+            font-size: 1.15rem;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 0.5rem;
         }
 
         #toast {
@@ -132,6 +144,11 @@
             font-size: 0.9rem;
             color: #334155;
         }
+        
+        /* Estilos inputs */
+        .cert-input { width: 100%; padding: 0.75rem; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; font-size: 0.8rem; font-weight: 600; color: #334155; outline: none; transition: all 0.2s; }
+        .cert-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
+        .cert-label { font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.25rem; display: block; }
     </style>
 </head>
 <body>
@@ -141,7 +158,7 @@
     <div class="app-shell">
         <div id="loading-overlay" class="overlay">
             <div class="w-14 h-14 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-            <p class="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 text-center">Conectando...</p>
+            <p class="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 text-center">Conectando Terminal SPEI</p>
         </div>
 
         <!-- Login -->
@@ -163,7 +180,6 @@
             <p class="mt-20 text-slate-500 text-[10px] uppercase tracking-[0.4em] font-black italic text-center">Creado por Daniel Anzaldo • 2026</p>
         </div>
 
-        <!-- App -->
         <div class="app-container blur-md shadow-2xl" id="app-content">
             <header class="bg-slate-900 text-white p-6 pt-10 shadow-xl flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-4">
@@ -180,7 +196,7 @@
                 </div>
                 
                 <div id="admin-controls" class="hidden flex items-center gap-4 text-white">
-                    <button id="open-settings-btn" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10 hover:bg-white/20 transition-all"><i class="fas fa-cog text-sm"></i></button>
+                    <button id="open-settings-btn" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10 hover:bg-white/20 transition-all"><i class="fas fa-layer-group text-sm"></i></button>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="mode-toggle" class="sr-only peer">
                         <div class="w-10 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
@@ -196,45 +212,70 @@
                         <input type="text" id="user-input" placeholder="Realiza una consulta técnica..." class="w-full bg-transparent border-none py-4 text-[16px] font-medium text-slate-700 outline-none" autocomplete="off">
                     </div>
                     <button type="submit" class="bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200 active:scale-90 transition-all">
-                        <i class="fas fa-paper-plane text-lg"></i>
+                        <i class="fas fa-paper-plane text-lg text-white"></i>
                     </button>
                 </form>
                 <div class="flex justify-between items-center mt-6 px-2">
                     <p id="footer-username" class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Sesión Iniciada</p>
-                    <button id="logout-btn" class="text-[10px] font-black text-slate-400 uppercase underline hover:text-red-500 transition-colors">Salir</button>
+                    <button id="logout-btn" class="text-[10px] font-black text-slate-400 uppercase underline hover:text-red-500 transition-colors">Salir del Sistema</button>
                 </div>
             </footer>
         </div>
 
-        <!-- Panel Admin -->
+        <!-- Panel Administrativo -->
         <div id="settings-modal" class="hidden-ui system-overlay overlay" style="z-index: 10005;">
             <div class="w-full max-w-5xl bg-white p-8 rounded-[2.5rem] shadow-2xl flex flex-col max-h-[92vh] text-slate-800">
                 <div class="flex justify-between items-center mb-8">
-                    <h2 class="text-2xl font-black uppercase italic tracking-tighter">Panel de Gestión</h2>
+                    <h2 class="text-2xl font-black uppercase italic tracking-tighter">Administración</h2>
                     <button id="close-settings-btn" class="bg-slate-100 p-3 rounded-full text-slate-400 hover:bg-slate-200 transition-all"><i class="fas fa-times text-lg"></i></button>
                 </div>
                 
                 <div class="flex gap-8 border-b border-slate-100 mb-8">
-                    <button id="tab-kb-btn" class="tab-btn active pb-3 text-xs font-black uppercase tracking-widest">Manuales (<span id="kb-count">0</span>)</button>
+                    <button id="tab-kb-btn" class="tab-btn active pb-3 text-xs font-black uppercase tracking-widest">Base de Manuales</button>
                     <button id="tab-users-btn" class="tab-btn pb-3 text-xs font-black uppercase tracking-widest">Mi Equipo</button>
                 </div>
                 
                 <div class="overflow-y-auto flex-1 space-y-6 px-2">
                     <div id="tab-kb">
-                        <div class="bg-slate-50 p-6 rounded-3xl space-y-4 mb-8 border border-slate-200 shadow-sm">
-                            <div class="flex flex-wrap gap-4">
-                                <select id="entry-category" class="bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold outline-none flex-1 min-w-[180px] text-slate-600 shadow-sm">
-                                    <option value="Procesos">Procesos</option>
-                                    <option value="Servidores">Servidores</option>
+                        <div class="bg-slate-50 p-6 rounded-3xl space-y-6 mb-8 border border-slate-200 shadow-sm">
+                            <div>
+                                <label class="cert-label">Tipo de Información</label>
+                                <select id="entry-category" class="cert-input">
+                                    <option value="Procesos">Manual de Procesos (Texto Libre)</option>
+                                    <option value="Certificados">⭐ Registro de Certificados</option>
+                                    <option value="Extensiones">📞 Directorio Telefónico</option>
+                                    <option value="Servidores">Servidores e Infraestructura</option>
                                     <option value="Seguridad">Seguridad</option>
-                                    <option value="Contactos">Contactos</option>
                                 </select>
-                                <input type="text" id="entry-title" placeholder="Título del procedimiento..." class="flex-[2] min-w-[300px] bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none text-slate-800 shadow-sm">
                             </div>
-                            <textarea id="entry-content" placeholder="Escribe o pega aquí el contenido técnico..." class="w-full h-56 bg-white border border-slate-200 rounded-xl p-5 text-sm font-medium outline-none text-slate-700 leading-relaxed shadow-sm"></textarea>
-                            <div class="flex gap-4">
+
+                            <!-- Formulario Estándar -->
+                            <div id="form-standard" class="space-y-4">
+                                <input type="text" id="entry-title" placeholder="Título del procedimiento..." class="cert-input">
+                                <textarea id="entry-content" placeholder="Escribe el texto técnico detallado aquí..." class="w-full h-56 bg-white border border-e2e8f0 rounded-xl p-5 text-sm font-medium outline-none text-slate-700 leading-relaxed shadow-sm"></textarea>
+                            </div>
+
+                            <!-- Formulario Certificados -->
+                            <div id="form-certificate" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="cert-label">Últimos 4 Dígitos</label><input type="text" id="cert-num" placeholder="Ej. 9A3F" class="cert-input" maxlength="4" style="text-transform: uppercase;"></div>
+                                <div><label class="cert-label">Negocio</label><select id="cert-negocio" class="cert-input"><option value="SPEI">SPEI</option><option value="CODI">CoDi</option><option value="SPID">SPID</option><option value="DIMO">DIMO</option><option value="BDT">BDT</option></select></div>
+                                <div><label class="cert-label">Entorno</label><select id="cert-entorno" class="cert-input"><option value="PRODUCCION">PRODUCCIÓN</option><option value="HOMOLOGACION">HOMOLOGACIÓN</option><option value="DESARROLLO">DESARROLLO</option></select></div>
+                                <div><label class="cert-label">Tipo</label><select id="cert-tipo" class="cert-input"><option value="PRIVADO">PRIVADO (.key)</option><option value="PUBLICO">PÚBLICO (.cer)</option></select></div>
+                                <div><label class="cert-label">Vigencia Inicio</label><input type="date" id="cert-vig-ini" class="cert-input"></div>
+                                <div><label class="cert-label">Vigencia Fin</label><input type="date" id="cert-vig-fin" class="cert-input"></div>
+                                <div class="md:col-span-2"><label class="cert-label">Estatus Actual</label><input type="text" id="cert-estatus" placeholder="Ej. VIGENTE, REVOCADO" class="cert-input" style="text-transform: uppercase;"></div>
+                            </div>
+
+                            <!-- Formulario Extensiones -->
+                            <div id="form-extension" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div><label class="cert-label">Extensión</label><input type="text" id="ext-num" placeholder="Ej. 1234" class="cert-input"></div>
+                                <div><label class="cert-label">Nombre Persona</label><input type="text" id="ext-nombre" placeholder="Nombre completo" class="cert-input"></div>
+                                <div><label class="cert-label">Área</label><input type="text" id="ext-area" placeholder="Ej. Operación SPEI" class="cert-input" value="Operación SPEI"></div>
+                            </div>
+
+                            <div class="flex gap-4 pt-2">
                                 <input type="hidden" id="editing-id">
-                                <button id="save-entry-btn" class="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest hover:bg-emerald-700 transition-all">Guardar Manual</button>
+                                <button id="save-entry-btn" class="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest hover:bg-emerald-700 transition-all">Guardar Registro</button>
                                 <button id="file-trigger" class="bg-slate-800 text-white px-8 rounded-2xl hover:bg-slate-700 transition-colors shadow-lg"><i class="fas fa-file-upload text-lg"></i></button>
                                 <input type="file" id="file-selector" class="hidden" multiple accept=".pdf,.xlsx,.txt">
                             </div>
@@ -249,8 +290,8 @@
                                 <input type="text" id="new-user-id" placeholder="No. Empleado" class="w-full p-4 rounded-2xl text-sm font-bold border border-blue-100 text-slate-800">
                             </div>
                             <select id="new-user-role" class="w-full p-4 rounded-2xl text-sm font-bold border border-blue-100 bg-white text-slate-600">
-                                <option value="user">Usuario</option>
-                                <option value="admin">Administrador</option>
+                                <option value="user">Rol: Usuario Operativo</option>
+                                <option value="admin">Rol: Administrador Maestro</option>
                             </select>
                             <button id="add-user-btn" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs mt-2 shadow-lg uppercase tracking-widest">Autorizar Acceso</button>
                         </div>
@@ -262,9 +303,9 @@
 
         <div id="timeout-modal" class="overlay hidden-ui" style="background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(15px); z-index: 10000;">
             <div class="w-full max-w-sm bg-white p-10 rounded-[3rem] shadow-2xl text-center text-slate-800">
-                <h3 class="text-2xl font-black mb-3 text-blue-600 tracking-tighter italic">¿Continuas?</h3>
-                <p class="text-sm text-slate-500 mb-10 font-medium text-center">Por seguridad, tu sesión cerrará pronto.</p>
-                <div class="flex gap-3">
+                <h3 class="text-2xl font-black mb-3 text-blue-600 tracking-tighter italic text-center">¿Continuas?</h3>
+                <p class="text-sm text-slate-500 mb-10 font-medium text-center">Por seguridad, tu sesión cerrará pronto por inactividad.</p>
+                <div class="flex gap-3 text-center">
                     <button id="timeout-logout-btn" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold text-sm">SALIR</button>
                     <button id="timeout-extend-btn" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-bold text-sm shadow-lg uppercase tracking-widest">Seguir</button>
                 </div>
@@ -273,14 +314,14 @@
     </div>
 
     <script type="module">
-        const apiKey = "AIzaSyAZBbCOgKN68qFX2ab_cegWOeV0lHAtMpA"; 
+        const apiKey = "AIzaSyDraEnCKuwnicZVQ-aOcYYwMIPiuadcVgU"; 
         const SESSION_LIMIT = 5 * 60 * 1000;
         const WARNING_LIMIT = 30 * 1000;
 
         let inactivityTimer, warningTimer, currentUser, isInternalMode = false;
         let knowledgeBase = [], employeeRegistry = [], chatHistory = [], isDataLoaded = false;
 
-        const { auth, db, appId, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, signInAnonymously, onAuthStateChanged } = window.fb;
+        const { auth, db, appId, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, getDoc, signInAnonymously, onAuthStateChanged } = window.fb;
 
         function notify(msg, isError = false) {
             const t = document.getElementById('toast');
@@ -291,13 +332,12 @@
 
         async function initApp() {
             try {
-                await signInAnonymously(auth);
+                await fb.signInAnonymously(auth);
                 onAuthStateChanged(auth, async (user) => {
                     if (!user) return;
 
                     onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'knowledge'), (snap) => {
                         knowledgeBase = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                        document.getElementById('kb-count').innerText = knowledgeBase.length;
                         renderEntries();
                     });
 
@@ -310,16 +350,19 @@
                             const btn = document.getElementById('login-btn');
                             btn.innerText = "INGRESAR";
                             btn.disabled = false;
-                            
-                            const saved = localStorage.getItem('spei_final_prod_v2026');
+
+                            const saved = localStorage.getItem('spei_ops_production_final_v_dir_clean');
                             if (saved) {
-                                currentUser = JSON.parse(saved);
-                                const exists = employeeRegistry.find(u => u.empNumber === currentUser.empNumber);
-                                if (exists) { currentUser = exists; enterApp(); } else { logout(); }
+                                const savedUser = JSON.parse(saved);
+                                const updated = employeeRegistry.find(u => u.empNumber === savedUser.empNumber);
+                                if (updated) { currentUser = updated; enterApp(); } else { logout(); }
                             } else {
                                 document.getElementById('loading-overlay').classList.add('hidden-ui');
                                 document.getElementById('lock-screen').classList.remove('hidden-ui');
                             }
+                        } else if (currentUser) {
+                            const updated = employeeRegistry.find(u => u.empNumber === currentUser.empNumber);
+                            if (updated) currentUser = updated;
                         }
                         renderUsers();
                     });
@@ -343,7 +386,7 @@
         }
 
         function logout() {
-            localStorage.removeItem('spei_final_prod_v2026');
+            localStorage.removeItem('spei_ops_production_final_v_dir_clean');
             location.reload();
         }
 
@@ -364,9 +407,9 @@
             const user = employeeRegistry.find(u => u.empNumber === input);
             if (user) {
                 currentUser = user;
-                localStorage.setItem('spei_final_prod_v2026', JSON.stringify(user));
+                localStorage.setItem('spei_ops_production_final_v_dir_clean', JSON.stringify(user));
                 enterApp();
-                addMessage(`Bienvenido, ${user.name}. Terminal lista. ¿Qué manual deseas consultar?`);
+                addMessage(`Bienvenido, ${user.name}. Terminal operativa sincronizada. ¿Qué proceso deseas consultar?`);
             } else {
                 document.getElementById('error-emp').style.opacity = "1";
                 setTimeout(() => document.getElementById('error-emp').style.opacity = "0", 2500);
@@ -385,75 +428,173 @@
 
         document.getElementById('mode-toggle').onchange = (e) => {
             isInternalMode = e.target.checked;
-            document.getElementById('chat-header').className = isInternalMode 
-                ? "bg-emerald-900 text-white p-6 pt-10 shadow-xl flex items-center justify-between shrink-0 transition-all"
-                : "bg-slate-900 text-white p-6 pt-10 shadow-xl flex items-center justify-between shrink-0 transition-all";
             notify(isInternalMode ? "Modo Administración" : "Modo Consulta");
         };
 
-        // GESTIÓN DE MANUALES
+        // LÓGICA DE FORMULARIO DINÁMICO
+        const categorySelect = document.getElementById('entry-category');
+        const formStandard = document.getElementById('form-standard');
+        const formCertificate = document.getElementById('form-certificate');
+        const formExtension = document.getElementById('form-extension'); 
+
+        categorySelect.addEventListener('change', () => {
+            formStandard.classList.add('hidden');
+            formCertificate.classList.add('hidden');
+            document.getElementById('form-extension').classList.add('hidden');
+
+            if (categorySelect.value === 'Certificados') {
+                formCertificate.classList.remove('hidden');
+            } else if (categorySelect.value === 'Extensiones') {
+                document.getElementById('form-extension').classList.remove('hidden');
+            } else {
+                formStandard.classList.remove('hidden');
+            }
+        });
+
         document.getElementById('save-entry-btn').onclick = async () => {
-            const cat = document.getElementById('entry-category').value;
-            const title = document.getElementById('entry-title').value.trim();
-            const content = document.getElementById('entry-content').value.trim();
+            const cat = categorySelect.value;
             const editId = document.getElementById('editing-id').value;
-            if (!title || !content) return notify("Faltan datos", true);
-            
+            let title = "", content = "";
+
+            if (cat === 'Certificados') {
+                const num = document.getElementById('cert-num').value.trim().toUpperCase();
+                const negocio = document.getElementById('cert-negocio').value;
+                const entorno = document.getElementById('cert-entorno').value;
+                const tipo = document.getElementById('cert-tipo').value;
+                const vigIni = document.getElementById('cert-vig-ini').value;
+                const vigFin = document.getElementById('cert-vig-fin').value;
+                const estatus = document.getElementById('cert-estatus').value.trim().toUpperCase();
+                if (!num) return notify("Faltan datos", true);
+                title = `CERTIFICADO ${num} (${negocio})`;
+                content = `TIPO_REGISTRO: CERTIFICADO\nCERT_NUM_ULT4: ${num}\nNEGOCIO: ${negocio}\nENTORNO: ${entorno}\nESTATUS: ${estatus}\nVIGENCIA_INICIO: ${vigIni}\nVIGENCIA_FIN: ${vigFin}\nTIPO_CERTIFICADO: ${tipo}\nULTIMA_ACTUALIZACION: ${new Date().toLocaleDateString()}`;
+            } else if (cat === 'Extensiones') {
+                const ext = document.getElementById('ext-num').value.trim();
+                const nom = document.getElementById('ext-nombre').value.trim();
+                const area = document.getElementById('ext-area').value.trim();
+                if (!ext) return notify("Faltan datos", true);
+                title = `EXT: ${nom}`;
+                content = `TIPO_REGISTRO: EXTENSION_TELEFONICA\nEXTENSION: ${ext}\nNOMBRE_PERSONA: ${nom}\nAREA: ${area}`;
+            } else {
+                title = document.getElementById('entry-title').value.trim();
+                content = document.getElementById('entry-content').value.trim();
+                if (!title) return notify("Faltan datos", true);
+            }
+
             try {
                 const id = editId || Date.now().toString();
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), { 
-                    category: cat, title: title, content: content, date: new Date().toLocaleDateString() 
+                    category: cat, title, content, date: new Date().toLocaleDateString() 
                 }, { merge: true });
-                notify("Manual Guardado");
+                notify(editId ? "Actualizado" : "Guardado");
                 clearManualForm();
-            } catch (err) { notify("Error al guardar", true); }
+            } catch (err) { notify("Error de red", true); }
         };
 
         function clearManualForm() {
-            document.getElementById('entry-title').value = "";
-            document.getElementById('entry-content').value = "";
-            document.getElementById('editing-id').value = "";
+            const inputs = document.querySelectorAll('input, textarea');
+            inputs.forEach(i => i.value = '');
             document.getElementById('save-entry-btn').innerText = "Guardar Registro";
-            document.getElementById('save-entry-btn').className = "flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest transition-all";
+            document.getElementById('editing-id').value = "";
+            categorySelect.value = "Procesos";
+            categorySelect.dispatchEvent(new Event('change'));
         }
 
-        window.editEntry = (id) => {
-            const e = knowledgeBase.find(x => x.id === id);
-            if (!e) return;
-            document.getElementById('entry-category').value = e.category || "Procesos";
-            document.getElementById('entry-title').value = e.title;
-            document.getElementById('entry-content').value = e.content;
-            document.getElementById('editing-id').value = id;
-            document.getElementById('save-entry-btn').innerText = "Confirmar Cambios";
-            document.getElementById('save-entry-btn').className = "flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest";
-            notify("Modo Edición");
-            document.querySelector('#settings-modal .overflow-y-auto').scrollTop = 0;
-        };
-
+        // FUNCIONES GLOBALES PARA BORRADO Y EDICIÓN
         window.deleteEntry = async (id) => {
-            if (confirm("¿Eliminar este manual?")) {
+            if (confirm("¿Eliminar este registro?")) {
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id));
                 notify("Eliminado");
             }
         };
 
+        window.deleteUser = async (id) => {
+            if (id === "682930") return alert("No se puede eliminar al Administrador.");
+            if (confirm("¿Eliminar acceso a este usuario?")) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', id));
+                notify("Usuario eliminado");
+            }
+        };
+
+        window.editEntry = (id) => {
+            const e = knowledgeBase.find(x => x.id === id);
+            if (!e) return;
+            document.getElementById('editing-id').value = id;
+            document.getElementById('save-entry-btn').innerText = "Confirmar Cambios";
+            categorySelect.value = e.category || "Procesos";
+            categorySelect.dispatchEvent(new Event('change'));
+            
+            if (e.content.includes("TIPO_REGISTRO: EXTENSION_TELEFONICA")) {
+                const lines = e.content.split('\n');
+                document.getElementById('ext-num').value = lines.find(l=>l.startsWith('EXTENSION:'))?.split(': ')[1] || "";
+                document.getElementById('ext-nombre').value = lines.find(l=>l.startsWith('NOMBRE_PERSONA:'))?.split(': ')[1] || "";
+                document.getElementById('ext-area').value = lines.find(l=>l.startsWith('AREA:'))?.split(': ')[1] || "";
+            } else if (e.content.includes("TIPO_REGISTRO: CERTIFICADO")) {
+                 const lines = e.content.split('\n');
+                 document.getElementById('cert-num').value = lines.find(l=>l.startsWith('CERT_NUM_ULT4:'))?.split(': ')[1] || "";
+                 document.getElementById('cert-estatus').value = lines.find(l=>l.startsWith('ESTATUS:'))?.split(': ')[1] || "";
+            } else {
+                document.getElementById('entry-title').value = e.title;
+                document.getElementById('entry-content').value = e.content;
+            }
+            notify("Modo Edición");
+            document.querySelector('#settings-modal .overflow-y-auto').scrollTop = 0;
+        };
+
         function renderEntries() {
-            document.getElementById('knowledge-list').innerHTML = knowledgeBase.map(e => `
-                <div class="bg-white p-6 rounded-3xl border border-slate-100 mb-4 shadow-sm text-slate-800">
+            document.getElementById('knowledge-list').innerHTML = knowledgeBase.map(e => {
+                let displayContent = e.content;
+                // Renderizado condicional
+                if (e.content.includes("TIPO_REGISTRO:")) {
+                    const lines = e.content.split('\n');
+                    const getValue = k => lines.find(l => l.startsWith(k))?.split(': ')[1] || '';
+                    const type = getValue("TIPO_REGISTRO");
+                    
+                    if (type === "CERTIFICADO") {
+                         displayContent = `
+                            <div class="flex flex-col gap-2 mt-2 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+                                    <span class="font-bold text-xs text-blue-600">${getValue('NEGOCIO')}</span>
+                                    <span class="text-[10px] bg-white border px-2 py-0.5 rounded font-mono">${getValue('ENTORNO')}</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 text-[10px] text-slate-500">
+                                    <div><span class="font-bold">Tipo:</span> ${getValue('TIPO_CERTIFICADO')}</div>
+                                    <div><span class="font-bold">Fin:</span> ${getValue('VIGENCIA_FIN')}</div>
+                                </div>
+                                <div class="text-[10px] font-black ${getValue('ESTATUS').includes('VIGENTE') ? 'text-emerald-500' : 'text-red-500'} text-right mt-1">
+                                    ${getValue('ESTATUS')}
+                                </div>
+                            </div>
+                         `;
+                    } else if (type === "EXTENSION_TELEFONICA") {
+                        displayContent = `
+                            <div class="flex items-center gap-4 mt-2 bg-blue-50 p-3 rounded-xl border border-blue-100">
+                                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-sm border border-blue-100 text-lg"><i class="fas fa-phone"></i></div>
+                                <div>
+                                    <div class="text-sm font-black text-slate-800 tracking-tight">${getValue('EXTENSION')}</div>
+                                    <div class="text-[11px] font-bold text-blue-600">${getValue('NOMBRE_PERSONA')}</div>
+                                    <div class="text-[9px] text-slate-400 uppercase tracking-wide">${getValue('AREA')}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+
+                return `
+                <div class="bg-white p-6 rounded-3xl border border-slate-100 mb-4 shadow-sm text-slate-800 transition-all hover:shadow-md">
                     <div class="flex justify-between items-start mb-4 border-b border-slate-50 pb-3">
                         <div class="flex items-center gap-3">
                             <span class="text-[9px] bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-black uppercase tracking-tighter">${e.category || 'Manual'}</span>
                             <span class="text-[9px] text-slate-300 font-bold">${e.date}</span>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="editEntry('${e.id}')" class="text-blue-500 hover:bg-blue-50 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm"><i class="fas fa-pen text-sm"></i></button>
-                            <button onclick="deleteEntry('${e.id}')" class="text-red-300 hover:bg-red-50 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm"><i class="fas fa-trash text-sm"></i></button>
+                            <button onclick="editEntry('${e.id}')" class="text-blue-500 hover:bg-blue-50 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm border border-blue-50"><i class="fas fa-pen text-sm"></i></button>
+                            <button onclick="deleteEntry('${e.id}')" class="text-red-300 hover:bg-red-50 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm border border-red-50"><i class="fas fa-trash text-sm"></i></button>
                         </div>
                     </div>
                     <h4 class="text-sm font-black uppercase mb-3 tracking-tight">${e.title}</h4>
-                    <p class="manual-text-admin text-[13px] text-slate-600 font-medium">${e.content}</p>
+                    <div class="manual-text-admin text-[13.5px] text-slate-600 font-medium">${displayContent}</div>
                 </div>
-            `).join('');
+            `;}).join('');
         }
 
         document.getElementById('add-user-btn').onclick = async () => {
@@ -472,7 +613,10 @@
             document.getElementById('user-registry-list').innerHTML = employeeRegistry.map(u => `
                 <div class="flex items-center justify-between p-5 bg-slate-50 rounded-3xl border border-slate-100 mb-2 shadow-sm">
                     <div class="text-[12px] font-bold text-slate-800">${u.name} <span class="text-[9px] opacity-40 uppercase ml-2 font-black tracking-widest">[${u.role}]</span></div>
-                    <div class="text-[11px] font-black text-blue-600 bg-blue-100 px-4 py-1 rounded-full">${u.queries || 0} q</div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-[11px] font-black text-blue-600 bg-blue-100 px-4 py-1 rounded-full">${u.queries || 0} q</div>
+                        <button onclick="deleteUser('${u.empNumber}')" class="text-red-300 hover:text-red-500 transition-colors"><i class="fas fa-trash text-sm"></i></button>
+                    </div>
                 </div>
             `).join('');
         }
@@ -480,7 +624,7 @@
         document.getElementById('file-selector').onchange = async (e) => {
             const files = e.target.files;
             if (!files.length) return;
-            notify("Procesando...");
+            notify("Leyendo archivos...");
             for (let file of files) {
                 const ext = file.name.split('.').pop().toLowerCase();
                 let text = "";
@@ -507,59 +651,37 @@
                     }
                 } catch (err) { notify("Error en archivo", true); }
             }
-            notify("Carga exitosa");
+            notify("Carga Completa");
         };
 
-        // FILTRO MAESTRO DE SALIDA
+        // FILTRO DE LIMPIEZA DE RESPUESTA
         function formatBotResponse(text) {
-            let clean = text.replace(/\[CATEGORÍA:.*?\| TEMA:.*?\]/gi, "");
+            let clean = text.replace(/CONTENIDO TÉCNICO:.*?\n/gi, "");
             clean = clean.replace(/REGISTRO:.*?\n/gi, "");
             clean = clean.replace(/CONTENIDO:\s*/gi, "");
-            clean = clean.replace(/CATEGORÍA:.*?\n/gi, "");
+            clean = clean.replace(/\[CATEGORÍA:.*?\| TEMA:.*?\]/gi, "");
+            clean = clean.replace(/TIPO_REGISTRO:.*?\n/gi, ""); // Limpia etiquetas de certificados
             clean = clean.trim();
-            
-            return clean.replace(/###\s*(.*?)(\n|$)/g, '<div class="bot-header"><i class="fas fa-book-open text-blue-600"></i> $1</div>')
-                       .replace(/\n/g, '<br>');
+            return clean.replace(/###\s*(.*?)(\n|$)/g, '<div class="bot-header"><i class="fas fa-book-open text-blue-600"></i> $1</div>').replace(/\n/g, '<br>');
         }
 
         async function fetchGemini(q) {
-            // CONTEXTO INTELIGENTE: ENVIAR TODO PERO CON ETIQUETAS INTERNAS
-            const kb = knowledgeBase.map(e => `[MANUAL ${e.category} - ${e.title}]:\n${e.content}`).join('\n\n---\n\n');
-            
-            const systemPrompt = `ACTÚA COMO UN CONSULTOR EXPERTO EN SPEI.
-            TU CONOCIMIENTO PROVIENE EXCLUSIVAMENTE DE ESTOS MANUALES INTERNOS:
-            ${kb}
-
-            INSTRUCCIONES DE RESPUESTA:
-            1. BÚSQUEDA FLEXIBLE: Si el usuario pregunta por un tema, busca en todos los manuales aunque las palabras no sean exactas (ej. "claves" = "claves de rastreo").
-            2. RESPUESTA PRECISA: Si encuentras la información, entrégala de forma clara y directa.
-            3. EXPLICACIÓN: Si el usuario no entiende o pide ejemplos, USA LA INFORMACIÓN DEL MANUAL para explicarlo con tus propias palabras o crear un ejemplo práctico. ¡No te quedes callado!
-            4. FILTRO DE SALIDA: JAMÁS escribas las etiquetas internas como [MANUAL...], REGISTRO:, o CONTENIDO: en tu respuesta final.
-            5. Si de plano el tema no existe en ningún manual, di: "Ese tema no está cubierto en la documentación actual."
-            6. Usa LaTeX ($$formula$$) para matemáticas y ### para títulos.
-            7. Sé profesional, directo y útil.`;
-
+            const kb = knowledgeBase.map(e => `REGISTRO: ${e.title}\nCONTENIDO: ${e.content}`).join('\n\n---\n\n');
+            const systemPrompt = `ACTÚA COMO ASISTENTE TÉCNICO. BASE: ${kb}. REGLAS: 1. Busca por significado. 2. Si no hay dato exacto, USA EL MANUAL para explicar o dar ejemplo. 3. NO etiquetas internas. 4. NO saludos. 5. Si no hay nada, di: "No encontrado en documentación."`;
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [...chatHistory, { role: "user", parts: [{ text: q }] }],
-                        systemInstruction: { parts: [{ text: systemPrompt }] }
-                    })
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [...chatHistory, { role: "user", parts: [{ text: q }] }], systemInstruction: { parts: [{ text: systemPrompt }] } })
                 });
                 const data = await res.json();
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "No encontré información relacionada.";
-                
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta técnica.";
                 chatHistory.push({ role: "user", parts: [{ text: q }] }, { role: "model", parts: [{ text }] });
                 if (chatHistory.length > 10) chatHistory.splice(0, 2);
-                
                 if (!isInternalMode && currentUser) {
-                    const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'team', currentUser.empNumber);
-                    await updateDoc(userRef, { queries: (currentUser.queries || 0) + 1 });
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', currentUser.empNumber), { queries: (currentUser.queries || 0) + 1 });
                 }
                 return text;
-            } catch (e) { return "Error de conexión con la IA."; }
+            } catch (e) { return "Error técnico en la red."; }
         }
 
         document.getElementById('chat-form').onsubmit = async (e) => {
@@ -568,7 +690,7 @@
             if (!v) return;
             document.getElementById('user-input').value = "";
             addMessage(v, true);
-            const l = document.createElement('div'); l.id = "loader"; l.className = "p-5 bg-white border rounded-3xl w-fit bot-bubble animate-pulse text-[12px] font-black text-slate-400 italic shadow-sm"; l.innerText = "Analizando manuales...";
+            const l = document.createElement('div'); l.id = "loader"; l.className = "p-5 bg-white border rounded-3xl w-fit bot-bubble animate-pulse text-[12px] font-black text-slate-400 italic shadow-sm"; l.innerText = "Consultando...";
             document.getElementById('chat-box').appendChild(l);
             const res = await fetchGemini(v);
             if (document.getElementById('loader')) document.getElementById('loader').remove();
@@ -581,7 +703,7 @@
             div.className = `flex flex-col gap-2 message-appear ${isUser ? 'items-end ml-auto text-right' : 'items-start text-left'} max-w-[95%]`;
             const color = isUser ? 'user-bubble' : 'bot-bubble';
             const formattedContent = isUser ? text.replace(/\n/g, '<br>') : formatBotResponse(text);
-            div.innerHTML = `<div class="${color} px-8 py-6 text-[15.5px] leading-[1.8] font-medium shadow-md transition-all">${formattedContent}</div><span class="text-[9px] text-slate-400 mx-6 font-black uppercase tracking-widest text-center">Daniel Anzaldo • ${isUser ? currentUser.name : 'Asistente SPEI'}</span>`;
+            div.innerHTML = `<div class="${color} px-8 py-6 text-[15.5px] leading-[1.8] font-medium shadow-md transition-all text-left">${formattedContent}</div><span class="text-[9px] text-slate-400 mx-6 font-black uppercase tracking-widest text-center">Daniel Anzaldo • ${isUser ? currentUser.name : 'Asistente SPEI Ops'}</span>`;
             document.getElementById('chat-box').appendChild(div);
             document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
             if (!isUser && window.MathJax) MathJax.typesetPromise();
@@ -601,4 +723,3 @@
     </script>
 </body>
 </html>
-
