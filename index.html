@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Operación Pagos Electrónicos - SPEI Ops</title>
+    
+    <!-- Metadatos de Aplicación (PWA) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SPEI Ops">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2830/2830284.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, deleteDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'spei-ops-app';
+
+        window.fb = { 
+            auth, db, appId, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, deleteDoc, query,
+            signInWithCustomToken, signInAnonymously, onAuthStateChanged
+        };
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        html, body {
+            height: 100%;
+            width: 100%;
+            background-color: #0f172a;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+            position: fixed;
+        }
+
+        .app-main-wrapper {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            justify-content: center;
+            background-color: #0f172a;
+        }
+
+        .app-viewport {
+            width: 100%;
+            max-width: 50rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #f8fafc;
+            position: relative;
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            background-image: radial-gradient(#e2e8f0 1.2px, transparent 1.2px);
+            background-size: 24px 24px;
+        }
+
+        .message-appear {
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .system-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: white;
+            padding: 2rem;
+            background: #0f172a;
+            transition: all 0.4s ease;
+        }
+
+        #settings-modal, #timeout-modal {
+            position: absolute;
+            inset: 0;
+            z-index: 9998;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            transition: opacity 0.3s ease;
+        }
+
+        .hidden-ui { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+        
+        .tab-btn.active {
+            color: #3b82f6;
+            border-bottom: 3px solid #3b82f6;
+        }
+
+        .user-bubble { box-shadow: 0 4px 15px -3px rgba(37, 99, 235, 0.3); }
+        .bot-bubble { border: 1px solid #f1f5f9; box-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.04); }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="app-main-wrapper">
+        <!-- Pantalla de Carga -->
+        <div id="loading-overlay" class="system-overlay">
+            <div class="w-14 h-14 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
+            <p class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Sincronizando Sistema</p>
+        </div>
+
+        <!-- Pantalla de Login -->
+        <div id="lock-screen" class="system-overlay hidden-ui">
+            <div class="w-20 h-20 bg-blue-600 rounded-[2rem] mb-8 flex items-center justify-center shadow-2xl shadow-blue-500/20">
+                <i class="fas fa-id-card-alt text-3xl text-white"></i>
+            </div>
+            <h2 class="text-3xl font-black mb-1 tracking-tighter text-white text-center">Acceso SPEI Ops</h2>
+            <p class="text-slate-400 text-sm mb-10 text-center">Identificación de Colaborador</p>
+            
+            <div class="w-full max-w-[300px] space-y-4">
+                <input type="text" id="emp-number-input" placeholder="No. de Empleado" 
+                    class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 text-center text-xl font-bold text-white transition-all focus:ring-2 focus:ring-blue-500 outline-none">
+                <button onclick="checkEmployeeAccess()" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all text-white">
+                    INGRESAR
+                </button>
+                <p id="error-emp" class="text-red-400 text-[10px] text-center opacity-0 font-black tracking-widest uppercase mt-4">Número no registrado</p>
+            </div>
+            <div class="mt-auto pt-10 text-center">
+                <p class="text-slate-500 text-[9px] uppercase tracking-[0.4em] font-black">Powered by Daniel Anzaldo</p>
+            </div>
+        </div>
+
+        <!-- Aviso de Inactividad -->
+        <div id="timeout-modal" class="hidden-ui">
+            <div class="w-full max-w-sm bg-white p-8 rounded-[2.5rem] shadow-2xl text-center">
+                <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-hourglass-half text-2xl animate-pulse"></i>
+                </div>
+                <h3 class="text-xl font-black text-slate-800 mb-2">¿Sigues ahí?</h3>
+                <p class="text-sm text-slate-500 mb-8">Por seguridad, tu sesión está por expirar debido a 5 minutos de inactividad.</p>
+                <div class="flex gap-3">
+                    <button onclick="logout()" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold text-sm">NO, SALIR</button>
+                    <button onclick="extendSession()" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-bold text-sm shadow-lg shadow-blue-200">SÍ, CONTINUAR</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interface de la Aplicación -->
+        <div class="app-viewport blur-md" id="app-content">
+            <header id="chat-header" class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-5 pt-8 shadow-2xl flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10 backdrop-blur-md">
+                        <i class="fas fa-university text-blue-400 text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 id="header-title" class="font-extrabold text-base tracking-tight leading-none mb-1">Operación Pagos</h1>
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                            <span id="header-subtitle" class="text-[8px] font-black uppercase tracking-widest text-slate-400">Sesión Activa</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="admin-controls" class="hidden flex items-center gap-3">
+                    <button id="settings-btn" onclick="toggleSettings()" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/10 hover:bg-white/20 transition-all">
+                        <i class="fas fa-database text-sm"></i>
+                    </button>
+                    <div class="flex flex-col items-center">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="mode-toggle" class="sr-only peer" onchange="toggleAdminView()">
+                            <div class="w-10 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 text-white"></div>
+                        </label>
+                        <span class="text-[6px] font-black uppercase mt-1 opacity-50">Admin</span>
+                    </div>
+                </div>
+            </header>
+
+            <main id="chat-box" class="chat-container"></main>
+
+            <footer class="bg-white p-5 border-t border-slate-100 shrink-0">
+                <div id="suggestions" class="flex flex-wrap gap-2 mb-4"></div>
+                <form id="chat-form" class="flex gap-2 items-center">
+                    <div class="flex-1 bg-slate-100 rounded-3xl flex items-center px-6 border border-transparent focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 transition-all">
+                        <input type="text" id="user-input" placeholder="Preguntar al manual..." class="w-full bg-transparent border-none py-4 text-sm font-semibold outline-none" autocomplete="off">
+                    </div>
+                    <button type="submit" id="send-btn" class="bg-blue-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-all">
+                        <i class="fas fa-paper-plane text-lg text-white"></i>
+                    </button>
+                </form>
+                <div class="flex justify-between items-center mt-5">
+                    <div class="flex items-center gap-2">
+                        <p id="footer-username" class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Inicia sesión</p>
+                        <span id="role-badge" class="hidden text-[7px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest"></span>
+                    </div>
+                    <button onclick="logout()" class="text-[8px] font-black text-slate-400 uppercase underline hover:text-red-500 transition-colors">Salir</button>
+                </div>
+            </footer>
+        </div>
+
+        <!-- Modal de Gestión (Admin) -->
+        <div id="settings-modal" class="hidden-ui">
+            <div class="w-full max-w-2xl bg-white p-6 rounded-[2.5rem] shadow-2xl flex flex-col max-h-[85vh]">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-black text-slate-800 uppercase italic">Administración</h2>
+                    <button onclick="toggleSettings()" class="bg-slate-100 p-2.5 rounded-full text-slate-500"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="flex gap-6 border-b border-slate-100 mb-6">
+                    <button onclick="switchTab('tab-kb')" id="btn-tab-kb" class="tab-btn active pb-3 text-[10px] font-black uppercase tracking-wider">Conocimiento</button>
+                    <button onclick="switchTab('tab-users')" id="btn-tab-users" class="tab-btn pb-3 text-[10px] font-black uppercase tracking-wider">Gestión Equipo</button>
+                </div>
+                <div class="overflow-y-auto flex-1 space-y-6">
+                    <div id="tab-kb" class="space-y-4">
+                        <div class="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-4">
+                            <div class="flex gap-2 flex-wrap">
+                                <select id="entry-category" class="bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold outline-none flex-1">
+                                    <option value="Procesos">Procesos</option>
+                                    <option value="Servidores">Servidores</option>
+                                    <option value="Seguridad">Seguridad</option>
+                                    <option value="Contactos">Contactos</option>
+                                </select>
+                                <input type="text" id="entry-title" placeholder="Título..." class="flex-[2] bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold">
+                            </div>
+                            <textarea id="entry-content" placeholder="Escribe el manual..." class="w-full h-24 bg-white border border-slate-200 rounded-xl p-4 text-xs font-medium"></textarea>
+                            <div class="flex gap-2">
+                                <button onclick="addManualEntry()" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-black text-xs shadow-lg">Publicar</button>
+                                <button onclick="document.getElementById('file-selector').click()" class="bg-slate-800 text-white px-5 rounded-xl"><i class="fas fa-file-upload"></i></button>
+                                <input type="file" id="file-selector" class="hidden" multiple accept=".pdf,.xlsx,.txt">
+                            </div>
+                        </div>
+                        <div id="knowledge-list" class="space-y-2"></div>
+                    </div>
+                    <div id="tab-users" class="hidden space-y-4">
+                        <div class="bg-blue-50 p-5 rounded-3xl border border-blue-100 space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <input type="text" id="new-user-name" placeholder="Nombre" class="bg-white border border-blue-200 rounded-xl px-4 py-3 text-xs font-bold">
+                                <input type="text" id="new-user-id" placeholder="No. Empleado" class="bg-white border border-blue-200 rounded-xl px-4 py-3 text-xs font-bold">
+                                <select id="new-user-role" class="bg-white border border-blue-200 rounded-xl px-4 py-3 text-xs font-bold">
+                                    <option value="user">Usuario</option>
+                                    <option value="admin">Administrador</option>
+                                </select>
+                            </div>
+                            <button onclick="registerEmployee()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black text-xs">Autorizar</button>
+                        </div>
+                        <div id="user-registry-list" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        const apiKey = "";
+        const MASTER_ADMIN_PIN = "070388";
+        const SESSION_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutos
+        const WARNING_TIMEOUT_MS = 30 * 1000;    // 30 segundos para responder al aviso
+
+        let inactivityTimer = null;
+        let warningTimer = null;
+        let isInternalMode = false;
+        let knowledgeBase = [];
+        let employeeRegistry = [];
+        let currentUser = null;
+        let chatHistory = [];
+
+        const chatBox = document.getElementById('chat-box');
+        const { auth, db, appId, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, deleteDoc, query, signInWithCustomToken, signInAnonymously, onAuthStateChanged } = window.fb;
+
+        async function initApp() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (!user) return;
+
+                    onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'knowledge'), (snap) => {
+                        knowledgeBase = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        renderEntries();
+                    });
+
+                    onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'team'), (snap) => {
+                        employeeRegistry = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        if (employeeRegistry.length === 0) seedAdmin();
+                        renderUsers();
+                        
+                        if (currentUser) {
+                            const updated = employeeRegistry.find(u => u.empNumber === currentUser.empNumber);
+                            if (!updated) logout();
+                            else { currentUser = updated; setupIdentity(); }
+                        }
+                    });
+
+                    const saved = localStorage.getItem('spei_active_user_v5');
+                    if (saved) {
+                        currentUser = JSON.parse(saved);
+                        setupIdentity();
+                        document.getElementById('loading-overlay').classList.add('hidden-ui');
+                        document.getElementById('app-content').classList.remove('blur-md');
+                        resetInactivityTimer();
+                    } else {
+                        document.getElementById('loading-overlay').classList.add('hidden-ui');
+                        document.getElementById('lock-screen').classList.remove('hidden-ui');
+                    }
+                });
+            } catch (error) {
+                console.error("Init Error:", error);
+            }
+        }
+
+        async function seedAdmin() {
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', '682930'), {
+                name: "Daniel Anzaldo", empNumber: "682930", role: "admin", queries: 0
+            });
+        }
+
+        // CONTROL DE INACTIVIDAD
+        function resetInactivityTimer() {
+            if (!currentUser) return;
+            clearTimeout(inactivityTimer);
+            clearTimeout(warningTimer);
+            document.getElementById('timeout-modal').classList.add('hidden-ui');
+            
+            inactivityTimer = setTimeout(() => {
+                showInactivityWarning();
+            }, SESSION_TIMEOUT_MS);
+        }
+
+        function showInactivityWarning() {
+            document.getElementById('timeout-modal').classList.remove('hidden-ui');
+            // Si no responde en 30 segundos, cerrar automáticamente
+            warningTimer = setTimeout(() => {
+                logout();
+            }, WARNING_TIMEOUT_MS);
+        }
+
+        window.extendSession = function() {
+            resetInactivityTimer();
+            addSystemMessage("Sesión extendida.");
+        };
+
+        window.checkEmployeeAccess = function() {
+            const input = document.getElementById('emp-number-input').value.trim();
+            const user = employeeRegistry.find(u => u.empNumber === input);
+
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('spei_active_user_v5', JSON.stringify(user));
+                setupIdentity();
+                document.getElementById('lock-screen').classList.add('hidden-ui');
+                document.getElementById('app-content').classList.remove('blur-md');
+                addMessage(`Bienvenido al sistema SPEI Ops, ${user.name}. He sincronizado el conocimiento operativo. ¿En qué puedo ayudarte?`);
+                resetInactivityTimer();
+            } else {
+                const err = document.getElementById('error-emp');
+                err.style.opacity = "1";
+                setTimeout(() => err.style.opacity = "0", 2500);
+            }
+        };
+
+        function setupIdentity() {
+            if (!currentUser) return;
+            const footerUser = document.getElementById('footer-username');
+            if (footerUser) footerUser.innerText = currentUser.name;
+            
+            const badge = document.getElementById('role-badge');
+            if (badge) {
+                badge.classList.remove('hidden');
+                if (currentUser.role === 'admin') {
+                    badge.innerText = "Admin";
+                    badge.className = "inline-block bg-blue-100 text-blue-600 text-[7px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest";
+                    document.getElementById('admin-controls')?.classList.remove('hidden');
+                } else {
+                    badge.innerText = "Equipo";
+                    badge.className = "inline-block bg-slate-100 text-slate-500 text-[7px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest";
+                    document.getElementById('admin-controls')?.classList.add('hidden');
+                }
+            }
+        }
+
+        window.toggleAdminView = function() {
+            const toggle = document.getElementById('mode-toggle');
+            if (toggle.checked) {
+                if (currentUser && currentUser.role === 'admin') {
+                    enableStaffMode();
+                } else {
+                    toggle.checked = false;
+                    document.getElementById('admin-lock-screen').classList.remove('hidden-ui');
+                }
+            } else {
+                disableStaffMode();
+            }
+        };
+
+        window.checkAdminAccess = function() {
+            if (document.getElementById('admin-pin-input').value === MASTER_ADMIN_PIN) {
+                document.getElementById('admin-lock-screen').classList.add('hidden-ui');
+                document.getElementById('mode-toggle').checked = true;
+                enableStaffMode();
+            } else {
+                alert("PIN Inválido");
+            }
+        };
+
+        window.cancelAdminAccess = function() {
+            document.getElementById('admin-lock-screen').classList.add('hidden-ui');
+            document.getElementById('mode-toggle').checked = false;
+        };
+
+        function enableStaffMode() {
+            isInternalMode = true;
+            const header = document.getElementById('chat-header');
+            if (header) header.className = "bg-gradient-to-br from-emerald-900 to-slate-900 text-white p-5 pt-8 shadow-2xl flex items-center justify-between shrink-0";
+            const subtitle = document.getElementById('header-subtitle');
+            if (subtitle) {
+                subtitle.innerText = 'CONTROL OPERATIVO';
+                subtitle.className = "text-[8px] font-black text-emerald-400 uppercase tracking-widest";
+            }
+            const sendBtn = document.getElementById('send-btn');
+            if (sendBtn) sendBtn.className = "bg-emerald-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center active:scale-95 transition-all shadow-lg";
+            addSystemMessage("Administración Sincronizada");
+            renderSuggestions();
+        }
+
+        function disableStaffMode() {
+            isInternalMode = false;
+            const header = document.getElementById('chat-header');
+            if (header) header.className = "bg-gradient-to-br from-slate-900 to-slate-800 text-white p-5 pt-8 shadow-2xl flex items-center justify-between shrink-0";
+            const subtitle = document.getElementById('header-subtitle');
+            if (subtitle) {
+                subtitle.innerText = 'SESIÓN ACTIVA';
+                subtitle.className = "text-[8px] font-black text-slate-400 uppercase tracking-widest";
+            }
+            const sendBtn = document.getElementById('send-btn');
+            if (sendBtn) sendBtn.className = "bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center active:scale-95 transition-all shadow-lg";
+            renderSuggestions();
+        }
+
+        window.logout = function() {
+            clearTimeout(inactivityTimer);
+            clearTimeout(warningTimer);
+            localStorage.removeItem('spei_active_user_v5');
+            location.reload();
+        };
+
+        window.registerEmployee = async function() {
+            const name = document.getElementById('new-user-name').value.trim();
+            const num = document.getElementById('new-user-id').value.trim();
+            const role = document.getElementById('new-user-role').value;
+            if (!name || !num) return;
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', num), { name, empNumber: num, role, queries: 0 });
+            document.getElementById('new-user-name').value = "";
+            document.getElementById('new-user-id').value = "";
+        };
+
+        window.deleteUser = async function(num) {
+            if (num === "682930") return alert("Intocable.");
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', num));
+        };
+
+        function renderUsers() {
+            const list = document.getElementById('user-registry-list');
+            list.innerHTML = employeeRegistry.map(u => `
+                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-3xl border border-slate-100">
+                    <div>
+                        <p class="text-[11px] font-black text-slate-800">${u.name}</p>
+                        <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">${u.empNumber} • ${u.role}</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-center"><p class="text-[10px] font-black text-blue-600">${u.queries || 0}</p></div>
+                        <button onclick="deleteUser('${u.empNumber}')" class="text-slate-300 hover:text-red-500 p-2"><i class="fas fa-trash-alt text-[10px]"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.addManualEntry = async function() {
+            const cat = document.getElementById('entry-category').value;
+            const title = document.getElementById('entry-title').value.trim();
+            const content = document.getElementById('entry-content').value.trim();
+            if (!title || !content) return;
+            const id = Date.now().toString();
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), { category: cat, title, content, date: new Date().toLocaleDateString() });
+            document.getElementById('entry-title').value = "";
+            document.getElementById('entry-content').value = "";
+        };
+
+        window.deleteEntry = async function(id) {
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id));
+        };
+
+        function renderEntries() {
+            const list = document.getElementById('knowledge-list');
+            if (!knowledgeBase.length) {
+                list.innerHTML = `<div class='text-center p-6 text-slate-300 text-[10px] italic font-bold uppercase'>Manual Vacío</div>`;
+                return;
+            }
+            list.innerHTML = knowledgeBase.map(e => `
+                <div class="card-entry p-3 rounded-3xl flex justify-between items-start gap-4 bg-white border border-slate-100 mb-2">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-[7px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter">${e.category}</span>
+                            <span class="text-[7px] text-slate-300 font-bold">${e.date}</span>
+                        </div>
+                        <h4 class="text-[11px] font-black text-slate-800 mb-0.5 line-clamp-1">${e.title}</h4>
+                        <p class="text-[9px] text-slate-500 line-clamp-1">${e.content}</p>
+                    </div>
+                    <button onclick="deleteEntry('${e.id}')" class="text-slate-300 hover:text-red-500 p-2"><i class="fas fa-trash-alt text-[10px]"></i></button>
+                </div>
+            `).join('');
+        }
+
+        async function fetchGemini(queryText) {
+            const formattedKB = knowledgeBase.map(e => `[${e.category}] ${e.title}: ${e.content}`).join('\n\n');
+            const formatRules = `
+            ESTRICTO:
+            1. RESPONDE EN ESPAÑOL. SÉ MUY CONCISO.
+            2. NO MENCIONES nombres personales de gerentes (ej. Daniel).
+            3. SIGUE EL HILO conversacional.
+            4. CIERRE OBLIGATORIO: "¿Deseas profundizar en algún detalle o podemos dar por finalizada la duda?"`;
+
+            const sysPrompt = isInternalMode 
+                ? `Maestro Daniel. Datos Nube: ${formattedKB}` 
+                : `Eres el Asistente Técnico SPEI. Datos operativos: ${formattedKB}. ${formatRules}`;
+            
+            const currentExchange = [...chatHistory, { role: "user", parts: [{ text: queryText }] }];
+
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: currentExchange, systemInstruction: { parts: [{ text: sysPrompt }] } })
+                });
+
+                const data = await res.json();
+                const responseText = cleanFormatting(data.candidates?.[0]?.content?.parts?.[0]?.text);
+                
+                chatHistory.push({ role: "user", parts: [{ text: queryText }] });
+                chatHistory.push({ role: "model", parts: [{ text: responseText }] });
+                if (chatHistory.length > 10) chatHistory.splice(0, 2);
+
+                if (!isInternalMode && currentUser) {
+                    const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'team', currentUser.empNumber);
+                    await updateDoc(userRef, { queries: (currentUser.queries || 0) + 1 });
+                }
+                return responseText;
+            } catch (e) { return "Error técnico remota."; }
+        }
+
+        function cleanFormatting(text) {
+            if (!text) return "";
+            return text.split('\n').filter(line => !line.includes('|') && !line.includes('---')).join('\n')
+                .replace(/#{1,6}\s?/g, '').replace(/\*\*/g, '').replace(/\*/g, '')
+                .replace(/\$\$/g, '').replace(/\$/g, '').replace(/\\text\{([^}]*)\}/g, '$1')
+                .replace(/^-{3,}$/gm, '').replace(/\n{3,}/g, '\n\n').trim();
+        }
+
+        window.handleQuery = async function(q) {
+            addMessage(q, true);
+            document.getElementById('user-input').value = '';
+            showLoading();
+            const res = await fetchGemini(q);
+            removeLoading();
+            addMessage(res);
+            resetInactivityTimer(); // Resetear timer al enviar mensaje
+        };
+
+        function addMessage(text, isUser = false) {
+            const div = document.createElement('div');
+            div.className = `flex flex-col gap-1.5 message-appear ${isUser ? 'items-end ml-auto' : 'items-start'} max-w-[92%]`;
+            const color = isUser ? 'bg-blue-600 text-white user-bubble' : 'bg-white text-slate-800 bot-bubble';
+            
+            div.innerHTML = `
+                <div class="${color} px-5 py-4 text-[13.5px] leading-[1.6] rounded-[1.8rem] ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} shadow-sm">
+                    ${text.replace(/\n/g, '<br>')}
+                </div>
+                <span class="text-[8px] text-slate-400 mx-4 font-black uppercase tracking-widest">${isUser ? (currentUser ? currentUser.name : 'Tú') : 'Asistente Virtual'}</span>
+            `;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function showLoading() {
+            const l = document.createElement('div');
+            l.id = "loader"; l.className = "flex gap-2 p-5 bg-white border border-slate-50 rounded-3xl w-fit ml-2 bot-bubble";
+            l.innerHTML = `<div class='w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce'></div>`.repeat(3);
+            chatBox.appendChild(l);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function removeLoading() { if (document.getElementById('loader')) document.getElementById('loader').remove(); }
+        
+        function addSystemMessage(t) {
+            const div = document.createElement('div');
+            div.className = "text-center my-4 message-appear";
+            div.innerHTML = `<span class="text-[8px] bg-slate-200/40 px-3 py-1.5 rounded-full text-slate-500 font-black uppercase border border-slate-100 tracking-tighter">${t}</span>`;
+            chatBox.appendChild(div);
+        }
+
+        window.renderSuggestions = function() {
+            const container = document.getElementById('suggestions');
+            if (!container) return;
+            const list = isInternalMode ? ["Status Nube", "Métricas"] : ["Procesos", "Servidores"];
+            container.innerHTML = list.map(s => `<button onclick="handleQuery('${s}')" class="text-[10px] bg-white text-blue-700 border border-slate-200 px-4 py-2 rounded-2xl font-bold shadow-sm active:scale-95 transition-all">${s}</button>`).join('');
+        };
+
+        window.switchTab = function(id) {
+            document.getElementById('tab-kb').classList.add('hidden');
+            document.getElementById('tab-users').classList.add('hidden');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.remove('hidden');
+            document.getElementById('btn-' + id).classList.add('active');
+        };
+
+        window.toggleSettings = function() { document.getElementById('settings-modal').classList.toggle('hidden-ui'); };
+
+        document.getElementById('chat-form').onsubmit = (e) => {
+            e.preventDefault();
+            const v = document.getElementById('user-input').value.trim();
+            if (v) handleQuery(v);
+        };
+
+        document.getElementById('file-selector').addEventListener('change', async (e) => {
+            const files = e.target.files;
+            if (!files.length) return;
+            for (let file of files) {
+                const ext = file.name.split('.').pop().toLowerCase();
+                let text = "";
+                if (ext === 'pdf') text = await extractTextFromPDF(file);
+                else if (['xlsx', 'xls', 'csv'].includes(ext)) text = await extractTextFromExcel(file);
+                else if (ext === 'txt') text = await file.text();
+                if (text) {
+                    const id = Date.now().toString() + Math.random().toString(36).substr(2, 4);
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), { category: "Archivo", title: file.name, content: text, date: new Date().toLocaleDateString() });
+                }
+            }
+        });
+
+        function extractTextFromPDF(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = async function() {
+                    const pdf = await pdfjsLib.getDocument(new Uint8Array(this.result)).promise;
+                    let fullText = "";
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const content = await page.getTextContent();
+                        fullText += content.items.map(s => s.str).join(' ') + '\n';
+                    }
+                    resolve(fullText);
+                };
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        function extractTextFromExcel(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
+                    let text = "";
+                    workbook.SheetNames.forEach(n => text += XLSX.utils.sheet_to_txt(workbook.Sheets[n]) + '\n');
+                    resolve(text);
+                };
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        initApp();
+    </script>
+</body>
+</html>
