@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Metaetiquetas para evitar caché -->
+    <!-- Metaetiquetas anti-caché -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     
-    <title>SPEI Ops - Gestión Operativa</title>
+    <title>SPEI Ops - Gestión Operativa v5</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="SPEI Ops">
-    <meta name="mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2830/2830284.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -114,7 +113,7 @@
         
         .bot-header {
             display: flex; align-items: center; gap: 0.8rem; font-weight: 800; color: #0f172a;
-            margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1.15rem; border-bottom: 2px solid #3b82f6; padding-bottom: 0.4rem;
+            margin-top: 1.5rem; margin-bottom: 0.8rem; font-size: 1.15rem; border-bottom: 2px solid #3b82f6; padding-bottom: 0.5rem;
         }
 
         #toast {
@@ -130,6 +129,11 @@
         .cert-input { width: 100%; padding: 0.75rem; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; font-size: 0.8rem; font-weight: 600; color: #334155; outline: none; transition: all 0.2s; }
         .cert-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
         .cert-label { font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.25rem; display: block; }
+
+        /* Badges de Prioridad */
+        .badge-1 { background-color: #fee2e2; color: #991b1b; }
+        .badge-2 { background-color: #fef9c3; color: #854d0e; }
+        .badge-3 { background-color: #dbeafe; color: #1e40af; }
     </style>
 </head>
 <body>
@@ -161,7 +165,6 @@
             <p class="mt-20 text-slate-500 text-[10px] uppercase tracking-[0.4em] font-black italic text-center">Creado por Daniel Anzaldo • 2026</p>
         </div>
 
-        <!-- App -->
         <div class="app-container blur-md shadow-2xl" id="app-content">
             <header class="bg-slate-900 text-white p-6 pt-10 shadow-xl flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-4">
@@ -204,7 +207,7 @@
             </footer>
         </div>
 
-        <!-- Panel Admin -->
+        <!-- Panel Administrativo -->
         <div id="settings-modal" class="hidden-ui system-overlay overlay" style="z-index: 10005;">
             <div class="w-full max-w-5xl bg-white p-8 rounded-[2.5rem] shadow-2xl flex flex-col max-h-[92vh] text-slate-800">
                 <div class="flex justify-between items-center mb-8">
@@ -219,26 +222,52 @@
                 
                 <div class="overflow-y-auto flex-1 space-y-6 px-2">
                     <div id="tab-kb">
-                        <div class="bg-slate-50 p-6 rounded-3xl space-y-4 mb-8 border border-slate-200 shadow-sm">
-                            <div class="flex flex-wrap gap-4">
-                                <select id="entry-category" class="bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold outline-none flex-1 min-w-[180px] text-slate-600 shadow-sm">
-                                    <option value="Procesos">Procesos</option>
-                                    <option value="Servidores">Servidores</option>
-                                    <option value="Seguridad">Seguridad</option>
-                                    <option value="Contactos">Contactos</option>
-                                    <option value="Codi">CoDi</option>
-                                </select>
-                                <input type="text" id="entry-title" placeholder="Título..." class="flex-[2] min-w-[300px] bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none text-slate-800 shadow-sm">
+                        <div class="bg-slate-50 p-6 rounded-3xl space-y-6 mb-8 border border-slate-200 shadow-sm">
+                            <!-- Selectores de Segmentación -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="cert-label">Tipo de Contenido</label>
+                                    <select id="content-type" class="cert-input">
+                                        <option value="MANUAL">MANUAL</option>
+                                        <option value="PROCEDIMIENTO">PROCEDIMIENTO</option>
+                                        <option value="POLITICA">POLÍTICA</option>
+                                        <option value="CERTIFICADO">CERTIFICADO</option>
+                                        <option value="EVIDENCIA">EVIDENCIA</option>
+                                        <option value="REPORTE">REPORTE</option>
+                                        <option value="PLANTILLA">PLANTILLA</option>
+                                        <option value="CORREO">CORREO</option>
+                                        <option value="EXTENSION">EXTENSION (Directorio)</option>
+                                        <option value="OTRO">OTRO</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="cert-label">Clasificación</label>
+                                    <select id="op-class" class="cert-input">
+                                        <option value="OPERATIVO">OPERATIVO</option>
+                                        <option value="SEGURIDAD">SEGURIDAD</option>
+                                        <option value="REGULATORIO">REGULATORIO</option>
+                                        <option value="INFORMATIVO">INFORMATIVO</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="cert-label">Prioridad</label>
+                                    <select id="source-priority" class="cert-input">
+                                        <option value="1">1 - ALTA (Base Estructurada)</option>
+                                        <option value="2">2 - MEDIA (Manuales)</option>
+                                        <option value="3">3 - BAJA (Históricos)</option>
+                                    </select>
+                                </div>
                             </div>
 
-                            <!-- Área dinámica para formularios -->
+                            <!-- Formularios Dinámicos -->
                             <div id="form-container">
-                                <!-- Formulario Estándar (Por defecto) -->
-                                <div id="form-standard">
-                                    <textarea id="entry-content" placeholder="Escribe el texto técnico aquí..." class="w-full h-56 bg-white border border-slate-200 rounded-xl p-5 text-sm font-medium outline-none text-slate-700 leading-relaxed shadow-sm"></textarea>
+                                <!-- A) Texto Libre -->
+                                <div id="form-standard" class="space-y-4">
+                                    <input type="text" id="entry-title" placeholder="Título del documento..." class="cert-input">
+                                    <textarea id="entry-content" placeholder="Escribe el texto técnico detallado aquí..." class="w-full h-56 bg-white border border-e2e8f0 rounded-xl p-5 text-sm font-medium outline-none text-slate-700 leading-relaxed shadow-sm"></textarea>
                                 </div>
-                                
-                                <!-- Formulario Certificados (Nuevo: R2, DIMO, BDT) -->
+
+                                <!-- B) Certificados -->
                                 <div id="form-certificate" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div><label class="cert-label">Últimos 4</label><input type="text" id="cert-num" placeholder="Ej. 9A3F" class="cert-input" maxlength="4" style="text-transform: uppercase;"></div>
                                     <div><label class="cert-label">Negocio</label><select id="cert-negocio" class="cert-input"><option value="SPEI">SPEI</option><option value="CODI">CoDi</option><option value="SPID">SPID</option><option value="DIMO">DIMO</option><option value="BDT">BDT</option><option value="R2">R2</option></select></div>
@@ -248,9 +277,16 @@
                                     <div><label class="cert-label">Fin</label><input type="date" id="cert-vig-fin" class="cert-input"></div>
                                     <div class="md:col-span-2"><label class="cert-label">Estatus</label><input type="text" id="cert-estatus" placeholder="Ej. VIGENTE" class="cert-input" style="text-transform: uppercase;"></div>
                                 </div>
+
+                                <!-- C) Extensiones -->
+                                <div id="form-extension" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div><label class="cert-label">Extensión</label><input type="text" id="ext-num" placeholder="Ej. 1234" class="cert-input"></div>
+                                    <div><label class="cert-label">Nombre</label><input type="text" id="ext-nombre" placeholder="Nombre completo" class="cert-input"></div>
+                                    <div><label class="cert-label">Área</label><input type="text" id="ext-area" placeholder="Ej. Operación SPEI" class="cert-input" value="Operación SPEI"></div>
+                                </div>
                             </div>
 
-                            <div class="flex gap-4 pt-4 border-t border-slate-100">
+                            <div class="flex gap-4 pt-2 border-t border-slate-100">
                                 <input type="hidden" id="editing-id">
                                 <button id="save-entry-btn" class="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs shadow-lg uppercase tracking-widest hover:bg-emerald-700 transition-all">Guardar Registro</button>
                                 <button id="file-trigger" class="bg-slate-800 text-white px-8 rounded-2xl hover:bg-slate-700 transition-colors shadow-lg"><i class="fas fa-file-upload text-lg"></i></button>
@@ -281,7 +317,7 @@
         <div id="timeout-modal" class="overlay hidden-ui" style="background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(15px); z-index: 10000;">
             <div class="w-full max-w-sm bg-white p-10 rounded-[3rem] shadow-2xl text-center text-slate-800">
                 <h3 class="text-2xl font-black mb-3 text-blue-600 tracking-tighter italic text-center">¿Continuas?</h3>
-                <p class="text-sm text-slate-500 mb-10 font-medium text-center">Por seguridad, tu sesión cerrará pronto.</p>
+                <p class="text-sm text-slate-500 mb-10 font-medium text-center">Por seguridad, tu sesión cerrará pronto por inactividad.</p>
                 <div class="flex gap-3 text-center">
                     <button id="timeout-logout-btn" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold text-sm">SALIR</button>
                     <button id="timeout-extend-btn" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-bold text-sm shadow-lg uppercase tracking-widest">Seguir</button>
@@ -328,7 +364,7 @@
                             btn.innerText = "INGRESAR";
                             btn.disabled = false;
 
-                            const saved = localStorage.getItem('spei_ops_production_final_v_clean');
+                            const saved = localStorage.getItem('spei_ops_production_final_v5');
                             if (saved) {
                                 const savedUser = JSON.parse(saved);
                                 const updated = employeeRegistry.find(u => u.empNumber === savedUser.empNumber);
@@ -363,7 +399,7 @@
         }
 
         function logout() {
-            localStorage.removeItem('spei_ops_production_final_v_clean');
+            localStorage.removeItem('spei_ops_production_final_v5');
             location.reload();
         }
 
@@ -384,7 +420,7 @@
             const user = employeeRegistry.find(u => u.empNumber === input);
             if (user) {
                 currentUser = user;
-                localStorage.setItem('spei_ops_production_final_v_clean', JSON.stringify(user));
+                localStorage.setItem('spei_ops_production_final_v5', JSON.stringify(user));
                 enterApp();
                 addMessage(`Bienvenido, ${user.name}. Terminal operativa sincronizada. ¿Qué proceso deseas consultar?`);
             } else {
@@ -412,26 +448,34 @@
         };
 
         // LÓGICA DE FORMULARIO DINÁMICO
-        const categorySelect = document.getElementById('entry-category');
+        const categorySelect = document.getElementById('content-type');
         const formStandard = document.getElementById('form-standard');
         const formCertificate = document.getElementById('form-certificate');
+        const formExtension = document.getElementById('form-extension'); 
 
         categorySelect.addEventListener('change', () => {
-            if (categorySelect.value === 'Certificados') {
-                formStandard.classList.add('hidden');
+            formStandard.classList.add('hidden');
+            formCertificate.classList.add('hidden');
+            document.getElementById('form-extension').classList.add('hidden');
+
+            if (categorySelect.value === 'CERTIFICADO') {
                 formCertificate.classList.remove('hidden');
+            } else if (categorySelect.value === 'EXTENSION') {
+                document.getElementById('form-extension').classList.remove('hidden');
             } else {
                 formStandard.classList.remove('hidden');
-                formCertificate.classList.add('hidden');
             }
         });
 
         document.getElementById('save-entry-btn').onclick = async () => {
-            const cat = categorySelect.value;
+            const type = categorySelect.value;
+            const opClass = document.getElementById('op-class').value;
+            const priority = document.getElementById('source-priority').value;
             const editId = document.getElementById('editing-id').value;
+            
             let title = "", content = "";
 
-            if (cat === 'Certificados') {
+            if (type === 'CERTIFICADO') {
                 const num = document.getElementById('cert-num').value.trim().toUpperCase();
                 const negocio = document.getElementById('cert-negocio').value;
                 const entorno = document.getElementById('cert-entorno').value;
@@ -443,18 +487,24 @@
                 if (!num) return notify("Falta número", true);
                 
                 title = `CERTIFICADO ${num} (${negocio})`;
-                // GUARDADO ESTRUCTURADO PERO TEXTO LIMPIO PARA IA
-                content = `CERTIFICADO ${num} | ${negocio} | ${entorno} | ${estatus} | VIGENCIA: ${vigIni} a ${vigFin} | TIPO: ${tipoC}`;
+                content = `TIPO_REGISTRO: CERTIFICADO\nCERT_NUM_ULT4: ${num}\nNEGOCIO: ${negocio}\nENTORNO: ${entorno}\nESTATUS: ${estatus}\nVIGENCIA_INICIO: ${vigIni}\nVIGENCIA_FIN: ${vigFin}\nTIPO_CERTIFICADO: ${tipoC}\nULTIMA_ACTUALIZACION: ${new Date().toLocaleDateString()}`;
+            } else if (type === 'EXTENSION') {
+                const ext = document.getElementById('ext-num').value.trim();
+                const nom = document.getElementById('ext-nombre').value.trim();
+                const area = document.getElementById('ext-area').value.trim();
+                if (!ext) return notify("Falta extensión", true);
+                title = `EXT: ${nom}`;
+                content = `TIPO_REGISTRO: EXTENSION_TELEFONICA\nEXTENSION: ${ext}\nNOMBRE_PERSONA: ${nom}\nAREA: ${area}`;
             } else {
                 title = document.getElementById('entry-title').value.trim();
                 content = document.getElementById('entry-content').value.trim();
-                if (!title || !content) return notify("Faltan datos", true);
+                if (!title) return notify("Faltan datos", true);
             }
 
             try {
                 const id = editId || Date.now().toString();
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), { 
-                    category: cat, title: title, content: content, date: new Date().toLocaleDateString() 
+                    contentType: type, opClass: op, priority: parseInt(priority), title, content, date: new Date().toLocaleDateString() 
                 }, { merge: true });
                 notify(editId ? "Actualizado" : "Guardado");
                 clearManualForm();
@@ -466,7 +516,7 @@
             inputs.forEach(i => i.value = '');
             document.getElementById('save-entry-btn').innerText = "Guardar Registro";
             document.getElementById('editing-id').value = "";
-            categorySelect.value = "Procesos";
+            categorySelect.value = "MANUAL";
             categorySelect.dispatchEvent(new Event('change'));
         }
 
@@ -475,22 +525,25 @@
             if (!e) return;
             document.getElementById('editing-id').value = id;
             document.getElementById('save-entry-btn').innerText = "Confirmar Cambios";
-            categorySelect.value = e.category || "Procesos";
-            
-            // Si es texto libre
-            if (categorySelect.value !== 'Certificados') {
-                 document.getElementById('entry-title').value = e.title;
-                 document.getElementById('entry-content').value = e.content;
-            } else {
-                 // Si es certificado (parseo simple del string guardado)
-                 const parts = e.content.split('|');
-                 if(parts.length > 3) {
-                     document.getElementById('cert-num').value = parts[3].split(':')[1].trim();
-                     document.getElementById('cert-estatus').value = parts[4].split(':')[1].trim();
-                 }
-            }
+            categorySelect.value = e.contentType || "MANUAL";
+            document.getElementById('op-class').value = e.opClass || "OPERATIVO";
+            document.getElementById('source-priority').value = e.priority || "2";
             
             categorySelect.dispatchEvent(new Event('change'));
+            
+            if (e.content.includes("TIPO_REGISTRO: EXTENSION")) {
+                const lines = e.content.split('\n');
+                document.getElementById('ext-num').value = lines.find(l=>l.startsWith('EXTENSION:'))?.split(': ')[1] || "";
+                document.getElementById('ext-nombre').value = lines.find(l=>l.startsWith('NOMBRE_PERSONA:'))?.split(': ')[1] || "";
+                document.getElementById('ext-area').value = lines.find(l=>l.startsWith('AREA:'))?.split(': ')[1] || "";
+            } else if (e.content.includes("TIPO_REGISTRO: CERTIFICADO")) {
+                 const lines = e.content.split('\n');
+                 document.getElementById('cert-num').value = lines.find(l=>l.startsWith('CERT_NUM_ULT4:'))?.split(': ')[1] || "";
+                 document.getElementById('cert-estatus').value = lines.find(l=>l.startsWith('ESTATUS:'))?.split(': ')[1] || "";
+            } else {
+                document.getElementById('entry-title').value = e.title;
+                document.getElementById('entry-content').value = e.content;
+            }
             notify("Modo Edición");
             document.querySelector('#settings-modal .overflow-y-auto').scrollTop = 0;
         };
@@ -504,29 +557,52 @@
 
         window.deleteUser = async (id) => {
             if (id === "682930") return alert("No se puede eliminar al Administrador.");
-            if (confirm("¿Eliminar acceso?")) {
+            if (confirm("¿Eliminar acceso a este usuario?")) {
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', id));
                 notify("Usuario eliminado");
             }
         };
 
         function renderEntries() {
-            document.getElementById('knowledge-list').innerHTML = knowledgeBase.map(e => `
-                <div class="bg-white p-6 rounded-3xl border border-slate-100 mb-4 shadow-sm text-slate-800">
-                    <div class="flex justify-between items-start mb-4 border-b border-slate-50 pb-3">
-                        <div class="flex items-center gap-3">
-                            <span class="text-[9px] bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-black uppercase tracking-tighter">${e.category || 'Manual'}</span>
-                            <span class="text-[9px] text-slate-300 font-bold">${e.date}</span>
+            document.getElementById('knowledge-list').innerHTML = knowledgeBase.map(e => {
+                let badgeColor = e.priority === 1 ? 'badge-p1' : (e.priority === 2 ? 'badge-p2' : 'badge-p3');
+                let displayContent = e.content;
+                
+                if (e.content.includes("TIPO_REGISTRO: CERTIFICADO")) {
+                    const lines = e.content.split('\n');
+                    const getValue = k => lines.find(l => l.startsWith(k))?.split(': ')[1] || '';
+                    displayContent = `<div class="flex flex-col gap-2 mt-2 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                        <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+                            <span class="font-bold text-xs text-blue-600">${getValue('NEGOCIO')}</span>
+                            <span class="text-[10px] bg-white border px-2 py-0.5 rounded font-mono">${getValue('ENTORNO')}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-[10px] text-slate-500">
+                            <div><span class="font-bold">Tipo:</span> ${getValue('TIPO_CERTIFICADO')}</div>
+                            <div><span class="font-bold">Fin:</span> ${getValue('VIGENCIA_FIN')}</div>
+                        </div>
+                        <div class="text-[10px] font-black ${getValue('ESTATUS').includes('VIGENTE') ? 'text-emerald-500' : 'text-red-500'} text-right mt-1">${getValue('ESTATUS')}</div>
+                    </div>`;
+                } else if (e.content.includes("TIPO_REGISTRO: EXTENSION")) {
+                    const lines = e.content.split('\n');
+                    displayContent = `<div class="flex items-center gap-3 mt-2 bg-blue-50 p-2 rounded-xl"><div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600"><i class="fas fa-phone"></i></div><div><div class="text-xs font-bold text-slate-800">${lines.find(l=>l.startsWith('EXTENSION:'))?.split(': ')[1]}</div><div class="text-[10px] text-slate-500">${lines.find(l=>l.startsWith('AREA:'))?.split(': ')[1]}</div></div></div>`;
+                }
+
+                return `
+                <div class="bg-white p-6 rounded-3xl border border-slate-100 mb-4 shadow-sm text-slate-800 transition-all hover:shadow-md">
+                    <div class="flex justify-between items-start mb-3 border-b border-slate-50 pb-2">
+                        <div class="flex flex-wrap gap-2">
+                            <span class="text-[9px] px-2 py-0.5 rounded-full font-black uppercase ${badgeColor} tracking-tighter">P${e.priority} • ${e.contentType || 'MANUAL'}</span>
+                            <span class="text-[9px] bg-slate-50 text-slate-400 px-2 py-0.5 rounded-full font-bold">${e.opClass || 'OPERATIVO'}</span>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="editEntry('${e.id}')" class="text-blue-500 hover:bg-blue-50 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm"><i class="fas fa-pen text-sm"></i></button>
                             <button onclick="deleteEntry('${e.id}')" class="text-red-300 hover:bg-red-50 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm"><i class="fas fa-trash text-sm"></i></button>
                         </div>
                     </div>
-                    <h4 class="text-sm font-black uppercase mb-3 tracking-tight">${e.title}</h4>
-                    <p class="manual-text-admin text-[13.5px] text-slate-600 font-medium">${e.content}</p>
+                    <h4 class="text-sm font-black uppercase mb-2 tracking-tight">${e.title}</h4>
+                    <div class="manual-text-admin text-[12px] text-slate-600 font-medium line-clamp-3">${displayContent}</div>
                 </div>
-            `).join('');
+            `;}).join('');
         }
 
         document.getElementById('add-user-btn').onclick = async () => {
@@ -535,7 +611,7 @@
             const role = document.getElementById('new-user-role').value;
             if (!name || !num) return notify("Faltan datos", true);
             try {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', num), { name, empNumber: num, role: role, queries: 0 });
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', num), { name, empNumber: num, role, queries: 0 });
                 document.getElementById('new-user-name').value = ""; document.getElementById('new-user-id').value = "";
                 notify("Autorizado");
             } catch (err) { notify("Error", true); }
@@ -592,22 +668,24 @@
             clean = clean.replace(/REGISTRO:.*?\n/gi, "");
             clean = clean.replace(/CONTENIDO:\s*/gi, "");
             clean = clean.replace(/\[CATEGORÍA:.*?\| TEMA:.*?\]/gi, "");
-            clean = clean.replace(/\| :--- \|/g, ""); // Borra tablas markdown rotas
+            clean = clean.replace(/TIPO_REGISTRO:.*?\n/gi, ""); 
+            clean = clean.replace(/\|.*\|.*\|/g, ""); // Elimina tablas Markdown rotas
             clean = clean.trim();
-            return clean.replace(/###\s*(.*?)(\n|$)/g, '<div class="bot-header"><i class="fas fa-book-open text-blue-600"></i> $1</div>').replace(/\n/g, '<br>');
+            return clean.replace(/###\s*(.*?)(\n|$)/g, '<div class="bot-header"><i class="fas fa-book-open text-blue-600"></i> $1</div>')
+                       .replace(/\n/g, '<br>');
         }
 
         async function fetchGemini(q) {
-            const kb = knowledgeBase.map(e => `[${e.category}] ${e.title}:\n${e.content}`).join('\n\n---\n\n');
-            const systemPrompt = `ACTÚA COMO ASISTENTE TÉCNICO EXPERTO.
-            TU ÚNICA FUENTE ES: ${kb}.
+            const kb = knowledgeBase.map(e => `REGISTRO: ${e.title}\nCONTENIDO: ${e.content}`).join('\n\n---\n\n');
+            const systemPrompt = `ACTÚA COMO ASISTENTE TÉCNICO EXPERTO. TU ÚNICA FUENTE DE VERDAD ES: ${kb}.
             REGLAS:
-            1. Transcribe el texto técnico exacto si existe.
-            2. Si piden explicación, USA EL MANUAL para explicar con tus palabras.
-            3. FILTRO: JAMÁS incluyas etiquetas internas como "REGISTRO:", "CONTENIDO:", "CATEGORÍA".
-            4. NO saludes ni te despidas.
-            5. Usa LaTeX ($$formula$$) y ### para títulos.
-            6. Si no existe, di: "No registrado en manual."`;
+            1. Si la consulta pide un dato técnico, transcribe ÚNICAMENTE el texto técnico encontrado.
+            2. QUEDA PROHIBIDO incluir "REGISTRO:", "CONTENIDO:", "CATEGORÍA:", "TEMA:" o nombres de archivos.
+            3. Si el usuario pide EXPLICACIONES, aclaraciones o EJEMPLOS, proporciónalos BASÁNDOTE EXCLUSIVAMENTE en la información de la fuente. 
+            4. NO saludes, NO te despidas, NO agregues introducciones.
+            5. Usa LaTeX ($$formula$$) para matemáticas y ### para títulos.
+            6. NO USES TABLAS DE MARKDOWN.
+            7. Si no existe nada relacionado en absoluto, di únicamente: "Esa información no se encuentra registrada en el manual operativo actualmente."`;
 
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
@@ -623,17 +701,13 @@
             } catch (e) { return "Error técnico."; }
         }
 
-        document.getElementById('chat-form').onsubmit = async (e) => { e.preventDefault(); const v = document.getElementById('user-input').value.trim(); if (!v) return; document.getElementById('user-input').value=""; addMessage(v, true); const res = await fetchGemini(v); addMessage(res); };
-        function addMessage(t, u) { 
-            const d = document.createElement('div'); d.className = `flex flex-col gap-2 message-appear ${u?'items-end ml-auto text-right':'items-start text-left'} max-w-[95%]`; 
-            d.innerHTML = `<div class="${u?'user-bubble px-4 py-3':'bot-bubble px-6 py-5'} text-sm leading-relaxed rounded-2xl bg-white shadow">${u ? t : formatBotResponse(t)}</div>`; 
-            document.getElementById('chat-box').appendChild(d);
-        }
+        document.getElementById('chat-form').onsubmit = async (e) => { e.preventDefault(); const v = document.getElementById('user-input').value.trim(); if (!v) return; document.getElementById('user-input').value=""; addMessage(v, true); const l = document.createElement('div'); l.id="loader"; l.className="p-5 bg-white border rounded-3xl w-fit bot-bubble animate-pulse text-[12px] font-black text-slate-400 italic shadow-sm"; l.innerText="Consultando..."; document.getElementById('chat-box').appendChild(l); const res = await fetchGemini(v); if(document.getElementById('loader')) document.getElementById('loader').remove(); addMessage(res); resetInactivityTimer(); };
+        function addMessage(text, isUser = false) { const div = document.createElement('div'); div.className = `flex flex-col gap-2 message-appear ${isUser ? 'items-end ml-auto text-right' : 'items-start text-left'} max-w-[95%]`; const color = isUser ? 'user-bubble' : 'bot-bubble'; const formattedContent = isUser ? text.replace(/\n/g, '<br>') : formatBotResponse(text); div.innerHTML = `<div class="${color} px-8 py-6 text-[15.5px] leading-[1.8] font-medium shadow-md transition-all text-left">${formattedContent}</div><span class="text-[9px] text-slate-400 mx-6 font-black uppercase tracking-widest text-center">Daniel Anzaldo • ${isUser ? currentUser.name : 'Asistente SPEI Ops'}</span>`; document.getElementById('chat-box').appendChild(div); document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight; if (!isUser && window.MathJax) MathJax.typesetPromise(); }
 
         document.getElementById('tab-kb-btn').onclick = () => { document.getElementById('tab-kb').classList.remove('hidden'); document.getElementById('tab-users').classList.add('hidden'); document.getElementById('tab-kb-btn').classList.add('active'); document.getElementById('tab-users-btn').classList.remove('active'); };
         document.getElementById('tab-users-btn').onclick = () => { document.getElementById('tab-kb').classList.add('hidden'); document.getElementById('tab-users').classList.remove('hidden'); document.getElementById('tab-kb-btn').classList.remove('active'); document.getElementById('tab-users-btn').classList.add('active'); };
 
-        ['mousedown', 'keydown'].forEach(e => window.addEventListener(e, resetInactivityTimer));
+        ['mousedown', 'keydown', 'touchstart'].forEach(e => window.addEventListener(e, resetInactivityTimer));
         initApp();
     </script>
 </body>
