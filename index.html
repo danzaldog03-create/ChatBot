@@ -8,10 +8,11 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     
-    <title>SPEI Ops - Gestión Operativa</title>
+    <title>SPEI Ops - v5.2</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2830/2830284.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -78,7 +79,7 @@
             background: #ffffff;
             position: relative;
             border-radius: 1.5rem;
-            box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.9);
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.9);
             overflow: hidden;
         }
 
@@ -91,7 +92,7 @@
             padding: 2.5rem;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 2rem;
             background-color: #f8fafc;
             background-image: radial-gradient(#cbd5e1 0.7px, transparent 0.7px);
             background-size: 25px 25px;
@@ -112,7 +113,7 @@
         
         .bot-header {
             display: flex; align-items: center; gap: 0.8rem; font-weight: 800; color: #0f172a;
-            margin-top: 1.5rem; margin-bottom: 0.8rem; font-size: 1.15rem; border-bottom: 2px solid #3b82f6; padding-bottom: 0.4rem;
+            margin-top: 1.5rem; margin-bottom: 0.8rem; font-size: 1.15rem; border-bottom: 2px solid #3b82f6; padding-bottom: 0.5rem;
         }
 
         #toast {
@@ -128,9 +129,11 @@
         .cert-input { width: 100%; padding: 0.75rem; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; font-size: 0.8rem; font-weight: 600; color: #334155; outline: none; transition: all 0.2s; }
         .cert-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
         .cert-label { font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.25rem; display: block; }
-        .badge-p1 { background-color: #fee2e2; color: #991b1b; }
-        .badge-p2 { background-color: #fef3c7; color: #854d0e; }
-        .badge-p3 { background-color: #dbeafe; color: #1e40af; }
+
+        /* Badges de Prioridad */
+        .badge-1 { background-color: #fee2e2; color: #991b1b; }
+        .badge-2 { background-color: #fef9c3; color: #854d0e; }
+        .badge-3 { background-color: #dbeafe; color: #1e40af; }
     </style>
 </head>
 <body>
@@ -159,7 +162,7 @@
                 </button>
                 <p id="error-emp" class="text-red-400 text-[9px] text-center opacity-0 font-black tracking-widest uppercase mt-4">Acceso Denegado</p>
             </div>
-            <p class="mt-20 text-slate-500 text-[10px] uppercase tracking-[0.4em] font-black italic text-center">Creado por Daniel Anzaldo • 2026</p>
+            <p class="mt-20 text-slate-500 text-[10px] uppercase tracking-[0.4em] font-black italic text-center">v5.2 • Creado por Daniel Anzaldo</p>
         </div>
 
         <div class="app-container blur-md shadow-2xl" id="app-content">
@@ -220,7 +223,6 @@
                 <div class="overflow-y-auto flex-1 space-y-6 px-2">
                     <div id="tab-kb">
                         <div class="bg-slate-50 p-6 rounded-3xl space-y-6 mb-8 border border-slate-200 shadow-sm">
-                            
                             <!-- Clasificación -->
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                 <div>
@@ -228,7 +230,7 @@
                                     <select id="content-type" class="cert-input">
                                         <option value="MANUAL">MANUAL</option>
                                         <option value="PROCEDIMIENTO">PROCEDIMIENTO</option>
-                                        <option value="POLITICA">POLÍTICA</option>
+                                        <option value="POLITICA">POLITICA</option>
                                         <option value="CERTIFICADO">CERTIFICADO</option>
                                         <option value="EVIDENCIA">EVIDENCIA</option>
                                         <option value="REPORTE">REPORTE</option>
@@ -266,7 +268,7 @@
                                 <div id="form-certificate" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div><label class="cert-label">Últimos 4</label><input type="text" id="cert-num" placeholder="Ej. 9A3F" class="cert-input" maxlength="4" style="text-transform: uppercase;"></div>
                                     <div><label class="cert-label">Negocio</label><select id="cert-negocio" class="cert-input"><option value="SPEI">SPEI</option><option value="CODI">CoDi</option><option value="SPID">SPID</option><option value="DIMO">DIMO</option><option value="BDT">BDT</option><option value="R2">R2</option></select></div>
-                                    <div><label class="cert-label">Entorno</label><select id="cert-entorno" class="cert-input"><option value="PRODUCCION">PRODUCCIÓN</option><option value="BETA">BETA</option></select></div>
+                                    <div><label class="cert-label">Entorno</label><select id="cert-entorno" class="cert-input"><option value="PRODUCCION">PRODUCCIÓN</option><option value="HOMOLOGACION">HOMOLOGACIÓN</option><option value="DESARROLLO">DESARROLLO</option></select></div>
                                     <div><label class="cert-label">Tipo</label><select id="cert-tipo" class="cert-input"><option value="PRIVADO">PRIVADO (.key)</option><option value="PUBLICO">PÚBLICO (.cer)</option></select></div>
                                     <div><label class="cert-label">Inicio</label><input type="date" id="cert-vig-ini" class="cert-input"></div>
                                     <div><label class="cert-label">Fin</label><input type="date" id="cert-vig-fin" class="cert-input"></div>
@@ -311,7 +313,7 @@
         <div id="timeout-modal" class="overlay hidden-ui" style="background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(15px); z-index: 10000;">
             <div class="w-full max-w-sm bg-white p-10 rounded-[3rem] shadow-2xl text-center text-slate-800">
                 <h3 class="text-2xl font-black mb-3 text-blue-600 tracking-tighter italic text-center">¿Continuas?</h3>
-                <p class="text-sm text-slate-500 mb-10 font-medium text-center">Por seguridad, tu sesión cerrará pronto por inactividad.</p>
+                <p class="text-sm text-slate-500 mb-10 font-medium text-center">Por seguridad, tu sesión cerrará pronto.</p>
                 <div class="flex gap-3 text-center">
                     <button id="timeout-logout-btn" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold text-sm">SALIR</button>
                     <button id="timeout-extend-btn" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-bold text-sm shadow-lg uppercase tracking-widest">Seguir</button>
@@ -321,7 +323,7 @@
     </div>
 
     <script type="module">
-        const apiKey = "AIzaSyDraEnCKuwnicZVQ-aOcYYwMIPiuadcVgU"; 
+        const apiKey = "AIzaSyAZBbCOgKN68qFX2ab_cegWOeV0lHAtMpA"; 
         const SESSION_LIMIT = 5 * 60 * 1000;
         const WARNING_LIMIT = 30 * 1000;
 
@@ -358,7 +360,7 @@
                             btn.innerText = "INGRESAR";
                             btn.disabled = false;
 
-                            const saved = localStorage.getItem('spei_ops_production_final_v_dir_clean_v5');
+                            const saved = localStorage.getItem('spei_ops_production_final_v5_2');
                             if (saved) {
                                 const savedUser = JSON.parse(saved);
                                 const updated = employeeRegistry.find(u => u.empNumber === savedUser.empNumber);
@@ -393,7 +395,7 @@
         }
 
         function logout() {
-            localStorage.removeItem('spei_ops_production_final_v_dir_clean_v5');
+            localStorage.removeItem('spei_ops_production_final_v5_2');
             location.reload();
         }
 
@@ -414,7 +416,7 @@
             const user = employeeRegistry.find(u => u.empNumber === input);
             if (user) {
                 currentUser = user;
-                localStorage.setItem('spei_ops_production_final_v_dir_clean_v5', JSON.stringify(user));
+                localStorage.setItem('spei_ops_production_final_v5_2', JSON.stringify(user));
                 enterApp();
                 addMessage(`Bienvenido, ${user.name}. Terminal operativa sincronizada. ¿Qué proceso deseas consultar?`);
             } else {
@@ -435,10 +437,12 @@
 
         document.getElementById('mode-toggle').onchange = (e) => {
             isInternalMode = e.target.checked;
+            document.getElementById('chat-header').className = isInternalMode 
+                ? "bg-emerald-900 text-white p-6 pt-10 shadow-xl flex items-center justify-between shrink-0 transition-all"
+                : "bg-slate-900 text-white p-6 pt-10 shadow-xl flex items-center justify-between shrink-0 transition-all";
             notify(isInternalMode ? "Modo Administración" : "Modo Consulta");
         };
 
-        // LÓGICA DE FORMULARIO DINÁMICO
         const categorySelect = document.getElementById('content-type');
         const formStandard = document.getElementById('form-standard');
         const formCertificate = document.getElementById('form-certificate');
@@ -458,7 +462,6 @@
             const opClass = document.getElementById('op-class').value;
             const priority = document.getElementById('source-priority').value;
             const editId = document.getElementById('editing-id').value;
-            
             let title = "", content = "";
 
             if (type === 'CERTIFICADO') {
@@ -469,7 +472,9 @@
                 const vigIni = document.getElementById('cert-vig-ini').value;
                 const vigFin = document.getElementById('cert-vig-fin').value;
                 const estatus = document.getElementById('cert-estatus').value.trim().toUpperCase();
+                
                 if (!num) return notify("Falta número", true);
+                
                 title = `CERTIFICADO ${num} (${negocio})`;
                 content = `TIPO_REGISTRO: CERTIFICADO\nCERT_NUM_ULT4: ${num}\nNEGOCIO: ${negocio}\nENTORNO: ${entorno}\nESTATUS: ${estatus}\nVIGENCIA_INICIO: ${vigIni}\nVIGENCIA_FIN: ${vigFin}\nTIPO_CERTIFICADO: ${tipoC}\nULTIMA_ACTUALIZACION: ${new Date().toLocaleDateString()}`;
             } else if (type === 'EXTENSION') {
@@ -540,7 +545,7 @@
 
         window.deleteUser = async (id) => {
             if (id === "682930") return alert("No se puede eliminar al Administrador.");
-            if (confirm("¿Eliminar acceso?")) {
+            if (confirm("¿Eliminar acceso a este usuario?")) {
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', id));
                 notify("Usuario eliminado");
             }
@@ -557,13 +562,13 @@
                     displayContent = `<div class="flex flex-col gap-2 mt-2 p-3 bg-slate-50 rounded-xl border border-slate-100 text-[11px]">
                         <div class="flex justify-between items-center border-b border-slate-200 pb-2">
                             <span class="font-bold text-xs text-blue-600">${getValue('NEGOCIO')}</span>
-                            <span class="bg-white border px-2 py-0.5 rounded font-mono">${getValue('ENTORNO')}</span>
+                            <span class="text-[10px] bg-white border px-2 py-0.5 rounded font-mono">${getValue('ENTORNO')}</span>
                         </div>
                         <div class="grid grid-cols-2 gap-2 text-slate-500">
                             <div><span class="font-bold">Tipo:</span> ${getValue('TIPO_CERTIFICADO')}</div>
                             <div><span class="font-bold">Fin:</span> ${getValue('VIGENCIA_FIN')}</div>
                         </div>
-                        <div class="font-black ${getValue('ESTATUS').includes('VIGENTE') ? 'text-emerald-500' : 'text-red-500'} text-right mt-1">${getValue('ESTATUS')}</div>
+                        <div class="text-[10px] font-black ${getValue('ESTATUS').includes('VIGENTE') ? 'text-emerald-500' : 'text-red-500'} text-right mt-1">${getValue('ESTATUS')}</div>
                     </div>`;
                 } else if (e.content.includes("TIPO_REGISTRO: EXTENSION")) {
                     const lines = e.content.split('\n');
@@ -604,10 +609,8 @@
             document.getElementById('user-registry-list').innerHTML = employeeRegistry.map(u => `
                 <div class="flex items-center justify-between p-5 bg-slate-50 rounded-3xl border border-slate-100 mb-2 shadow-sm">
                     <div class="text-[12px] font-bold text-slate-800">${u.name} <span class="text-[9px] opacity-40 uppercase ml-2 font-black tracking-widest">[${u.role}]</span></div>
-                    <div class="flex items-center gap-4">
-                        <div class="text-[11px] font-black text-blue-600 bg-blue-100 px-4 py-1 rounded-full">${u.queries || 0} q</div>
-                        <button onclick="deleteUser('${u.empNumber}')" class="text-red-300 hover:text-red-500 transition-colors"><i class="fas fa-trash text-sm"></i></button>
-                    </div>
+                    <div class="text-[11px] font-black text-blue-600 bg-blue-100 px-4 py-1 rounded-full">${u.queries || 0} q</div>
+                    <button onclick="deleteUser('${u.empNumber}')" class="text-red-300 hover:text-red-500 p-2"><i class="fas fa-trash text-sm"></i></button>
                 </div>
             `).join('');
         }
@@ -637,26 +640,30 @@
                     if (text) {
                         const id = "doc_" + Date.now() + "_" + Math.floor(Math.random()*1000);
                         await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), {
-                            contentType: document.getElementById('content-type').value,
-                            priority: parseInt(document.getElementById('source-priority').value),
-                            opClass: document.getElementById('op-class').value,
-                            title: file.name, content: text, date: new Date().toLocaleDateString()
+                            category: "Archivo", title: file.name, content: text, date: new Date().toLocaleDateString()
                         });
                     }
-                } catch (err) { notify("Error archivo", true); }
+                } catch (err) { notify("Error en archivo", true); }
             }
             notify("Carga Completa");
         };
 
         // FILTRO DE LIMPIEZA DE RESPUESTA
         function formatBotResponse(text) {
-            let clean = text.replace(/CONTENIDO TÉCNICO:.*?\n/gi, "").replace(/REGISTRO:.*?\n/gi, "").replace(/CONTENIDO:\s*/gi, "").replace(/\[.*?\]/gi, "").replace(/TIPO_REGISTRO:.*?\n/gi, "").trim();
-            return clean.replace(/###\s*(.*?)(\n|$)/g, '<div class="bot-header"><i class="fas fa-book-open text-blue-600"></i> $1</div>').replace(/\n/g, '<br>');
+            let clean = text.replace(/CONTENIDO TÉCNICO:.*?\n/gi, "");
+            clean = clean.replace(/REGISTRO:.*?\n/gi, "");
+            clean = clean.replace(/CONTENIDO:\s*/gi, "");
+            clean = clean.replace(/\[CATEGORÍA:.*?\| TEMA:.*?\]/gi, "");
+            clean = clean.replace(/TIPO_REGISTRO:.*?\n/gi, ""); 
+            clean = clean.replace(/\|.*\|.*\|/g, ""); // Elimina tablas Markdown rotas
+            clean = clean.trim();
+            return clean.replace(/###\s*(.*?)(\n|$)/g, '<div class="bot-header"><i class="fas fa-book-open text-blue-600"></i> $1</div>')
+                       .replace(/\n/g, '<br>');
         }
 
         async function fetchGemini(q) {
-             const kb = knowledgeBase.sort((a,b)=>(a.priority||3)-(b.priority||3)).map(e => `[PRIORIDAD:${e.priority} TIPO:${e.contentType} TÍTULO:${e.title}] ${e.content}`).join('\n\n');
-             const prompt = `ACTÚA COMO ASISTENTE TÉCNICO. BASE: ${kb}. REGLAS: 1. Busca por significado. 2. Si no hay dato exacto, USA EL MANUAL para explicar. 3. NO etiquetas internas. 4. NO saludos.`;
+             const kb = knowledgeBase.sort((a,b)=>(a.priority||3)-(b.priority||3)).map(e => `[PRIORIDAD ${e.priority}] ${e.content}`).join('\n\n');
+             const prompt = `ACTÚA COMO ASISTENTE SPEI. TU BASE: ${kb}. REGLAS: 1. Prioriza P1. 2. Si hay respuesta en manual, úsala. 3. Si piden ejemplo, genéralo basado en el manual. 4. Pregunta validación al final: "¿Era la respuesta que esperabas?". 5. NO uses tablas de Markdown.`;
              try {
                  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
                      method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -668,7 +675,7 @@
                  if (chatHistory.length > 10) chatHistory.splice(0, 2);
                  if (!isInternalMode && currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', currentUser.empNumber), { queries: (currentUser.queries || 0) + 1 });
                  return text;
-             } catch (e) { return "Error técnico."; }
+             } catch(e) { return "Error técnico."; }
         }
         
         document.getElementById('chat-form').onsubmit = async (e) => { e.preventDefault(); const v = document.getElementById('user-input').value.trim(); if (!v) return; document.getElementById('user-input').value=""; addMessage(v, true); const res = await fetchGemini(v); addMessage(res); resetInactivityTimer(); };
