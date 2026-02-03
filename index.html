@@ -3,25 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Forzar recarga para evitar caché antigua -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    <!-- Metaetiquetas anti-caché -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     
-    <title>SPEI Ops - Gestión v6.0</title>
+    <title>SPEI Ops - v6.1 Diagnóstico</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2830/2830284.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Librerías de PDF y Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    <!-- MathJax para Fórmulas -->
     <script>
         window.MathJax = {
             tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']] },
@@ -35,9 +34,6 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, getDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // ================================================================
-        // 1. CONFIGURACIÓN DE FIREBASE (NO TOCAR SI YA FUNCIONA)
-        // ================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyDPi5pcDL6OL2zCJK_0n3A_RdDGt3U3LVQ",
             authDomain: "chatbot-8d0a3.firebaseapp.com",
@@ -52,7 +48,6 @@
         const db = getFirestore(app);
         const appId = "chatbot-8d0a3"; 
 
-        // Exportar funciones a ventana global
         window.fb = { auth, db, appId, doc, setDoc, getDoc, collection, onSnapshot, updateDoc, deleteDoc, query, signInAnonymously, onAuthStateChanged };
     </script>
 
@@ -134,7 +129,7 @@
         .cert-input { width: 100%; padding: 0.75rem; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; font-size: 0.8rem; font-weight: 600; color: #334155; outline: none; transition: all 0.2s; }
         .cert-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
         .cert-label { font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.25rem; display: block; }
-        
+
         /* Badges */
         .badge-p1 { background-color: #fee2e2; color: #991b1b; }
         .badge-p2 { background-color: #fef9c3; color: #854d0e; }
@@ -148,9 +143,10 @@
     <div class="app-shell">
         <div id="loading-overlay" class="overlay">
             <div class="w-14 h-14 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-            <p class="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 text-center">Iniciando Sistema...</p>
+            <p class="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 text-center">Conectando Terminal SPEI</p>
         </div>
 
+        <!-- Login -->
         <div id="lock-screen" class="overlay hidden-ui">
             <div class="w-20 h-20 bg-blue-600 rounded-[2.2rem] mb-8 flex items-center justify-center shadow-2xl">
                 <i class="fas fa-fingerprint text-3xl text-white"></i>
@@ -197,9 +193,8 @@
 
             <footer class="bg-white p-6 border-t border-slate-100 shrink-0 pb-12 shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.05)]">
                 <form id="chat-form" class="flex gap-4 items-center">
-                    <div class="flex-1 bg-slate-50 rounded-3xl flex items-center px-6 border border-slate-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 transition-all shadow-inner flex flex-col justify-center">
+                    <div class="flex-1 bg-slate-50 rounded-3xl flex items-center px-6 border border-slate-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 transition-all shadow-inner">
                         <input type="text" id="user-input" placeholder="Realiza una consulta técnica..." class="w-full bg-transparent border-none py-4 text-[16px] font-medium text-slate-700 outline-none" autocomplete="off">
-                        <div class="text-[8px] text-slate-400 -mt-1 font-bold w-full text-right" id="kb-indicator">Cargando base de datos...</div>
                     </div>
                     <button type="submit" class="bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200 active:scale-90 transition-all">
                         <i class="fas fa-paper-plane text-lg"></i>
@@ -226,13 +221,12 @@
                 </div>
                 
                 <div class="overflow-y-auto flex-1 space-y-6 px-2">
-                    <!-- Sección de Manuales -->
                     <div id="tab-kb">
                         <div class="bg-slate-50 p-6 rounded-3xl space-y-6 mb-8 border border-slate-200 shadow-sm">
-                            <!-- Selectores -->
+                            <!-- Clasificación -->
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                 <div>
-                                    <label class="cert-label">Contenido</label>
+                                    <label class="cert-label">Tipo de Contenido</label>
                                     <select id="content-type" class="cert-input">
                                         <option value="MANUAL">MANUAL</option>
                                         <option value="PROCEDIMIENTO">PROCEDIMIENTO</option>
@@ -276,11 +270,11 @@
                                 <div id="form-certificate" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div><label class="cert-label">Últimos 4</label><input type="text" id="cert-num" placeholder="Ej. 9A3F" class="cert-input" maxlength="4" style="text-transform: uppercase;"></div>
                                     <div><label class="cert-label">Negocio</label><select id="cert-negocio" class="cert-input"><option value="SPEI">SPEI</option><option value="CODI">CoDi</option><option value="SPID">SPID</option><option value="DIMO">DIMO</option><option value="BDT">BDT</option><option value="R2">R2</option></select></div>
-                                    <div><label class="cert-label">Entorno</label><select id="cert-entorno" class="cert-input"><option value="PRODUCCION">PRODUCCIÓN</option><option value="BETA">BETA</option></select></div>
+                                    <div><label class="cert-label">Entorno</label><select id="cert-entorno" class="cert-input"><option value="PRODUCCION">PRODUCCIÓN</option><option value="HOMOLOGACION">HOMOLOGACIÓN</option><option value="DESARROLLO">DESARROLLO</option></select></div>
                                     <div><label class="cert-label">Tipo</label><select id="cert-tipo" class="cert-input"><option value="PRIVADO">PRIVADO (.key)</option><option value="PUBLICO">PÚBLICO (.cer)</option></select></div>
                                     <div><label class="cert-label">Inicio</label><input type="date" id="cert-vig-ini" class="cert-input"></div>
                                     <div><label class="cert-label">Fin</label><input type="date" id="cert-vig-fin" class="cert-input"></div>
-                                    <div class="md:col-span-2"><label class="cert-label">Estatus</label><input type="text" id="cert-estatus" placeholder="Ej. VIGENTE" class="cert-input" style="text-transform: uppercase;"></div>
+                                    <div class="md:col-span-2"><label class="cert-label">Estatus</label><input type="text" id="cert-estatus" placeholder="Ej. VIGENTE, REVOCADO" class="cert-input" style="text-transform: uppercase;"></div>
                                 </div>
 
                                 <!-- Extensiones -->
@@ -301,7 +295,6 @@
                         <div id="knowledge-list" class="space-y-4"></div>
                     </div>
                     
-                    <!-- Tab Usuarios -->
                     <div id="tab-users" class="hidden">
                         <div class="bg-blue-50 p-6 rounded-3xl space-y-3 mb-6 border border-blue-100 shadow-sm">
                             <div class="grid grid-cols-2 gap-3">
@@ -320,11 +313,10 @@
             </div>
         </div>
 
-        <!-- Aviso Inactividad -->
         <div id="timeout-modal" class="overlay hidden-ui" style="background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(15px); z-index: 10000;">
             <div class="w-full max-w-sm bg-white p-10 rounded-[3rem] shadow-2xl text-center text-slate-800">
                 <h3 class="text-2xl font-black mb-3 text-blue-600 tracking-tighter italic text-center">¿Continuas?</h3>
-                <p class="text-sm text-slate-500 mb-10 font-medium text-center">Por seguridad, tu sesión cerrará pronto por inactividad.</p>
+                <p class="text-sm text-slate-500 mb-10 font-medium text-center">Por seguridad, tu sesión cerrará pronto.</p>
                 <div class="flex gap-3 text-center">
                     <button id="timeout-logout-btn" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold text-sm">SALIR</button>
                     <button id="timeout-extend-btn" class="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-bold text-sm shadow-lg uppercase tracking-widest">Seguir</button>
@@ -334,7 +326,7 @@
     </div>
 
     <script type="module">
-        // 2. CONFIGURACIÓN DE GEMINI API KEY (DANIEL: VERIFICA QUE SEA LA NUEVA)
+        // API KEY DE GEMINI (Cerebro)
         const apiKey = "AIzaSyDraEnCKuwnicZVQ-aOcYYwMIPiuadcVgU"; 
         
         const SESSION_LIMIT = 5 * 60 * 1000;
@@ -358,16 +350,11 @@
                 onAuthStateChanged(auth, async (user) => {
                     if (!user) return;
 
-                    // Sincronizar Manuales
                     onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'knowledge'), (snap) => {
                         knowledgeBase = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                         renderEntries();
-                        // Actualizar indicador visual
-                        const indicator = document.getElementById('kb-indicator');
-                        if (indicator) indicator.innerText = `${knowledgeBase.length} manuales cargados`;
                     });
 
-                    // Sincronizar Equipo
                     onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'team'), (snap) => {
                         employeeRegistry = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                         if (employeeRegistry.length === 0) seedAdmin();
@@ -378,7 +365,7 @@
                             btn.innerText = "INGRESAR";
                             btn.disabled = false;
 
-                            const saved = localStorage.getItem('spei_ops_production_final_v6');
+                            const saved = localStorage.getItem('spei_ops_production_final_v_dir_clean_v6');
                             if (saved) {
                                 const savedUser = JSON.parse(saved);
                                 const updated = employeeRegistry.find(u => u.empNumber === savedUser.empNumber);
@@ -413,7 +400,7 @@
         }
 
         function logout() {
-            localStorage.removeItem('spei_ops_production_final_v6');
+            localStorage.removeItem('spei_ops_production_final_v_dir_clean_v6');
             location.reload();
         }
 
@@ -434,7 +421,7 @@
             const user = employeeRegistry.find(u => u.empNumber === input);
             if (user) {
                 currentUser = user;
-                localStorage.setItem('spei_ops_production_final_v6', JSON.stringify(user));
+                localStorage.setItem('spei_ops_production_final_v_dir_clean_v6', JSON.stringify(user));
                 enterApp();
                 addMessage(`Bienvenido, ${user.name}. Terminal operativa sincronizada. ¿Qué proceso deseas consultar?`);
             } else {
@@ -461,15 +448,23 @@
             notify(isInternalMode ? "Modo Administración" : "Modo Consulta");
         };
 
-        // GESTIÓN DE FORMULARIOS (CORREGIDO)
         const categorySelect = document.getElementById('content-type');
+        const formStandard = document.getElementById('form-standard');
+        const formCertificate = document.getElementById('form-certificate');
+        const formExtension = document.getElementById('form-extension'); 
+
         categorySelect.addEventListener('change', () => {
-            document.getElementById('form-standard').classList.add('hidden');
-            document.getElementById('form-certificate').classList.add('hidden');
+            formStandard.classList.add('hidden');
+            formCertificate.classList.add('hidden');
             document.getElementById('form-extension').classList.add('hidden');
-            if (categorySelect.value === 'CERTIFICADO') document.getElementById('form-certificate').classList.remove('hidden');
-            else if (categorySelect.value === 'EXTENSION') document.getElementById('form-extension').classList.remove('hidden');
-            else document.getElementById('form-standard').classList.remove('hidden');
+
+            if (categorySelect.value === 'CERTIFICADO') {
+                formCertificate.classList.remove('hidden');
+            } else if (categorySelect.value === 'EXTENSION') {
+                document.getElementById('form-extension').classList.remove('hidden');
+            } else {
+                formStandard.classList.remove('hidden');
+            }
         });
 
         document.getElementById('save-entry-btn').onclick = async () => {
@@ -484,41 +479,62 @@
                 const num = document.getElementById('cert-num').value.trim().toUpperCase();
                 const negocio = document.getElementById('cert-negocio').value;
                 const entorno = document.getElementById('cert-entorno').value;
+                const tipoC = document.getElementById('cert-tipo').value;
+                const vigIni = document.getElementById('cert-vig-ini').value;
+                const vigFin = document.getElementById('cert-vig-fin').value;
                 const estatus = document.getElementById('cert-estatus').value.trim().toUpperCase();
+                
                 if (!num) return notify("Falta número", true);
+                
                 title = `CERTIFICADO ${num} (${negocio})`;
-                content = `TIPO_REGISTRO: CERTIFICADO\nCERT_NUM_ULT4: ${num}\nNEGOCIO: ${negocio}\nENTORNO: ${entorno}\nESTATUS: ${estatus}\nVIGENCIA_INICIO: ${document.getElementById('cert-vig-ini').value}\nVIGENCIA_FIN: ${document.getElementById('cert-vig-fin').value}\nTIPO_CERTIFICADO: ${document.getElementById('cert-tipo').value}`;
+                content = `TIPO_REGISTRO: CERTIFICADO\nCERT_NUM_ULT4: ${num}\nNEGOCIO: ${negocio}\nENTORNO: ${entorno}\nESTATUS: ${estatus}\nVIGENCIA_INICIO: ${vigIni}\nVIGENCIA_FIN: ${vigFin}\nTIPO_CERTIFICADO: ${tipoC}\nULTIMA_ACTUALIZACION: ${new Date().toLocaleDateString()}`;
             } else if (type === 'EXTENSION') {
                 const ext = document.getElementById('ext-num').value.trim();
                 const nom = document.getElementById('ext-nombre').value.trim();
-                if (!ext) return notify("Falta extensión", true);
+                const area = document.getElementById('ext-area').value.trim();
+                if (!ext) return notify("Faltan datos", true);
                 title = `EXT: ${nom}`;
-                content = `TIPO_REGISTRO: EXTENSION_TELEFONICA\nEXTENSION: ${ext}\nNOMBRE_PERSONA: ${nom}\nAREA: ${document.getElementById('ext-area').value}`;
+                content = `TIPO_REGISTRO: EXTENSION_TELEFONICA\nEXTENSION: ${ext}\nNOMBRE_PERSONA: ${nom}\nAREA: ${area}`;
             } else {
                 title = document.getElementById('entry-title').value.trim();
                 content = document.getElementById('entry-content').value.trim();
-                if (!title || !content) return notify("Falta título o contenido", true);
+                if (!title) return notify("Faltan datos", true);
             }
 
             try {
-                const id = editId || "reg_" + Date.now();
+                const id = editId || Date.now().toString();
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), { 
                     contentType: type, opClass: opClass, priority: parseInt(priority), title, content, date: new Date().toLocaleDateString() 
                 }, { merge: true });
                 notify(editId ? "Actualizado" : "Guardado");
                 clearManualForm();
-            } catch (err) { notify("Error al guardar en nube", true); console.error(err); }
+            } catch (err) { notify("Error de red", true); }
         };
 
         function clearManualForm() {
-            document.querySelectorAll('input, textarea').forEach(i => i.value = '');
+            const inputs = document.querySelectorAll('input, textarea');
+            inputs.forEach(i => i.value = '');
             document.getElementById('save-entry-btn').innerText = "Guardar Registro";
             document.getElementById('editing-id').value = "";
             categorySelect.value = "MANUAL";
             categorySelect.dispatchEvent(new Event('change'));
         }
 
-        // FUNCIONES GLOBALES
+        window.deleteEntry = async (id) => {
+            if (confirm("¿Borrar definitivamente?")) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id));
+                notify("Eliminado");
+            }
+        };
+
+        window.deleteUser = async (id) => {
+            if (id === "682930") return alert("No se puede eliminar al Administrador.");
+            if (confirm("¿Eliminar acceso a este usuario?")) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', id));
+                notify("Usuario eliminado");
+            }
+        };
+
         window.editEntry = (id) => {
             const e = knowledgeBase.find(x => x.id === id);
             if (!e) return;
@@ -541,28 +557,12 @@
                  const lines = e.content.split('\n');
                  document.getElementById('cert-num').value = lines.find(l=>l.startsWith('CERT_NUM_ULT4:'))?.split(': ')[1] || "";
                  document.getElementById('cert-estatus').value = lines.find(l=>l.startsWith('ESTATUS:'))?.split(': ')[1] || "";
-                 // Se pueden mapear más campos si se desea
             } else {
                 document.getElementById('entry-title').value = e.title;
                 document.getElementById('entry-content').value = e.content;
             }
-            notify("Editando registro...");
+            notify("Modo Edición");
             document.querySelector('#settings-modal .overflow-y-auto').scrollTop = 0;
-        };
-
-        window.deleteEntry = async (id) => {
-            if (confirm("¿Borrar definitivamente?")) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id));
-                notify("Eliminado");
-            }
-        };
-
-        window.deleteUser = async (id) => {
-            if (id === "682930") return alert("No se puede eliminar al Administrador.");
-            if (confirm("¿Eliminar acceso?")) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', id));
-                notify("Usuario eliminado");
-            }
         };
 
         function renderEntries() {
@@ -632,7 +632,9 @@
         }
 
         document.getElementById('file-selector').onchange = async (e) => {
-            const files = e.target.files; if (!files.length) return; notify("Subiendo...");
+            const files = e.target.files;
+            if (!files.length) return;
+            notify("Leyendo archivos...");
             for (let file of files) {
                 const ext = file.name.split('.').pop().toLowerCase();
                 let text = "";
@@ -652,63 +654,93 @@
                     } else if (ext === 'txt') text = await file.text();
                     
                     if (text) {
-                        const id = "doc_" + Date.now();
+                        const id = "doc_" + Date.now() + "_" + Math.floor(Math.random()*1000);
                         await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), {
-                            category: "Archivo", title: file.name, content: text, date: new Date().toLocaleDateString(), priority: 2
+                            category: "Archivo", title: file.name, content: text, date: new Date().toLocaleDateString()
                         });
                     }
-                } catch (err) { notify("Error archivo", true); }
+                } catch (err) { notify("Error en archivo", true); }
             }
             notify("Carga Completa");
         };
 
-        // FILTRO DE LIMPIEZA
+        // FILTRO DE LIMPIEZA DE RESPUESTA
         function formatBotResponse(text) {
-            let clean = text.replace(/CONTENIDO TÉCNICO:.*?\n/gi, "")
-                            .replace(/REGISTRO:.*?\n/gi, "")
-                            .replace(/CONTENIDO:\s*/gi, "")
-                            .replace(/\[CATEGORÍA:.*?\| TEMA:.*?\]/gi, "")
-                            .replace(/TIPO_REGISTRO:.*?\n/gi, "")
-                            .trim();
-            return clean.replace(/###\s*(.*?)(\n|$)/g, '<div class="bot-header"><i class="fas fa-book-open text-blue-600"></i> $1</div>').replace(/\n/g, '<br>');
+            let clean = text.replace(/CONTENIDO TÉCNICO:.*?\n/gi, "");
+            clean = clean.replace(/REGISTRO:.*?\n/gi, "");
+            clean = clean.replace(/CONTENIDO:\s*/gi, "");
+            clean = clean.replace(/\[CATEGORÍA:.*?\| TEMA:.*?\]/gi, "");
+            clean = clean.replace(/TIPO_REGISTRO:.*?\n/gi, ""); 
+            clean = clean.replace(/\|.*\|.*\|/g, ""); // Elimina tablas Markdown rotas
+            clean = clean.trim();
+            return clean.replace(/###\s*(.*?)(\n|$)/g, '<div class="bot-header"><i class="fas fa-book-open text-blue-600"></i> $1</div>')
+                       .replace(/\n/g, '<br>');
         }
 
         async function fetchGemini(q) {
-            // Contexto extendido con instrucciones relajadas
-            const kb = knowledgeBase.map(e => `[MANUAL ${e.contentType} - ${e.title}]:\n${e.content}`).join('\n\n');
-            const systemPrompt = `ACTÚA COMO UN ANALISTA DE OPERACIONES EXPERTO.
-            TU BASE DE CONOCIMIENTO: ${kb}.
-            
-            INSTRUCCIONES:
-            1. Analiza TODA la información disponible.
-            2. Si la pregunta es técnica, responde con los datos exactos del manual.
-            3. Si el usuario pide ayuda o no entiende, tienes permiso de EXPLICAR con tus propias palabras basándote en los manuales.
-            4. Si la información está dispersa, intégrala en una respuesta coherente.
-            5. JAMÁS muestres etiquetas internas como "REGISTRO:" o "CONTENIDO:".
-            6. Usa LaTeX y ### para formato.
-            7. Solo si es imposible encontrar relación, di: "No tengo información registrada sobre ese tema."`;
+            const kb = knowledgeBase.map(e => `REGISTRO: ${e.title}\nCONTENIDO: ${e.content}`).join('\n\n---\n\n');
+            const systemPrompt = `ACTÚA COMO ASISTENTE TÉCNICO EXPERTO. TU ÚNICA FUENTE DE VERDAD ES: ${kb}.
+            REGLAS:
+            1. Si el usuario pide un dato, localízalo por significado y transcribe la información técnica (ej. "certificados" busca en "CERTIFICADOS CODI").
+            2. Si el usuario pide EXPLICACIONES o EJEMPLOS, proporciónalos BASÁNDOTE EXCLUSIVAMENTE en la información de la fuente. 
+            3. QUEDA PROHIBIDO incluir etiquetas como "REGISTRO:", "CONTENIDO:", "CATEGORÍA:".
+            4. NO saludes ni te despidas. Respuestas directas y útiles.
+            5. Usa LaTeX ($$formula$$) para matemáticas y ### para títulos internos.
+            6. Si no existe nada relacionado, di únicamente: "Esa información no se encuentra registrada en el manual operativo actualmente."`;
 
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [...chatHistory, { role: "user", parts: [{ text: q }] }], systemInstruction: { parts: [{ text: systemPrompt }] } })
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [...chatHistory, { role: "user", parts: [{ text: q }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] }
+                    })
                 });
                 const data = await res.json();
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta técnica.";
                 chatHistory.push({ role: "user", parts: [{ text: q }] }, { role: "model", parts: [{ text }] });
                 if (chatHistory.length > 10) chatHistory.splice(0, 2);
-                if (!isInternalMode && currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', currentUser.empNumber), { queries: (currentUser.queries || 0) + 1 });
+                if (!isInternalMode && currentUser) {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', currentUser.empNumber), { queries: (currentUser.queries || 0) + 1 });
+                }
                 return text;
-            } catch (e) { return "Error técnico en IA."; }
+            } catch (e) { return "Error técnico en la red."; }
         }
 
-        document.getElementById('chat-form').onsubmit = async (e) => { e.preventDefault(); const v = document.getElementById('user-input').value.trim(); if (!v) return; document.getElementById('user-input').value=""; addMessage(v, true); const res = await fetchGemini(v); addMessage(res); resetInactivityTimer(); };
-        function addMessage(t, u) { 
-            const d = document.createElement('div'); d.className = `flex flex-col gap-2 message-appear ${u?'items-end ml-auto text-right':'items-start text-left'} max-w-[95%]`; 
-            const c = u ? t : formatBotResponse(t);
-            d.innerHTML = `<div class="${u?'user-bubble px-4 py-3':'bot-bubble px-6 py-5'} text-sm leading-relaxed rounded-2xl bg-white shadow">${c}</div>`; 
-            document.getElementById('chat-box').appendChild(d);
+        document.getElementById('chat-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const v = document.getElementById('user-input').value.trim();
+            if (!v) return;
+            document.getElementById('user-input').value = "";
+            addMessage(v, true);
+            const l = document.createElement('div'); l.id = "loader"; l.className = "p-5 bg-white border rounded-3xl w-fit bot-bubble animate-pulse text-[12px] font-black text-slate-400 italic shadow-sm"; l.innerText = "Consultando...";
+            document.getElementById('chat-box').appendChild(l);
+            const res = await fetchGemini(v);
+            if (document.getElementById('loader')) document.getElementById('loader').remove();
+            addMessage(res);
+            resetInactivityTimer();
+        };
+
+        function addMessage(text, isUser = false) {
+            const div = document.createElement('div');
+            div.className = `flex flex-col gap-2 message-appear ${isUser ? 'items-end ml-auto text-right' : 'items-start text-left'} max-w-[95%]`;
+            const color = isUser ? 'user-bubble' : 'bot-bubble';
+            const formattedContent = isUser ? text.replace(/\n/g, '<br>') : formatBotResponse(text);
+            div.innerHTML = `<div class="${color} px-8 py-6 text-[15.5px] leading-[1.8] font-medium shadow-md transition-all text-left">${formattedContent}</div><span class="text-[9px] text-slate-400 mx-6 font-black uppercase tracking-widest text-center">Daniel Anzaldo • ${isUser ? currentUser.name : 'Asistente SPEI Ops'}</span>`;
+            document.getElementById('chat-box').appendChild(div);
+            document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+            if (!isUser && window.MathJax) MathJax.typesetPromise();
         }
+
+        document.getElementById('tab-kb-btn').onclick = () => {
+            document.getElementById('tab-kb').classList.remove('hidden'); document.getElementById('tab-users').classList.add('hidden');
+            document.getElementById('tab-kb-btn').classList.add('active'); document.getElementById('tab-users-btn').classList.remove('active');
+        };
+        document.getElementById('tab-users-btn').onclick = () => {
+            document.getElementById('tab-kb').classList.add('hidden'); document.getElementById('tab-users').classList.remove('hidden');
+            document.getElementById('tab-kb-btn').classList.remove('active'); document.getElementById('tab-users-btn').classList.add('active');
+        };
 
         ['mousedown', 'keydown', 'touchstart'].forEach(e => window.addEventListener(e, resetInactivityTimer));
         initApp();
