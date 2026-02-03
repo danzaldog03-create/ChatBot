@@ -8,10 +8,12 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     
-    <title>SPEI Ops - Base Central</title>
+    <title>SPEI Ops - Base Central v8.1</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SPEI Ops">
+    <meta name="mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2830/2830284.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -63,6 +65,16 @@
         
         #toast { position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%); z-index: 10001; padding: 0.5rem 1.5rem; border-radius: 99px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; box-shadow: 0 10px 30px rgba(0,0,0,0.3); transition: all 0.3s ease; opacity: 0; pointer-events: none; }
         #toast.show { opacity: 1; top: 2.5rem; }
+
+        /* Estilos Inputs */
+        .cert-input { width: 100%; padding: 0.75rem; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem; font-size: 0.8rem; font-weight: 600; color: #334155; outline: none; transition: all 0.2s; }
+        .cert-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
+        .cert-label { font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.25rem; display: block; }
+        
+        /* Etiquetas */
+        .badge-p1 { background-color: #fee2e2; color: #991b1b; }
+        .badge-p2 { background-color: #fef9c3; color: #854d0e; }
+        .badge-p3 { background-color: #dbeafe; color: #1e40af; }
     </style>
 </head>
 <body>
@@ -78,10 +90,11 @@
             <h1 class="text-3xl font-black mb-2 tracking-tight">SPEI Ops</h1>
             <p class="text-slate-400 text-xs mb-8 uppercase tracking-[0.2em] font-bold">Base de Conocimiento Central</p>
             <div class="w-full max-w-xs space-y-4">
-                <input type="text" id="emp-input" placeholder="No. de Empleado" class="w-full bg-white/5 border border-white/10 rounded-xl py-4 text-center text-xl font-bold text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                <input type="text" id="emp-input" placeholder="No. de Empleado" class="w-full bg-white/5 border border-white/10 rounded-xl py-4 text-center text-xl font-bold text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                 <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-black text-sm shadow-xl transition-all" disabled>CARGANDO BASE...</button>
+                <p id="login-error" class="text-red-400 text-[10px] text-center opacity-0 font-bold uppercase">Acceso Denegado</p>
             </div>
-            <p class="mt-12 text-slate-600 text-[10px] font-black uppercase tracking-widest">Creado por Daniel Anzaldo • v8.0 Local</p>
+            <p class="mt-12 text-slate-600 text-[10px] font-black uppercase tracking-widest">Creado por Daniel Anzaldo • v8.1 Local</p>
         </div>
 
         <!-- MAIN INTERFACE -->
@@ -95,7 +108,7 @@
                     </div>
                 </div>
                 <div id="admin-tools" class="hidden">
-                    <button onclick="toggleSettings()" class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center hover:bg-white/20"><i class="fas fa-database text-xs"></i></button>
+                    <button onclick="toggleSettings()" class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center hover:bg-white/20 transition-all"><i class="fas fa-database text-xs"></i></button>
                 </div>
             </header>
 
@@ -105,12 +118,12 @@
 
             <footer class="bg-white p-4 border-t border-slate-100 shrink-0">
                 <form id="search-form" class="flex gap-2">
-                    <input type="text" id="search-input" placeholder="Buscar procedimiento, certificado, extensión..." class="flex-1 bg-slate-100 rounded-xl px-5 py-3 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500" autocomplete="off">
-                    <button type="submit" class="w-12 bg-blue-600 text-white rounded-xl flex items-center justify-center shadow-lg active:scale-95"><i class="fas fa-search"></i></button>
+                    <input type="text" id="search-input" placeholder="Buscar procedimiento, certificado, extensión..." class="flex-1 bg-slate-100 rounded-xl px-5 py-3 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500 transition-all" autocomplete="off">
+                    <button type="submit" class="w-12 bg-blue-600 text-white rounded-xl flex items-center justify-center shadow-lg active:scale-95 transition-all"><i class="fas fa-search"></i></button>
                 </form>
                 <div class="flex justify-between items-center mt-4 px-2">
                     <span id="user-display" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">...</span>
-                    <button onclick="logout()" class="text-[10px] font-black text-red-400 uppercase hover:underline">Salir</button>
+                    <button onclick="logout()" class="text-[10px] font-black text-red-400 uppercase hover:underline transition-colors">Salir</button>
                 </div>
             </footer>
         </div>
@@ -120,7 +133,7 @@
             <div class="w-full max-w-4xl bg-white p-6 rounded-3xl shadow-2xl flex flex-col max-h-[90vh]">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-xl font-black text-slate-800 uppercase italic">Administración</h3>
-                    <button onclick="toggleSettings()" class="bg-slate-100 w-8 h-8 rounded-full text-slate-500"><i class="fas fa-times"></i></button>
+                    <button onclick="toggleSettings()" class="bg-slate-100 w-8 h-8 rounded-full text-slate-500 hover:bg-red-50 hover:text-red-500 transition-all"><i class="fas fa-times"></i></button>
                 </div>
 
                 <div class="flex gap-4 border-b border-slate-100 mb-4">
@@ -130,46 +143,67 @@
 
                 <div id="panel-kb" class="flex-1 overflow-y-auto space-y-4 px-1">
                     <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                        <select id="data-type" class="w-full mb-3 p-3 rounded-xl text-xs font-bold bg-white border border-slate-200" onchange="toggleForm()">
-                            <option value="MANUAL">📝 Manual / Proceso (Texto)</option>
-                            <option value="CERTIFICADO">🔐 Certificado Digital</option>
-                            <option value="EXTENSION">📞 Extensión Telefónica</option>
-                        </select>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label class="cert-label">Tipo</label>
+                                <select id="data-type" class="cert-input" onchange="toggleForm()">
+                                    <option value="MANUAL">📝 Manual</option>
+                                    <option value="CERTIFICADO">🔐 Certificado</option>
+                                    <option value="EXTENSION">📞 Extensión</option>
+                                </select>
+                            </div>
+                             <div>
+                                <label class="cert-label">Prioridad</label>
+                                <select id="inp-prio" class="cert-input">
+                                    <option value="1">1 - Alta</option>
+                                    <option value="2">2 - Media</option>
+                                    <option value="3">3 - Baja</option>
+                                </select>
+                            </div>
+                             <div>
+                                <label class="cert-label">Clase</label>
+                                <select id="inp-cat" class="cert-input">
+                                    <option value="OPERATIVO">Operativo</option>
+                                    <option value="SEGURIDAD">Seguridad</option>
+                                </select>
+                            </div>
+                        </div>
                         
                         <!-- Form Manual -->
                         <div id="f-manual" class="space-y-3">
-                            <input id="m-title" type="text" placeholder="Título del Tema" class="w-full p-3 rounded-xl text-xs font-bold border border-slate-200">
-                            <textarea id="m-content" placeholder="Contenido completo..." class="w-full h-32 p-3 rounded-xl text-xs font-medium border border-slate-200"></textarea>
+                            <input id="m-title" type="text" placeholder="Título del Tema" class="cert-input">
+                            <textarea id="m-content" placeholder="Contenido completo..." class="w-full h-32 cert-input resize-none mb-3"></textarea>
                         </div>
                         
                         <!-- Form Certificado -->
                         <div id="f-cert" class="hidden grid grid-cols-2 gap-3">
-                            <input id="c-num" type="text" placeholder="Últimos 4" class="p-3 rounded-xl text-xs font-bold border border-slate-200">
-                            <select id="c-neg" class="p-3 rounded-xl text-xs font-bold border border-slate-200 bg-white"><option>SPEI</option><option>CODI</option><option>SPID</option><option>DIMO</option><option>BDT</option></select>
-                            <select id="c-env" class="p-3 rounded-xl text-xs font-bold border border-slate-200 bg-white"><option>PRODUCCION</option><option>HOMOLOGACION</option></select>
-                            <select id="c-stat" class="p-3 rounded-xl text-xs font-bold border border-slate-200 bg-white"><option>VIGENTE</option><option>REVOCADO</option><option>POR RENOVAR</option></select>
-                            <input id="c-ini" type="date" class="p-3 rounded-xl text-xs font-bold border border-slate-200">
-                            <input id="c-fin" type="date" class="p-3 rounded-xl text-xs font-bold border border-slate-200">
+                            <input id="c-num" type="text" placeholder="Últimos 4" class="cert-input">
+                            <select id="c-neg" class="cert-input"><option>SPEI</option><option>CODI</option><option>SPID</option><option>DIMO</option><option>BDT</option><option>R2</option></select>
+                            <select id="c-env" class="cert-input"><option>PRODUCCION</option><option>HOMOLOGACION</option></select>
+                            <select id="c-stat" class="cert-input"><option>VIGENTE</option><option>REVOCADO</option><option>POR RENOVAR</option></select>
+                            <select id="c-tipo" class="cert-input"><option>PRIVADO</option><option>PUBLICO</option></select>
+                            <input id="c-ini" type="date" class="cert-input">
+                            <input id="c-fin" type="date" class="cert-input">
                         </div>
 
                         <!-- Form Extension -->
                         <div id="f-ext" class="hidden grid grid-cols-2 gap-3">
-                            <input id="e-num" type="text" placeholder="Extensión" class="p-3 rounded-xl text-xs font-bold border border-slate-200">
-                            <input id="e-nom" type="text" placeholder="Nombre" class="p-3 rounded-xl text-xs font-bold border border-slate-200">
-                            <input id="e-area" type="text" placeholder="Área" class="col-span-2 p-3 rounded-xl text-xs font-bold border border-slate-200">
+                            <input id="e-num" type="text" placeholder="Extensión" class="cert-input">
+                            <input id="e-nom" type="text" placeholder="Nombre" class="cert-input">
+                            <input id="e-area" type="text" placeholder="Área" class="col-span-2 cert-input">
                         </div>
 
-                        <button onclick="saveData()" class="w-full mt-3 bg-emerald-600 text-white py-3 rounded-xl font-black text-xs shadow-lg">GUARDAR</button>
+                        <button onclick="saveData()" class="w-full mt-3 bg-emerald-600 text-white py-3 rounded-xl font-black text-xs shadow-lg hover:bg-emerald-700 transition-all">GUARDAR</button>
                     </div>
                     <div id="list-kb" class="space-y-2"></div>
                 </div>
 
                 <div id="panel-team" class="hidden flex-1 overflow-y-auto space-y-4 px-1">
                     <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 flex gap-2">
-                        <input id="t-name" type="text" placeholder="Nombre" class="flex-1 p-3 rounded-xl text-xs font-bold">
-                        <input id="t-id" type="text" placeholder="ID" class="w-20 p-3 rounded-xl text-xs font-bold text-center">
-                        <select id="t-role" class="w-20 p-3 rounded-xl text-xs font-bold bg-white"><option value="user">User</option><option value="admin">Admin</option></select>
-                        <button onclick="saveTeam()" class="bg-blue-600 text-white px-4 rounded-xl font-bold text-xs">OK</button>
+                        <input id="t-name" type="text" placeholder="Nombre" class="flex-1 cert-input border-blue-100">
+                        <input id="t-id" type="text" placeholder="ID" class="w-24 cert-input border-blue-100 text-center">
+                        <select id="t-role" class="w-24 cert-input border-blue-100"><option value="user">User</option><option value="admin">Admin</option></select>
+                        <button onclick="saveTeam()" class="bg-blue-600 text-white px-4 rounded-xl font-bold text-xs shadow-md">OK</button>
                     </div>
                     <div id="list-team" class="space-y-2"></div>
                 </div>
@@ -213,17 +247,19 @@
                         
                         // Habilitar Login
                         const btn = document.getElementById('login-btn');
-                        btn.innerText = "INGRESAR";
-                        btn.disabled = false;
+                        if (btn) {
+                            btn.innerText = "INGRESAR";
+                            btn.disabled = false;
+                        }
                         
                         // Auto-login
-                        const saved = localStorage.getItem('spei_local_v1');
+                        const saved = localStorage.getItem('spei_local_v8_1');
                         if(saved) {
                             const u = team.find(x => x.empNumber === JSON.parse(saved).empNumber);
                             if(u) login(u); else logout();
                         } else {
-                            document.getElementById('loading-overlay').classList.add('hidden-ui');
-                            document.getElementById('lock-screen').classList.remove('hidden-ui');
+                            document.getElementById('loading-overlay')?.classList.add('hidden-ui');
+                            document.getElementById('lock-screen')?.classList.remove('hidden-ui');
                         }
                         renderTeam();
                     });
@@ -239,12 +275,12 @@
 
         function login(user) {
             currentUser = user;
-            localStorage.setItem('spei_local_v1', JSON.stringify(user));
-            document.getElementById('lock-screen').classList.add('hidden-ui');
-            document.getElementById('loading-overlay').classList.add('hidden-ui');
-            document.getElementById('app-content').classList.remove('blur-md');
+            localStorage.setItem('spei_local_v8_1', JSON.stringify(user));
+            document.getElementById('lock-screen')?.classList.add('hidden-ui');
+            document.getElementById('loading-overlay')?.classList.add('hidden-ui');
+            document.getElementById('app-content')?.classList.remove('blur-md');
             document.getElementById('user-display').innerText = user.name;
-            if(user.role === 'admin') document.getElementById('admin-tools').classList.remove('hidden');
+            if(user.role === 'admin') document.getElementById('admin-tools')?.classList.remove('hidden');
             
             // Mensaje de bienvenida
             const chat = document.getElementById('chat-box');
@@ -252,47 +288,50 @@
             addBubble(`Hola <b>${user.name}</b>. Base de datos cargada (${knowledge.length} registros). Puedes buscar extensiones, certificados o manuales.`, false);
         }
 
-        window.logout = () => { localStorage.removeItem('spei_local_v1'); location.reload(); };
+        window.logout = () => { localStorage.removeItem('spei_local_v8_1'); location.reload(); };
 
         // BUSCADOR LOCAL (SIN IA)
-        document.getElementById('search-form').onsubmit = (e) => {
-            e.preventDefault();
-            const q = document.getElementById('search-input').value.trim().toLowerCase();
-            if(!q) return;
-            document.getElementById('search-input').value = "";
-            
-            addBubble(q, true);
-            
-            // Algoritmo de Búsqueda
-            const results = knowledge.filter(k => {
-                const text = JSON.stringify(k).toLowerCase();
-                return text.includes(q);
-            });
-
-            if(results.length === 0) {
-                addBubble("No encontré información relacionada en la base de datos.", false);
-            } else {
-                addBubble(`Encontré <b>${results.length}</b> coincidencias:`, false);
-                results.forEach(r => {
-                    let card = "";
-                    if(r.type === 'CERTIFICADO') {
-                        card = `<div class="result-card"><div class="flex justify-between font-bold text-xs text-blue-800"><span>${r.negocio} - ${r.entorno}</span><span>${r.num}</span></div><div class="text-[10px] mt-1 text-slate-600">Vence: ${r.vigFin}</div><div class="text-[10px] font-black ${r.estatus==='VIGENTE'?'text-emerald-600':'text-red-500'} text-right">${r.estatus}</div></div>`;
-                    } else if(r.type === 'EXTENSION') {
-                        card = `<div class="result-card flex items-center gap-3"><i class="fas fa-phone-alt text-blue-500"></i><div><div class="font-black text-sm">${r.ext}</div><div class="text-[10px] font-bold">${r.nombre}</div><div class="text-[9px] uppercase text-slate-500">${r.area}</div></div></div>`;
-                    } else {
-                        card = `<div class="result-card"><h4 class="font-bold text-xs text-slate-800 uppercase mb-1">${r.title}</h4><p class="text-[11px] leading-snug text-slate-600">${r.content}</p></div>`;
-                    }
-                    addBubble(card, false, true);
-                });
+        const searchForm = document.getElementById('search-form');
+        if (searchForm) {
+            searchForm.onsubmit = (e) => {
+                e.preventDefault();
+                const q = document.getElementById('search-input').value.trim().toLowerCase();
+                if(!q) return;
+                document.getElementById('search-input').value = "";
                 
-                // Actualizar métrica
-                if(currentUser.role !== 'admin') {
-                    updateDoc(doc(db, 'artifacts', 'chatbot-8d0a3', 'public', 'data', 'team', currentUser.empNumber), {
-                        queries: (currentUser.queries || 0) + 1
+                addBubble(q, true);
+                
+                // Algoritmo de Búsqueda
+                const results = knowledge.filter(k => {
+                    const text = JSON.stringify(k).toLowerCase();
+                    return text.includes(q);
+                });
+
+                if(results.length === 0) {
+                    addBubble("No encontré información relacionada en la base de datos.", false);
+                } else {
+                    addBubble(`Encontré <b>${results.length}</b> coincidencias:`, false);
+                    results.forEach(r => {
+                        let card = "";
+                        if(r.type === 'CERTIFICADO') {
+                            card = `<div class="result-card"><div class="flex justify-between font-bold text-xs text-blue-800"><span>${r.negocio} - ${r.entorno}</span><span>${r.num}</span></div><div class="text-[10px] mt-1 text-slate-600">Vence: ${r.vigFin}</div><div class="text-[10px] font-black ${r.estatus==='VIGENTE'?'text-emerald-600':'text-red-500'} text-right">${r.estatus}</div></div>`;
+                        } else if(r.type === 'EXTENSION') {
+                            card = `<div class="result-card flex items-center gap-3"><i class="fas fa-phone-alt text-blue-500"></i><div><div class="font-black text-sm">${r.ext}</div><div class="text-[10px] font-bold">${r.nombre}</div><div class="text-[9px] uppercase text-slate-500">${r.area}</div></div></div>`;
+                        } else {
+                            card = `<div class="result-card"><h4 class="font-bold text-xs text-slate-800 uppercase mb-1">${r.title}</h4><p class="text-[11px] leading-snug text-slate-600">${r.content}</p></div>`;
+                        }
+                        addBubble(card, false, true);
                     });
+                    
+                    // Actualizar métrica
+                    if(currentUser.role !== 'admin') {
+                        updateDoc(doc(db, 'artifacts', 'chatbot-8d0a3', 'public', 'data', 'team', currentUser.empNumber), {
+                            queries: (currentUser.queries || 0) + 1
+                        });
+                    }
                 }
-            }
-        };
+            };
+        }
 
         function addBubble(html, isUser, isCard = false) {
             const box = document.getElementById('chat-box');
@@ -312,7 +351,7 @@
         // GESTIÓN
         window.saveData = async () => {
             const type = document.getElementById('data-type').value;
-            let data = { type, date: new Date().toLocaleDateString() };
+            let data = { type, date: new Date().toLocaleDateString(), prio: document.getElementById('inp-prio') ? document.getElementById('inp-prio').value : '3', cat: document.getElementById('inp-cat') ? document.getElementById('inp-cat').value : 'General' };
             let id = "doc_" + Date.now();
 
             if(type === 'MANUAL') {
@@ -325,12 +364,18 @@
                 data.entorno = document.getElementById('c-env').value;
                 data.estatus = document.getElementById('c-stat').value;
                 data.vigFin = document.getElementById('c-fin').value;
+                data.vigIni = document.getElementById('c-ini').value;
+                data.tipoCert = document.getElementById('c-tipo').value;
                 if(!data.num) return window.toast("Falta número", true);
+                data.title = `CERT ${data.negocio} ${data.num}`;
+                data.content = `${data.type} ${data.negocio} ${data.entorno} ${data.num}`;
             } else if(type === 'EXTENSION') {
                 data.ext = document.getElementById('e-num').value;
                 data.nombre = document.getElementById('e-nom').value;
                 data.area = document.getElementById('e-area').value;
                 if(!data.ext) return window.toast("Falta extensión", true);
+                data.title = `EXT ${data.ext} ${data.nombre}`;
+                data.content = `EXTENSION ${data.ext} ${data.nombre} ${data.area}`;
             }
 
             await setDoc(doc(db, 'artifacts', 'chatbot-8d0a3', 'public', 'data', 'knowledge', id), data);
@@ -353,18 +398,22 @@
         };
 
         function renderKB() {
-            document.getElementById('list-kb').innerHTML = knowledge.map(k => 
-                `<div class="flex justify-between items-center p-3 bg-white border border-slate-100 rounded-xl">
+            const container = document.getElementById('list-kb');
+            if(!knowledge.length) { container.innerHTML = "<div class='text-center text-xs text-slate-400'>Vacío</div>"; return; }
+            container.innerHTML = knowledge.map(k => 
+                `<div class="flex justify-between items-center p-3 bg-white border border-slate-100 rounded-xl mb-2">
                     <div class="text-[10px] font-bold truncate w-48">${k.title || k.num || k.ext} <span class="text-slate-400 font-normal">(${k.type})</span></div>
-                    <button onclick="deleteItem('knowledge', '${k.id}')" class="text-red-400"><i class="fas fa-trash"></i></button>
+                    <button onclick="deleteItem('knowledge', '${k.id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
                 </div>`
             ).join('');
         }
 
         function renderTeam() {
-            document.getElementById('list-team').innerHTML = team.map(u => 
-                `<div class="flex justify-between items-center p-3 bg-white border border-slate-100 rounded-xl">
-                    <div><div class="text-xs font-bold">${u.name}</div><div class="text-[10px] text-slate-400">${u.empNumber}</div></div>
+            const container = document.getElementById('list-team');
+            if(!team.length) { container.innerHTML = "<div class='text-center text-xs text-slate-400'>Vacío</div>"; return; }
+            container.innerHTML = team.map(u => 
+                `<div class="flex justify-between items-center p-3 bg-white border border-slate-100 rounded-xl mb-2">
+                    <div><div class="text-xs font-bold">${u.name}</div><div class="text-[10px] text-slate-400">${u.empNumber} • ${u.role}</div></div>
                     <button onclick="deleteItem('team', '${u.id}')" class="text-red-400"><i class="fas fa-trash"></i></button>
                 </div>`
             ).join('');
@@ -391,16 +440,23 @@
         };
 
         // LOGIN BTN LOGIC
-        document.getElementById('login-btn').onclick = () => {
-             const val = document.getElementById('emp-number-input').value.trim();
-             const user = team.find(x => x.empNumber === val);
-             if(user) login(user); else {
-                 document.getElementById('error-emp').style.opacity="1";
-                 setTimeout(()=>document.getElementById('error-emp').style.opacity="0", 2000);
-             }
-        };
+        const loginBtn = document.getElementById('login-btn');
+        if (loginBtn) {
+            loginBtn.onclick = () => {
+                const val = document.getElementById('emp-input').value.trim();
+                const user = team.find(x => x.empNumber === val);
+                if(user) login(user); else {
+                    const err = document.getElementById('error-emp');
+                    if (err) {
+                        err.style.opacity="1";
+                        setTimeout(()=>err.style.opacity="0", 2000);
+                    }
+                }
+            };
+        }
 
-        init();
+        // Start
+        window.addEventListener('load', init);
     </script>
 </body>
 </html>
