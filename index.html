@@ -8,10 +8,11 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     
-    <title>SPEI Ops - v5.2</title>
+    <title>SPEI Ops - Gestión Operativa v5.3</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SPEI Ops">
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2830/2830284.png">
 
@@ -34,6 +35,7 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, getDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // CONFIGURACIÓN DE FIREBASE DE DANIEL
         const firebaseConfig = {
             apiKey: "AIzaSyDPi5pcDL6OL2zCJK_0n3A_RdDGt3U3LVQ",
             authDomain: "chatbot-8d0a3.firebaseapp.com",
@@ -130,7 +132,7 @@
         .cert-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
         .cert-label { font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.25rem; display: block; }
 
-        /* Badges de Prioridad */
+        /* Etiquetas de Prioridad */
         .badge-1 { background-color: #fee2e2; color: #991b1b; }
         .badge-2 { background-color: #fef9c3; color: #854d0e; }
         .badge-3 { background-color: #dbeafe; color: #1e40af; }
@@ -162,7 +164,7 @@
                 </button>
                 <p id="error-emp" class="text-red-400 text-[9px] text-center opacity-0 font-black tracking-widest uppercase mt-4">Acceso Denegado</p>
             </div>
-            <p class="mt-20 text-slate-500 text-[10px] uppercase tracking-[0.4em] font-black italic text-center">v5.2 • Creado por Daniel Anzaldo</p>
+            <p class="mt-20 text-slate-500 text-[10px] uppercase tracking-[0.4em] font-black italic text-center">Creado por Daniel Anzaldo • 2026</p>
         </div>
 
         <div class="app-container blur-md shadow-2xl" id="app-content">
@@ -207,7 +209,7 @@
             </footer>
         </div>
 
-        <!-- Panel Admin -->
+        <!-- Panel Administrativo -->
         <div id="settings-modal" class="hidden-ui system-overlay overlay" style="z-index: 10005;">
             <div class="w-full max-w-5xl bg-white p-8 rounded-[2.5rem] shadow-2xl flex flex-col max-h-[92vh] text-slate-800">
                 <div class="flex justify-between items-center mb-8">
@@ -230,7 +232,7 @@
                                     <select id="content-type" class="cert-input">
                                         <option value="MANUAL">MANUAL</option>
                                         <option value="PROCEDIMIENTO">PROCEDIMIENTO</option>
-                                        <option value="POLITICA">POLITICA</option>
+                                        <option value="POLITICA">POLÍTICA</option>
                                         <option value="CERTIFICADO">CERTIFICADO</option>
                                         <option value="EVIDENCIA">EVIDENCIA</option>
                                         <option value="REPORTE">REPORTE</option>
@@ -260,11 +262,13 @@
 
                             <!-- Formularios Dinámicos -->
                             <div id="form-container">
+                                <!-- Estándar -->
                                 <div id="form-standard" class="space-y-4">
                                     <input type="text" id="entry-title" placeholder="Título del documento..." class="cert-input">
                                     <textarea id="entry-content" placeholder="Escribe o pega el contenido aquí..." class="w-full h-48 bg-white border border-e2e8f0 rounded-xl p-5 text-sm font-medium outline-none text-slate-700 leading-relaxed shadow-sm"></textarea>
                                 </div>
 
+                                <!-- Certificados -->
                                 <div id="form-certificate" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div><label class="cert-label">Últimos 4</label><input type="text" id="cert-num" placeholder="Ej. 9A3F" class="cert-input" maxlength="4" style="text-transform: uppercase;"></div>
                                     <div><label class="cert-label">Negocio</label><select id="cert-negocio" class="cert-input"><option value="SPEI">SPEI</option><option value="CODI">CoDi</option><option value="SPID">SPID</option><option value="DIMO">DIMO</option><option value="BDT">BDT</option><option value="R2">R2</option></select></div>
@@ -275,6 +279,7 @@
                                     <div class="md:col-span-2"><label class="cert-label">Estatus</label><input type="text" id="cert-estatus" placeholder="Ej. VIGENTE" class="cert-input" style="text-transform: uppercase;"></div>
                                 </div>
 
+                                <!-- Extensiones -->
                                 <div id="form-extension" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div><label class="cert-label">Extensión</label><input type="text" id="ext-num" placeholder="Ej. 1234" class="cert-input"></div>
                                     <div><label class="cert-label">Nombre</label><input type="text" id="ext-nombre" placeholder="Nombre completo" class="cert-input"></div>
@@ -323,7 +328,9 @@
     </div>
 
     <script type="module">
-        const apiKey = "AIzaSyAZBbCOgKN68qFX2ab_cegWOeV0lHAtMpA"; 
+        // API KEY DE DANIEL (CORRECTA)
+        const apiKey = "AIzaSyDraEnCKuwnicZVQ-aOcYYwMIPiuadcVgU"; 
+        
         const SESSION_LIMIT = 5 * 60 * 1000;
         const WARNING_LIMIT = 30 * 1000;
 
@@ -360,7 +367,7 @@
                             btn.innerText = "INGRESAR";
                             btn.disabled = false;
 
-                            const saved = localStorage.getItem('spei_ops_production_final_v5_2');
+                            const saved = localStorage.getItem('spei_ops_production_final_v5_3');
                             if (saved) {
                                 const savedUser = JSON.parse(saved);
                                 const updated = employeeRegistry.find(u => u.empNumber === savedUser.empNumber);
@@ -395,7 +402,7 @@
         }
 
         function logout() {
-            localStorage.removeItem('spei_ops_production_final_v5_2');
+            localStorage.removeItem('spei_ops_production_final_v5_3');
             location.reload();
         }
 
@@ -416,7 +423,7 @@
             const user = employeeRegistry.find(u => u.empNumber === input);
             if (user) {
                 currentUser = user;
-                localStorage.setItem('spei_ops_production_final_v5_2', JSON.stringify(user));
+                localStorage.setItem('spei_ops_production_final_v5_3', JSON.stringify(user));
                 enterApp();
                 addMessage(`Bienvenido, ${user.name}. Terminal operativa sincronizada. ¿Qué proceso deseas consultar?`);
             } else {
@@ -583,8 +590,8 @@
                             <span class="text-[9px] bg-slate-50 text-slate-400 px-2 py-0.5 rounded-full font-bold">${e.opClass || 'OPERATIVO'}</span>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="editEntry('${e.id}')" class="text-blue-400 hover:text-blue-600"><i class="fas fa-pen text-sm"></i></button>
-                            <button onclick="deleteEntry('${e.id}')" class="text-red-300 hover:text-red-500"><i class="fas fa-trash text-sm"></i></button>
+                            <button onclick="editEntry('${e.id}')" class="text-blue-500 hover:bg-blue-50 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm"><i class="fas fa-pen text-sm"></i></button>
+                            <button onclick="deleteEntry('${e.id}')" class="text-red-300 hover:bg-red-50 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm"><i class="fas fa-trash text-sm"></i></button>
                         </div>
                     </div>
                     <h4 class="text-sm font-black uppercase mb-2 tracking-tight">${e.title}</h4>
@@ -610,7 +617,7 @@
                 <div class="flex items-center justify-between p-5 bg-slate-50 rounded-3xl border border-slate-100 mb-2 shadow-sm">
                     <div class="text-[12px] font-bold text-slate-800">${u.name} <span class="text-[9px] opacity-40 uppercase ml-2 font-black tracking-widest">[${u.role}]</span></div>
                     <div class="text-[11px] font-black text-blue-600 bg-blue-100 px-4 py-1 rounded-full">${u.queries || 0} q</div>
-                    <button onclick="deleteUser('${u.empNumber}')" class="text-red-300 hover:text-red-500 p-2"><i class="fas fa-trash text-sm"></i></button>
+                    <button onclick="deleteUser('${u.empNumber}')" class="text-red-300 hover:text-red-500 ml-4"><i class="fas fa-trash text-sm"></i></button>
                 </div>
             `).join('');
         }
@@ -662,33 +669,74 @@
         }
 
         async function fetchGemini(q) {
-             const kb = knowledgeBase.sort((a,b)=>(a.priority||3)-(b.priority||3)).map(e => `[PRIORIDAD ${e.priority}] ${e.content}`).join('\n\n');
-             const prompt = `ACTÚA COMO ASISTENTE SPEI. TU BASE: ${kb}. REGLAS: 1. Prioriza P1. 2. Si hay respuesta en manual, úsala. 3. Si piden ejemplo, genéralo basado en el manual. 4. Pregunta validación al final: "¿Era la respuesta que esperabas?". 5. NO uses tablas de Markdown.`;
-             try {
-                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                     body: JSON.stringify({ contents: [...chatHistory, { role: "user", parts: [{ text: q }] }], systemInstruction: { parts: [{ text: prompt }] } })
-                 });
-                 const data = await res.json();
-                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta técnica.";
-                 chatHistory.push({ role: "user", parts: [{ text: q }] }, { role: "model", parts: [{ text }] });
-                 if (chatHistory.length > 10) chatHistory.splice(0, 2);
-                 if (!isInternalMode && currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', currentUser.empNumber), { queries: (currentUser.queries || 0) + 1 });
-                 return text;
-             } catch(e) { return "Error técnico."; }
-        }
-        
-        document.getElementById('chat-form').onsubmit = async (e) => { e.preventDefault(); const v = document.getElementById('user-input').value.trim(); if (!v) return; document.getElementById('user-input').value=""; addMessage(v, true); const res = await fetchGemini(v); addMessage(res); resetInactivityTimer(); };
-        function addMessage(t, u) { 
-            const d = document.createElement('div'); d.className = `flex flex-col gap-2 message-appear ${u?'items-end ml-auto':'items-start'} max-w-[95%]`; 
-            const c = u ? t : formatBotResponse(t);
-            d.innerHTML = `<div class="${u?'user-bubble px-4 py-3':'bot-bubble px-6 py-5'} text-sm leading-relaxed rounded-2xl bg-white shadow">${c}</div>`; 
-            document.getElementById('chat-box').appendChild(d);
-            document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+            const kb = knowledgeBase.map(e => `REGISTRO: ${e.title}\nCONTENIDO: ${e.content}`).join('\n\n---\n\n');
+            const systemPrompt = `ACTÚA COMO ASISTENTE TÉCNICO EXPERTO.
+            TU ÚNICA FUENTE DE VERDAD ES: ${kb}.
+            
+            REGLAS:
+            1. Si la consulta pide un dato técnico, transcribe ÚNICAMENTE el texto técnico encontrado.
+            2. QUEDA PROHIBIDO incluir "REGISTRO:", "CONTENIDO:", "CATEGORÍA:", "TEMA:" o nombres de archivos.
+            3. Si el usuario pide EXPLICACIONES, aclaraciones o EJEMPLOS, proporciónalos BASÁNDOTE EXCLUSIVAMENTE en la información de la fuente. 
+            4. NO saludes, NO te despidas, NO agregues introducciones.
+            5. Usa LaTeX ($$formula$$) para matemáticas y ### para títulos.
+            6. Si no existe nada relacionado en absoluto, di únicamente: "Esa información no se encuentra registrada en el manual operativo actualmente."`;
+
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [...chatHistory, { role: "user", parts: [{ text: q }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] }
+                    })
+                });
+                const data = await res.json();
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta técnica.";
+                
+                chatHistory.push({ role: "user", parts: [{ text: q }] }, { role: "model", parts: [{ text }] });
+                if (chatHistory.length > 10) chatHistory.splice(0, 2);
+                
+                if (!isInternalMode && currentUser) {
+                    const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'team', currentUser.empNumber);
+                    await updateDoc(userRef, { queries: (currentUser.queries || 0) + 1 });
+                }
+                return text;
+            } catch (e) { return "Error técnico en la red operativa."; }
         }
 
-        document.getElementById('tab-kb-btn').onclick = () => { document.getElementById('tab-kb').classList.remove('hidden'); document.getElementById('tab-users').classList.add('hidden'); document.getElementById('tab-kb-btn').classList.add('active'); document.getElementById('tab-users-btn').classList.remove('active'); };
-        document.getElementById('tab-users-btn').onclick = () => { document.getElementById('tab-kb').classList.add('hidden'); document.getElementById('tab-users').classList.remove('hidden'); document.getElementById('tab-kb-btn').classList.remove('active'); document.getElementById('tab-users-btn').classList.add('active'); };
+        document.getElementById('chat-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const v = document.getElementById('user-input').value.trim();
+            if (!v) return;
+            document.getElementById('user-input').value = "";
+            addMessage(v, true);
+            const l = document.createElement('div'); l.id = "loader"; l.className = "p-5 bg-white border rounded-3xl w-fit bot-bubble animate-pulse text-[12px] font-black text-slate-400 italic shadow-sm"; l.innerText = "Consultando Manuales...";
+            document.getElementById('chat-box').appendChild(l);
+            const res = await fetchGemini(v);
+            if (document.getElementById('loader')) document.getElementById('loader').remove();
+            addMessage(res);
+            resetInactivityTimer();
+        };
+
+        function addMessage(text, isUser = false) {
+            const div = document.createElement('div');
+            div.className = `flex flex-col gap-2 message-appear ${isUser ? 'items-end ml-auto text-right' : 'items-start text-left'} max-w-[95%]`;
+            const color = isUser ? 'user-bubble' : 'bot-bubble';
+            const formattedContent = isUser ? text.replace(/\n/g, '<br>') : formatBotResponse(text);
+            div.innerHTML = `<div class="${color} px-8 py-6 text-[15.5px] leading-[1.8] font-medium shadow-md transition-all text-left">${formattedContent}</div><span class="text-[9px] text-slate-400 mx-6 font-black uppercase tracking-widest text-center">Daniel Anzaldo • ${isUser ? currentUser.name : 'Asistente SPEI Ops'}</span>`;
+            document.getElementById('chat-box').appendChild(div);
+            document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+            if (!isUser && window.MathJax) MathJax.typesetPromise();
+        }
+
+        document.getElementById('tab-kb-btn').onclick = () => {
+            document.getElementById('tab-kb').classList.remove('hidden'); document.getElementById('tab-users').classList.add('hidden');
+            document.getElementById('tab-kb-btn').classList.add('active'); document.getElementById('tab-users-btn').classList.remove('active');
+        };
+        document.getElementById('tab-users-btn').onclick = () => {
+            document.getElementById('tab-kb').classList.add('hidden'); document.getElementById('tab-users').classList.remove('hidden');
+            document.getElementById('tab-kb-btn').classList.remove('active'); document.getElementById('tab-users-btn').classList.add('active');
+        };
 
         ['mousedown', 'keydown', 'touchstart'].forEach(e => window.addEventListener(e, resetInactivityTimer));
         initApp();
