@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Metaetiquetas para forzar actualización -->
+    <!-- Metaetiquetas para forzar actualización inmediata -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     
-    <title>SPEI Ops - v19.1 Fixed</title>
+    <title>SPEI Ops - Panel v23.0</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -28,7 +28,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, getDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDPi5pcDL6OL2zCJK_0n3A_RdDGt3U3LVQ",
@@ -78,7 +78,7 @@
         .bot-msg { align-self: flex-start; background: white; border: 1px solid #e2e8f0; color: #1e293b; border-bottom-left-radius: 0; width: 100%; }
         .bot-header { font-weight: 800; color: #0f172a; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
 
-        #table-content { flex: 1; overflow-y: auto; padding-bottom: 4rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 300px; }
+        #table-content { flex: 1; overflow-y: auto; padding-bottom: 6rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 300px; }
         .data-card { background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); min-height: 80px; }
         .data-card:hover { border-color: #3b82f6; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transform: translateY(-1px); }
         
@@ -115,7 +115,7 @@
     <div id="loading-screen" class="overlay">
         <div class="text-center">
             <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Iniciando...</p>
+            <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Iniciando Sistema...</p>
         </div>
     </div>
 
@@ -130,7 +130,7 @@
                 <button onclick="handleLogin()" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-lg font-bold shadow-lg transition-all active:scale-95 cursor-pointer">INGRESAR</button>
                 <p id="login-msg" class="text-red-500 text-xs font-bold mt-2 opacity-0 transition-opacity">Credenciales Incorrectas</p>
             </div>
-            <p class="mt-8 text-[10px] text-slate-400 font-bold uppercase tracking-wider">v19.1 • Daniel Anzaldo</p>
+            <p class="mt-8 text-[10px] text-slate-400 font-bold uppercase tracking-wider">v23.0 • Daniel Anzaldo</p>
         </div>
     </div>
 
@@ -150,7 +150,6 @@
                 
                 <div class="admin-only hidden-ui">
                     <div class="nav-section">Gestión de Conocimiento</div>
-                    <!-- PESTAÑA VER TODO (DEFAULT PARA ADMIN) -->
                     <div onclick="navigate('admin-all')" class="nav-item text-blue-400" id="nav-all"><i class="fas fa-globe w-5"></i> VER TODO</div>
                     <div onclick="navigate('admin-cert')" class="nav-item" id="nav-cert"><i class="fas fa-certificate w-5"></i> Certificados</div>
                     <div onclick="navigate('admin-ext')" class="nav-item" id="nav-ext"><i class="fas fa-address-book w-5"></i> Directorio</div>
@@ -209,7 +208,6 @@
                     <button onclick="renderList(document.body.dataset.viewType)" class="w-10 h-10 bg-white border border-slate-300 rounded-lg flex items-center justify-center text-slate-500 hover:text-blue-600"><i class="fas fa-sync-alt"></i></button>
                 </div>
                 <div id="table-content" class="space-y-2 pb-20 overflow-y-auto w-full">
-                    <!-- Aquí se renderiza la lista -->
                     <div class="text-center py-10 text-slate-400 italic">Cargando datos...</div>
                 </div>
             </div>
@@ -278,8 +276,12 @@
     <div id="modal-upload" class="overlay hidden-ui">
         <div class="modal max-w-lg">
             <div class="p-5 border-b bg-slate-50"><h3 class="font-bold">Cargar Archivo</h3></div>
-            <div class="p-8 text-center" onclick="document.getElementById('file-in').click()">
-                <div class="border-2 border-dashed border-slate-300 rounded-xl p-10 cursor-pointer hover:bg-slate-50 transition-colors">
+            <div class="p-8 text-center">
+                <p class="text-xs text-slate-500 mb-4 text-left">
+                    <b>Carga Masiva:</b> Sube un CSV/Excel con las columnas TIPO, TITULO, CONTENIDO, NUMERO, etc. para llenar la base.<br>
+                    <button onclick="window.downloadTemplate()" class="text-blue-500 hover:underline mt-1 font-bold">Descargar Plantilla CSV</button>
+                </p>
+                <div class="border-2 border-dashed border-slate-300 rounded-xl p-10 cursor-pointer hover:bg-slate-50 transition-colors" onclick="document.getElementById('file-in').click()">
                     <i class="fas fa-cloud-upload-alt text-4xl text-blue-400 mb-3"></i>
                     <p class="text-sm font-bold text-slate-600">Clic para seleccionar</p>
                     <p class="text-xs text-slate-400">PDF, Excel, Imágenes, Texto</p>
@@ -308,7 +310,7 @@
 
     <script type="module">
         const apiKey = "AIzaSyDraEnCKuwnicZVQ-aOcYYwMIPiuadcVgU";
-        const { auth, db, appId, doc, setDoc, collection, onSnapshot, deleteDoc, signInAnonymously, onAuthStateChanged } = window.fb;
+        const { auth, db, appId, doc, setDoc, collection, onSnapshot, deleteDoc, signInAnonymously, onAuthStateChanged, writeBatch } = window.fb;
         
         let currentUser = null;
         let knowledgeBase = [];
@@ -323,6 +325,15 @@
                 t.className = `fixed top-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-xs font-black uppercase shadow-2xl z-[10002] transition-all duration-300 opacity-100 ${e?'bg-red-500 text-white':'bg-emerald-500 text-white'}`;
                 setTimeout(() => t.classList.remove('opacity-100'), 3000);
             }
+        };
+
+        window.downloadTemplate = () => {
+             const csvContent = "TIPO,TITULO,CONTENIDO,NUMERO,NEGOCIO,ENTORNO,ESTATUS,INICIO,FIN,EXTENSION,NOMBRE,AREA,PRIORIDAD\nCERTIFICADO,,,9A3F,SPEI,PRODUCCION,VIGENTE,2024-01-01,2026-12-31,,,1\nEXTENSION,,,,,,,,,5522,Juan Pérez,Soporte N1,1\nMANUAL,Guía de Conexión,Paso 1: Verificar VPN...,,,,,,,,2";
+             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+             const link = document.createElement("a");
+             link.href = URL.createObjectURL(blob);
+             link.download = "layout_spei_ops.csv";
+             link.click();
         };
 
         window.toggleSidebar = () => {
@@ -351,7 +362,7 @@
             }
         };
 
-        window.logout = () => { localStorage.removeItem('spei_v19_0_session'); location.reload(); };
+        window.logout = () => { localStorage.removeItem('spei_v23_0_session'); location.reload(); };
 
         window.navigate = (view) => {
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -431,7 +442,6 @@
             const id = editId || "doc_" + Date.now();
             let data = { contentType: type, date: new Date().toISOString(), author: currentUser.name };
 
-            // GUARDADO ESTRUCTURADO (BLINDADO)
             if(type === 'CERTIFICADO') {
                 const num = document.getElementById('c-num').value.trim().toUpperCase();
                 if(num.length !== 4) return alert("El certificado debe tener 4 dígitos");
@@ -448,10 +458,10 @@
                 const ext = document.getElementById('e-num').value.trim();
                 if(!ext) return window.toast("Falta extensión", true);
                 data.title = `EXT ${ext}`;
+                data.content = `EXTENSION ${ext}`;
                 data.ext = ext;
                 data.nombre = document.getElementById('e-nom').value;
                 data.area = document.getElementById('e-area').value;
-                data.content = `EXTENSIÓN ${ext}`;
             } else {
                 data.title = document.getElementById('d-title').value;
                 data.content = document.getElementById('d-content').value;
@@ -489,21 +499,61 @@
         window.deleteUser = async (id) => {
             if(id === '682930') return alert("No se puede borrar al Admin Principal");
             if(confirm("¿Eliminar usuario?")) {
-                await deleteDoc(doc(db, 'artifacts', 'chatbot-8d0a3', 'public', 'data', 'team', id));
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', id));
                 renderList('USERS');
             }
         };
         
+        // CARGA MASIVA EXCEL + ARCHIVOS
         window.handleFile = async (input) => {
-             const f = input.files[0]; if(!f) return;
-             const txt = await f.text();
-             const id = "file_" + Date.now();
-             await setDoc(doc(db, 'artifacts', 'chatbot-8d0a3', 'public', 'data', 'knowledge', id), {
-                 contentType: "ARCHIVO", title: f.name, content: txt, date: new Date().toISOString()
-             });
-             window.toast("Archivo cargado");
-             document.getElementById('modal-upload').classList.add('hidden-ui');
-             if(document.body.dataset.viewType === 'ARCHIVO') renderList('ARCHIVO');
+            const f = input.files[0]; if(!f) return;
+            
+            // Si es CSV/Excel y estamos en modo layout
+            if(f.name.endsWith('.csv') || f.name.endsWith('.xlsx')) {
+                 const reader = new FileReader();
+                 reader.onload = async (e) => {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, {type: 'array'});
+                        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const json = XLSX.utils.sheet_to_json(sheet);
+                        
+                        const batch = window.fb.writeBatch(db);
+                        let count = 0;
+                        json.forEach(row => {
+                            const id = "imp_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
+                            const ref = doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id);
+                            // Mapeo
+                            let entry = {
+                                contentType: (row.TIPO || 'MANUAL').toUpperCase(),
+                                date: new Date().toISOString(),
+                                author: currentUser.name,
+                                title: row.TITULO || `Importado ${row.TIPO}`,
+                                content: row.CONTENIDO || ''
+                            };
+                            // (Mismo mapeo detallado que v22.0)
+                            if(entry.contentType === 'CERTIFICADO') { entry.num=row.NUMERO; entry.negocio=row.NEGOCIO; entry.entorno=row.ENTORNO; entry.estatus=row.ESTATUS; entry.vigenciaFin=row.FIN; entry.title=`CERT ${entry.num} (${entry.negocio})`; }
+                            else if(entry.contentType === 'EXTENSION') { entry.ext=row.EXTENSION; entry.nombre=row.NOMBRE; entry.area=row.AREA; entry.title=`EXT ${entry.ext}`; }
+                            
+                            batch.set(ref, entry);
+                            count++;
+                        });
+                        await batch.commit();
+                        window.toast(`Importados ${count} registros`);
+                        window.closeModal('modal-upload');
+                    } catch(err){ window.toast("Error procesando Excel", true); }
+                 };
+                 reader.readAsArrayBuffer(f);
+            } else {
+                 // Carga normal de archivo (texto/pdf)
+                 const txt = await f.text();
+                 const id = "file_" + Date.now();
+                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), {
+                     contentType: "ARCHIVO", title: f.name, content: txt, date: new Date().toISOString()
+                 });
+                 window.toast("Archivo cargado");
+                 window.closeModal('modal-upload');
+            }
         };
 
         window.filterList = () => {
@@ -542,18 +592,25 @@
                         data = knowledgeBase.filter(k => k.contentType === type);
                     }
                     
-                    if(term) data = data.filter(d => (d.title+(d.content||"")).toLowerCase().includes(term));
+                    if(term) data = data.filter(d => 
+                        (d.title || "").toLowerCase().includes(term) || 
+                        (d.content || "").toLowerCase().includes(term) ||
+                        (d.nombre || "").toLowerCase().includes(term) ||
+                        (d.negocio || "").toLowerCase().includes(term) ||
+                        (d.ext || "").toLowerCase().includes(term) ||
+                        (d.area || "").toLowerCase().includes(term)
+                    );
 
                     if (data.length === 0) {
                         html = `<div class="text-center py-10 text-slate-400 italic text-sm">No se encontraron registros.</div>`;
                     } else {
                         html = data.map(item => {
                             let desc = item.content || "Sin contenido";
-                            // Fallback visual si es certificado estructurado
                             if (item.contentType === 'CERTIFICADO') {
                                 desc = `${item.negocio || 'N/A'} - ${item.estatus || 'N/A'}`;
+                            } else if (item.contentType === 'EXTENSION') {
+                                desc = `${item.nombre || ''} - ${item.area || ''}`;
                             }
-                            // Formateo de fecha seguro
                             let dateStr = "";
                             try { dateStr = item.date ? new Date(item.date).toLocaleDateString() : 'Sin fecha'; } catch(e) { dateStr = "Error fecha"; }
                             
@@ -586,11 +643,11 @@
         function format(t) { return t.replace(/REGISTRO:|CONTENIDO:|\[.*?\]|\|/g, "").replace(/###/g, "").trim().replace(/\n/g, '<br>'); }
         
         async function askGemini(q) {
-            const kb = knowledgeBase.map(k => `[${k.contentType}] ${k.title}: ${k.content}`).join('\n\n');
+            const kb = knowledgeBase.map(k => `[${k.contentType}] ${k.title}: ${k.content || k.negocio || k.nombre}`).join('\n\n');
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ contents: [{ parts: [{ text: `Eres experto SPEI. Base: ${kb}. Pregunta: ${q}. Responde breve, sin etiquetas técnicas.` }] }] })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: `Eres experto SPEI. Base: ${kb}. Pregunta: ${q}. Responde breve.` }] }] })
                 });
                 const d = await res.json();
                 return d.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta.";
@@ -601,12 +658,16 @@
             e.preventDefault(); const inp = document.getElementById('chat-input'); const q = inp.value.trim(); if(!q) return;
             inp.value = ""; addBubble(q, true);
             
-            const hits = knowledgeBase.filter(k => (k.title + (k.content || "")).toLowerCase().includes(q.toLowerCase()));
+            // BÚSQUEDA PROFUNDA EN TODOS LOS CAMPOS
+            const hits = knowledgeBase.filter(k => {
+                const text = (k.title + " " + (k.content || "") + " " + (k.nombre || "") + " " + (k.negocio || "") + " " + (k.ext || "") + " " + (k.area || "")).toLowerCase();
+                return text.includes(q.toLowerCase());
+            });
+
             let responseHTML = "";
             
             if(hits.length > 0) {
                 hits.forEach(item => {
-                    // RENDERIZADO DETALLADO EN CHAT
                     if (item.contentType === 'CERTIFICADO') {
                         responseHTML += `
                         <div class="bg-blue-50 p-4 rounded-xl mb-3 text-xs border border-blue-100 shadow-sm">
@@ -616,9 +677,7 @@
                             <div class="grid grid-cols-2 gap-2 text-slate-600">
                                 <div><span class="font-bold block text-[10px] text-blue-400">Negocio</span>${item.negocio || 'N/A'}</div>
                                 <div><span class="font-bold block text-[10px] text-blue-400">Entorno</span>${item.entorno || 'N/A'}</div>
-                                <div><span class="font-bold block text-[10px] text-blue-400">Inicio</span>${item.vigenciaInicio || 'N/A'}</div>
-                                <div><span class="font-bold block text-[10px] text-blue-400">Fin</span>${item.vigenciaFin || 'N/A'}</div>
-                                <div><span class="font-bold block text-[10px] text-blue-400">Tipo</span>${item.tipoCert || 'N/A'}</div>
+                                <div><span class="font-bold block text-[10px] text-blue-400">Vigencia</span>${item.vigenciaFin || 'N/A'}</div>
                                 <div><span class="font-bold block text-[10px] text-blue-400">Estatus</span><span class="${(item.estatus||'').includes('VIGENTE') ? 'text-emerald-600' : 'text-red-500'} font-bold">${item.estatus || 'N/A'}</span></div>
                             </div>
                         </div>`;
@@ -636,7 +695,7 @@
                         responseHTML += `
                         <div class="bg-white p-3 border border-slate-200 rounded-lg mb-2 text-xs shadow-sm">
                             <div class="font-bold text-slate-800 mb-1 flex items-center gap-2"><i class="fas fa-file-alt text-blue-500"></i> ${item.title || 'Documento'}</div>
-                            <div class="text-slate-500 leading-relaxed whitespace-pre-wrap">${item.content || 'Sin contenido'}</div>
+                            <div class="text-slate-500 leading-relaxed whitespace-pre-wrap">${item.content || ''}</div>
                         </div>`;
                     }
                 });
@@ -658,7 +717,7 @@
         // --- INIT ---
         function login(user) {
             currentUser = user;
-            localStorage.setItem('spei_v19_0', JSON.stringify(user));
+            localStorage.setItem('spei_v23_0_session', JSON.stringify(user));
             document.body.setAttribute('data-role', user.role);
             
             document.getElementById('login-screen').classList.add('hidden-ui');
@@ -683,7 +742,7 @@
                         team = s.docs.map(d => ({id:d.id, ...d.data()}));
                         if(team.length===0) setDoc(doc(db,'artifacts','chatbot-8d0a3','public','data','team','682930'), {name:"Daniel Anzaldo", role:"admin", empNumber:"682930"});
                         
-                        const saved = localStorage.getItem('spei_v19_0');
+                        const saved = localStorage.getItem('spei_v23_0_session');
                         if(saved) {
                             const usr = team.find(x => x.empNumber === JSON.parse(saved).empNumber);
                             if(usr) login(usr); else { document.getElementById('loading-screen').classList.add('hidden-ui'); document.getElementById('login-screen').classList.remove('hidden-ui'); }
@@ -694,14 +753,15 @@
                     });
                     onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'knowledge'), s => {
                         knowledgeBase = s.docs.map(d => ({id:d.id, ...d.data()}));
-                        window.toast(`Sincronizados: ${knowledgeBase.length}`);
-                        // Force refresh if active
-                        if(document.body.dataset.viewType) renderList(document.body.dataset.viewType);
+                        const adminView = document.getElementById('view-table');
+                        if(adminView && !adminView.classList.contains('hidden-ui')) {
+                             const currentView = document.body.dataset.viewType;
+                             if(currentView) renderList(currentView);
+                        }
                     });
                 }
             });
         }
-        
         window.addEventListener('load', init);
     </script>
 </body>
