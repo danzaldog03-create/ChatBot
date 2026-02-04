@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Metaetiquetas para forzar actualización inmediata -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     
-    <title>SPEI Ops - v17.1 Estructurada</title>
+    <title>SPEI Ops - v19.0 Failsafe</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -53,7 +52,6 @@
         * { box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
         
-        /* Layout */
         .layout-container { display: flex; height: 100%; width: 100%; }
         .sidebar { width: 260px; background: #0f172a; color: #94a3b8; display: flex; flex-direction: column; border-right: 1px solid #1e293b; transition: transform 0.3s; flex-shrink: 0; z-index: 50; }
         .sidebar-header { padding: 1.5rem; border-bottom: 1px solid #1e293b; display: flex; align-items: center; gap: 0.75rem; color: white; font-weight: 800; font-size: 1.1rem; }
@@ -64,16 +62,13 @@
         .nav-item:hover { background: #1e293b; color: white; }
         .nav-item.active { background: #1e293b; color: white; border-left-color: #3b82f6; }
         
-        /* Main Content */
         .main-area { flex: 1; display: flex; flex-direction: column; background: white; position: relative; overflow: hidden; }
         .top-header { height: 4rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; background: white; shrink: 0; z-index: 20; }
         
-        /* Views */
         .view-section { flex: 1; overflow-y: auto; padding: 2rem; display: none; height: 100%; flex-direction: column; }
         .view-section.active { display: flex; } 
         #view-chat { padding: 0; }
         
-        /* Chat UI */
         .chat-box { flex: 1; overflow-y: auto; padding: 2rem; background: #f8fafc; }
         .chat-input-area { padding: 1.5rem 2rem; background: white; border-top: 1px solid #e2e8f0; }
         
@@ -82,8 +77,7 @@
         .bot-msg { align-self: flex-start; background: white; border: 1px solid #e2e8f0; color: #1e293b; border-bottom-left-radius: 0; width: 100%; }
         .bot-header { font-weight: 800; color: #0f172a; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
 
-        /* Admin Tables */
-        #table-content { flex: 1; overflow-y: auto; padding-bottom: 4rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 200px; }
+        #table-content { flex: 1; overflow-y: auto; padding-bottom: 4rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 300px; }
         .data-card { background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); min-height: 80px; }
         .data-card:hover { border-color: #3b82f6; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transform: translateY(-1px); }
         
@@ -93,12 +87,10 @@
         .badge-MANUAL { background: #f8fafc; color: #475569; }
         .badge-ARCHIVO { background: #fff7ed; color: #9a3412; }
 
-        /* Forms */
         .form-input { width: 100%; padding: 0.7rem; border: 1px solid #cbd5e1; rounded: 0.5rem; font-size: 0.85rem; outline: none; transition: 0.2s; background: white; color: #1e293b !important; font-weight: 600; }
         .form-input:focus { border-color: #2563eb; ring: 2px solid #bfdbfe; }
         .form-label { font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 0.25rem; display: block; text-transform: uppercase; }
         
-        /* Overlays */
         .overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.95); backdrop-filter: blur(4px); z-index: 60; display: flex; align-items: center; justify-content: center; }
         .modal { background: white; width: 90%; max-width: 800px; max-height: 90vh; border-radius: 1rem; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
         
@@ -137,7 +129,7 @@
                 <button onclick="handleLogin()" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-lg font-bold shadow-lg transition-all active:scale-95 cursor-pointer">INGRESAR</button>
                 <p id="login-msg" class="text-red-500 text-xs font-bold mt-2 opacity-0 transition-opacity">Credenciales Incorrectas</p>
             </div>
-            <p class="mt-8 text-[10px] text-slate-400 font-bold uppercase tracking-wider">v17.1 • Daniel Anzaldo</p>
+            <p class="mt-8 text-[10px] text-slate-400 font-bold uppercase tracking-wider">v18.0 • Daniel Anzaldo</p>
         </div>
     </div>
 
@@ -210,10 +202,13 @@
 
             <!-- VISTA: ADMIN TABLA -->
             <div id="view-table" class="view-section hidden-ui h-full flex flex-col">
-                <div class="mb-4 sticky top-0 bg-[#f8fafc] z-10 py-2">
+                <div class="mb-4 sticky top-0 bg-[#f8fafc] z-10 py-2 flex gap-2">
                     <input type="text" id="table-search" placeholder="Filtrar registros..." class="form-input max-w-sm shadow-sm" onkeyup="filterList()">
+                    <button onclick="renderList(document.body.dataset.viewType)" class="w-10 h-10 bg-white border border-slate-300 rounded-lg flex items-center justify-center text-slate-500 hover:text-blue-600"><i class="fas fa-sync-alt"></i></button>
                 </div>
-                <div id="table-content" class="space-y-2 pb-20 overflow-y-auto"></div>
+                <div id="table-content" class="space-y-2 pb-20 overflow-y-auto">
+                    <!-- Aquí se renderiza la lista -->
+                </div>
             </div>
         </main>
     </div>
@@ -244,7 +239,7 @@
                             <div><label class="form-label">Últimos 4 Dígitos</label><input id="c-num" type="text" class="form-input uppercase" placeholder="Ej. 9A3F" maxlength="4"></div>
                             <div><label class="form-label">Negocio</label><select id="c-neg" class="form-input"><option>SPEI</option><option>CODI</option><option>DIMO</option><option>SPID</option><option>BDT</option><option>R2</option></select></div>
                             <div><label class="form-label">Entorno</label><select id="c-env" class="form-input"><option>PRODUCCION</option><option>BETA</option></select></div>
-                            <div><label class="form-label">Estatus</label><input type="text" id="c-stat" class="form-input" placeholder="Ej. Vigente, Revocado..."></div>
+                            <div><label class="form-label">Estatus (Libre)</label><input type="text" id="c-stat" class="form-input" placeholder="Ej. Vigente, Revocado..."></div>
                             <div><label class="form-label">Vigencia Inicio</label><input id="c-ini" type="date" class="form-input"></div>
                             <div><label class="form-label">Vigencia Fin</label><input id="c-fin" type="date" class="form-input"></div>
                             <select id="c-type" class="form-input col-span-2"><option>PRIVADO (.key)</option><option>PUBLICO (.cer)</option></select>
@@ -337,7 +332,6 @@
             const idInput = document.getElementById('login-id');
             if (!idInput) return;
             const id = idInput.value.trim();
-            
             if(id === "682930") {
                 const adminUser = { name: "Daniel Anzaldo", role: "admin", empNumber: "682930" };
                 login(adminUser);
@@ -354,7 +348,7 @@
             }
         };
 
-        window.logout = () => { localStorage.removeItem('spei_v17_1_session'); location.reload(); };
+        window.logout = () => { localStorage.removeItem('spei_v18_0_session'); location.reload(); };
 
         window.navigate = (view) => {
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -434,12 +428,11 @@
             const id = editId || "doc_" + Date.now();
             let data = { contentType: type, date: new Date().toISOString(), author: currentUser.name };
 
-            // GUARDADO ESTRUCTURADO (CAMPOS SEPARADOS)
+            // GUARDADO ESTRUCTURADO (BLINDADO)
             if(type === 'CERTIFICADO') {
                 const num = document.getElementById('c-num').value.trim().toUpperCase();
                 if(num.length !== 4) return alert("El certificado debe tener 4 dígitos");
                 data.title = `CERT ${num} (${document.getElementById('c-neg').value})`;
-                data.content = `CERT ${num}`; // Texto simple
                 // Campos Reales para la ficha
                 data.negocio = document.getElementById('c-neg').value;
                 data.entorno = document.getElementById('c-env').value;
@@ -448,6 +441,8 @@
                 data.vigenciaFin = document.getElementById('c-fin').value;
                 data.tipoCert = document.getElementById('c-type').value;
                 data.num = num;
+                // Texto plano para búsqueda simple
+                data.content = `CERTIFICADO ${num} | ${data.negocio} | ${data.entorno} | ${data.estatus}`;
             } else if (type === 'EXTENSION') {
                 const ext = document.getElementById('e-num').value.trim();
                 if(!ext) return window.toast("Falta extensión", true);
@@ -456,6 +451,7 @@
                 data.ext = ext;
                 data.nombre = document.getElementById('e-nom').value;
                 data.area = document.getElementById('e-area').value;
+                data.content = `EXTENSIÓN ${ext} | ${data.nombre} | ${data.area}`;
             } else {
                 data.title = document.getElementById('d-title').value;
                 data.content = document.getElementById('d-content').value;
@@ -463,18 +459,19 @@
             }
 
             try {
-                await setDoc(doc(db, 'artifacts', 'chatbot-8d0a3', 'public', 'data', 'knowledge', id), data, {merge:true});
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), data, {merge:true});
                 window.toast("Guardado");
                 window.closeModal('modal-capture');
                 document.querySelectorAll('input,textarea').forEach(i => i.value='');
                 const currentView = document.body.dataset.viewType;
+                // Forzar recarga de lista si estamos viendo la tabla
                 if(currentView) renderList(currentView);
             } catch(e) { window.toast("Error al guardar", true); }
         };
 
         window.deleteRec = async (id) => {
-            if(confirm("¿Eliminar registro?")) {
-                await deleteDoc(doc(db, 'artifacts', 'chatbot-8d0a3', 'public', 'data', 'knowledge', id));
+            if(confirm("¿Estás seguro de eliminar este registro permanentemente?")) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id));
                 const currentView = document.body.dataset.viewType;
                 if(currentView) renderList(currentView);
             }
@@ -524,50 +521,64 @@
             if(e.contentType === 'MANUAL') { document.getElementById('d-title').value = e.title; document.getElementById('d-content').value = e.content; }
         };
 
-        // --- RENDER (A PRUEBA DE FALLOS) ---
+        // --- RENDER ROBUSTO ---
         function renderList(type, term = "") {
             const list = document.getElementById('table-content');
             if(!list) return;
             
             let html = "";
             
-            if(type === 'USERS') {
-                let data = team;
-                if(term) data = data.filter(u => u.name.toLowerCase().includes(term) || u.empNumber.includes(term));
-                html = data.map(u => `
-                    <div class="data-card">
-                        <div><div class="font-bold text-sm">${u.name}</div><div class="text-xs text-slate-500">${u.empNumber} • ${u.role}</div></div>
-                        <button onclick="deleteUser('${u.empNumber}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
-                    </div>`).join('');
-            } else {
-                let data = knowledgeBase;
-                if(type !== 'ALL') {
-                    data = knowledgeBase.filter(k => k.contentType === type);
-                }
-                
-                if(term) data = data.filter(d => (d.title+(d.content||"")).toLowerCase().includes(term));
+            try {
+                if(type === 'USERS') {
+                    let data = team;
+                    if(term) data = data.filter(u => u.name.toLowerCase().includes(term) || u.empNumber.includes(term));
+                    html = data.map(u => `
+                        <div class="data-card">
+                            <div><div class="font-bold text-sm">${u.name}</div><div class="text-xs text-slate-500">${u.empNumber} • ${u.role}</div></div>
+                            <button onclick="deleteUser('${u.empNumber}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                        </div>`).join('');
+                } else {
+                    let data = knowledgeBase;
+                    if(type !== 'ALL') {
+                        data = knowledgeBase.filter(k => k.contentType === type);
+                    }
+                    
+                    if(term) data = data.filter(d => (d.title+(d.content||"")).toLowerCase().includes(term));
 
-                if (data.length === 0) {
-                    list.innerHTML = `<div class="text-center py-10 text-slate-400 italic text-sm">No se encontraron registros.</div>`;
-                    return;
-                }
-
-                list.innerHTML = data.map(item => `
-                    <div class="data-card">
-                        <div class="overflow-hidden w-full">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="badge ${item.contentType==='CERTIFICADO'?'badge-cert':(item.contentType==='EXTENSION'?'badge-ext':'badge-doc')}">${item.contentType || 'DOC'}</span>
-                                <span class="text-[9px] text-slate-400">${item.date ? new Date(item.date).toLocaleDateString() : ''}</span>
+                    if (data.length === 0) {
+                        html = `<div class="text-center py-10 text-slate-400 italic text-sm">No se encontraron registros.</div>`;
+                    } else {
+                        html = data.map(item => {
+                            let desc = item.content || "Sin contenido";
+                            // Fallback visual si es certificado estructurado
+                            if (item.contentType === 'CERTIFICADO') {
+                                desc = `${item.negocio || 'N/A'} - ${item.estatus || 'N/A'}`;
+                            }
+                            // Formateo de fecha seguro
+                            let dateStr = "";
+                            try { dateStr = item.date ? new Date(item.date).toLocaleDateString() : 'Sin fecha'; } catch(e) { dateStr = "Error fecha"; }
+                            
+                            return `
+                            <div class="data-card">
+                                <div class="overflow-hidden w-full">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="badge ${item.contentType==='CERTIFICADO'?'badge-cert':(item.contentType==='EXTENSION'?'badge-ext':'badge-doc')}">${item.contentType || 'DOC'}</span>
+                                        <span class="text-[9px] text-slate-400">${dateStr}</span>
+                                    </div>
+                                    <h4 class="font-bold text-sm text-slate-800 truncate">${item.title || 'Sin título'}</h4>
+                                    <p class="text-xs text-slate-500 line-clamp-1">${desc}</p>
+                                </div>
+                                <div class="flex gap-2 shrink-0 ml-4">
+                                    <button onclick="editEntry('${item.id}')" class="w-8 h-8 rounded bg-blue-50 text-blue-500 hover:bg-blue-100 flex items-center justify-center transition-colors"><i class="fas fa-pen"></i></button>
+                                    <button onclick="deleteRec('${item.id}')" class="w-8 h-8 rounded bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition-colors"><i class="fas fa-trash"></i></button>
+                                </div>
                             </div>
-                            <h4 class="font-bold text-sm text-slate-800 truncate">${item.title || 'Sin título'}</h4>
-                            <p class="text-xs text-slate-500 line-clamp-1">${item.content || item.negocio || item.nombre || 'Sin contenido'}</p>
-                        </div>
-                        <div class="flex gap-2 shrink-0 ml-4">
-                            <button onclick="editEntry('${item.id}')" class="w-8 h-8 rounded bg-blue-50 text-blue-500 hover:bg-blue-100 flex items-center justify-center transition-colors"><i class="fas fa-pen"></i></button>
-                            <button onclick="deleteRec('${item.id}')" class="w-8 h-8 rounded bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition-colors"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-                `).join('');
+                        `;}).join('');
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                html = `<div class="text-center py-10 text-red-400 italic text-sm">Error al mostrar datos. Intenta recargar.</div>`;
             }
             list.innerHTML = html;
         }
@@ -601,7 +612,7 @@
                         responseHTML += `
                         <div class="bg-blue-50 p-4 rounded-xl mb-3 text-xs border border-blue-100 shadow-sm">
                             <div class="flex items-center gap-2 mb-2 font-black text-blue-800 uppercase">
-                                <i class="fas fa-certificate"></i> ${item.title}
+                                <i class="fas fa-certificate"></i> ${item.title || 'Certificado'}
                             </div>
                             <div class="grid grid-cols-2 gap-2 text-slate-600">
                                 <div><span class="font-bold block text-[10px] text-blue-400">Negocio</span>${item.negocio || 'N/A'}</div>
@@ -625,8 +636,8 @@
                     } else {
                         responseHTML += `
                         <div class="bg-white p-3 border border-slate-200 rounded-lg mb-2 text-xs shadow-sm">
-                            <div class="font-bold text-slate-800 mb-1 flex items-center gap-2"><i class="fas fa-file-alt text-blue-500"></i> ${item.title}</div>
-                            <div class="text-slate-500 leading-relaxed whitespace-pre-wrap">${item.content || ''}</div>
+                            <div class="font-bold text-slate-800 mb-1 flex items-center gap-2"><i class="fas fa-file-alt text-blue-500"></i> ${item.title || 'Documento'}</div>
+                            <div class="text-slate-500 leading-relaxed whitespace-pre-wrap">${item.content || 'Sin contenido'}</div>
                         </div>`;
                     }
                 });
@@ -648,7 +659,7 @@
         // --- INIT ---
         function login(user) {
             currentUser = user;
-            localStorage.setItem('spei_v17_1_session', JSON.stringify(user));
+            localStorage.setItem('spei_v18_0_session', JSON.stringify(user));
             document.body.setAttribute('data-role', user.role);
             
             document.getElementById('login-screen').classList.add('hidden-ui');
@@ -673,7 +684,7 @@
                         team = s.docs.map(d => ({id:d.id, ...d.data()}));
                         if(team.length===0) setDoc(doc(db,'artifacts','chatbot-8d0a3','public','data','team','682930'), {name:"Daniel Anzaldo", role:"admin", empNumber:"682930"});
                         
-                        const saved = localStorage.getItem('spei_v17_1_session');
+                        const saved = localStorage.getItem('spei_v18_0_session');
                         if(saved) {
                             const usr = team.find(x => x.empNumber === JSON.parse(saved).empNumber);
                             if(usr) login(usr); else { document.getElementById('loading-screen').classList.add('hidden-ui'); document.getElementById('login-screen').classList.remove('hidden-ui'); }
@@ -684,6 +695,7 @@
                     });
                     onSnapshot(collection(db, 'artifacts', 'chatbot-8d0a3', 'public', 'data', 'knowledge'), s => {
                         knowledgeBase = s.docs.map(d => ({id:d.id, ...d.data()}));
+                        window.toast(`Sincronizados ${knowledgeBase.length} registros`);
                         const adminView = document.getElementById('view-table');
                         if(adminView && !adminView.classList.contains('hidden-ui')) {
                              const currentView = document.body.dataset.viewType;
