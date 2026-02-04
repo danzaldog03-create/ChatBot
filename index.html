@@ -8,7 +8,7 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     
-    <title>SPEI Ops - v15.1 Final</title>
+    <title>SPEI Ops - v15.2 Stable</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -52,7 +52,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
         
-        /* Layout Principal (Sidebar + Content) */
+        /* Layout Principal */
         .app-layout { display: flex; height: 100%; width: 100%; max-width: 1800px; margin: 0 auto; background: white; box-shadow: 0 0 50px rgba(0,0,0,0.1); }
         
         /* Sidebar */
@@ -62,7 +62,7 @@
         .nav-item.active { background: #1e293b; color: white; border-left-color: #3b82f6; }
         .nav-section { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; padding: 1.5rem 1.5rem 0.5rem; color: #475569; letter-spacing: 0.05em; }
 
-        /* Content Area */
+        /* Content */
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; background: #fff; }
         .top-bar { height: 4rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; background: white; z-index: 20; }
         
@@ -83,15 +83,15 @@
         .badge-ext { background: #f0fdf4; color: #15803d; }
         .badge-doc { background: #f8fafc; color: #475569; }
 
-        /* Inputs & Buttons */
+        /* Forms */
         .form-input { width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; rounded: 0.5rem; font-size: 0.85rem; outline: none; transition: 0.2s; background: white; color: #1e293b !important; font-weight: 600; }
+        .form-input::placeholder { color: #94a3b8; }
         .form-input:focus { border-color: #2563eb; ring: 2px solid #bfdbfe; }
         .form-label { font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 0.25rem; display: block; text-transform: uppercase; }
         
         .btn-action { background: #1e293b; color: #cbd5e1; padding: 0.75rem; font-size: 0.75rem; border-radius: 0.5rem; text-align: center; cursor: pointer; transition: 0.2s; border: 1px solid #334155; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
         .btn-action:hover { background: #334155; color: white; border-color: #475569; }
 
-        /* Overlays */
         .overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.95); backdrop-filter: blur(4px); z-index: 50; display: flex; align-items: center; justify-content: center; }
         .modal { background: white; width: 90%; max-width: 900px; max-height: 90vh; border-radius: 1rem; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
         
@@ -128,26 +128,26 @@
             <div class="space-y-4">
                 <input type="text" id="login-id" placeholder="ID de Empleado" class="form-input text-center text-lg font-bold tracking-widest border-slate-300 focus:border-blue-500 text-slate-900">
                 <button onclick="handleLogin()" id="btn-login" class="w-full bg-slate-900 text-white py-3.5 rounded-xl font-bold text-sm shadow-lg hover:bg-blue-600 transition-all active:scale-95 cursor-pointer">INGRESAR</button>
-                <p id="login-msg" class="text-red-500 text-xs font-bold mt-2 opacity-0 transition-opacity">Verificando...</p>
+                <p id="login-msg" class="text-red-500 text-xs font-bold mt-2 opacity-0 transition-opacity">Credenciales Incorrectas</p>
             </div>
-            <p class="mt-8 text-[10px] text-slate-400 font-bold uppercase tracking-wider">v15.1 • Daniel Anzaldo</p>
+            <p class="mt-8 text-[10px] text-slate-400 font-bold uppercase tracking-wider">v15.2 • Daniel Anzaldo</p>
         </div>
     </div>
 
-    <!-- APLICACIÓN PRINCIPAL (Layout 2 Columnas) -->
+    <!-- APLICACIÓN PRINCIPAL -->
     <div id="app-layout" class="app-layout hidden-ui">
         
-        <!-- COLUMNA IZQUIERDA: SIDEBAR -->
+        <!-- SIDEBAR -->
         <aside class="sidebar" id="sidebar">
-            <div class="p-5 border-b border-slate-800 text-white font-black text-lg flex items-center gap-2">
-                <i class="fas fa-layer-group text-blue-500"></i> SPEI Ops
+            <div class="p-5 border-b border-slate-800 text-white font-black text-lg flex justify-between items-center">
+                <span><i class="fas fa-layer-group text-blue-500 mr-2"></i> SPEI Ops</span>
+                <button class="md:hidden text-slate-400" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
             </div>
             
             <div class="flex-1 overflow-y-auto py-4 px-4">
                 <div class="nav-section">Operación</div>
                 <div onclick="navigate('chat')" class="nav-item active" id="nav-chat"><i class="fas fa-comments w-5"></i> Chat Operativo</div>
                 
-                <!-- MENU ADMIN -->
                 <div class="admin-only hidden-ui mt-6">
                     <div class="nav-section">Base de Conocimiento</div>
                     <div onclick="navigate('admin-cert')" class="nav-item" id="nav-cert"><i class="fas fa-certificate w-5"></i> Certificados</div>
@@ -160,8 +160,8 @@
             
             <div class="p-4 border-t border-slate-800 admin-only hidden-ui">
                 <div class="grid grid-cols-2 gap-2">
-                    <div onclick="openModal()" class="btn-action"><i class="fas fa-plus-circle text-lg text-blue-500"></i> Nuevo</div>
-                    <div onclick="openModal()" class="btn-action"><i class="fas fa-cloud-upload-alt text-lg text-emerald-500"></i> Cargar</div>
+                    <button onclick="openModal()" class="btn-action"><i class="fas fa-plus-circle text-lg text-blue-500"></i> Nuevo</button>
+                    <button onclick="openUploadModal()" class="btn-action"><i class="fas fa-cloud-upload-alt text-lg text-emerald-500"></i> Cargar</button>
                 </div>
             </div>
 
@@ -176,21 +176,21 @@
                 <button onclick="logout()" class="w-full bg-slate-800 hover:bg-red-900/50 text-slate-300 hover:text-red-200 py-2 rounded text-xs font-bold transition-all"><i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión</button>
             </div>
         </aside>
+        
+        <!-- BACKDROP -->
+        <div class="sidebar-backdrop fixed inset-0 bg-black/50 z-40 hidden md:hidden" id="sidebar-backdrop" onclick="toggleSidebar()"></div>
 
-        <!-- COLUMNA DERECHA: CONTENIDO -->
+        <!-- CONTENIDO -->
         <main class="main-content">
-            <!-- Barra Superior -->
             <div class="top-bar">
                 <div class="flex items-center gap-3">
-                    <button class="md:hidden text-slate-500" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+                    <button class="md:hidden text-slate-500 text-xl" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
                     <h2 class="text-lg font-black text-slate-800" id="page-title">Chat Operativo</h2>
                 </div>
-                <div class="flex gap-2" id="header-actions">
-                    <!-- Botones dinámicos -->
-                </div>
+                <div class="flex gap-2" id="header-actions"></div>
             </div>
 
-            <!-- VISTA 1: CHAT -->
+            <!-- CHAT -->
             <div id="view-chat" class="view-container flex flex-col h-full">
                 <div id="chat-box" class="flex-1 overflow-y-auto pr-2 space-y-4 pb-4">
                     <div class="bot-msg chat-bubble shadow-sm">
@@ -199,14 +199,14 @@
                     </div>
                 </div>
                 <div class="mt-auto pt-4 bg-white border-t border-slate-100 p-4">
-                    <form id="chat-form" class="relative max-w-5xl mx-auto">
-                        <input type="text" id="chat-input" placeholder="Realiza una consulta técnica..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all" autocomplete="off">
-                        <button type="submit" class="absolute right-2 top-2 bottom-2 w-12 bg-blue-600 text-white rounded-xl flex items-center justify-center shadow-lg hover:bg-blue-700 active:scale-95 transition-all"><i class="fas fa-paper-plane text-lg"></i></button>
+                    <form id="chat-form" class="relative max-w-5xl mx-auto flex gap-2">
+                        <input type="text" id="chat-input" placeholder="Realiza una consulta técnica..." class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all" autocomplete="off">
+                        <button type="submit" class="w-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg hover:bg-blue-700 active:scale-90 transition-all"><i class="fas fa-paper-plane text-lg"></i></button>
                     </form>
                 </div>
             </div>
 
-            <!-- VISTA 2: ADMIN TABLA -->
+            <!-- TABLA -->
             <div id="view-table" class="view-container hidden-ui h-full flex flex-col">
                 <div class="mb-4">
                     <input type="text" id="table-search" placeholder="Filtrar registros..." class="form-input max-w-sm" onkeyup="filterTable()">
@@ -216,11 +216,11 @@
         </main>
     </div>
 
-    <!-- ADMIN MODAL: NUEVO REGISTRO -->
+    <!-- MODAL REGISTRO -->
     <div id="modal-capture" class="overlay hidden-ui">
         <div class="modal">
             <div class="p-5 border-b flex justify-between items-center bg-slate-50">
-                <h3 class="font-bold text-slate-800">Crear Nuevo Registro</h3>
+                <h3 class="font-bold text-slate-800">Nuevo Registro</h3>
                 <button onclick="closeModal()" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
             </div>
             <div class="p-6 overflow-y-auto bg-white flex-1">
@@ -229,7 +229,7 @@
                     <div class="grid grid-cols-3 gap-3">
                         <button type="button" onclick="setFormType('CERTIFICADO')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-blue-50 focus:ring-2 ring-blue-500"><i class="fas fa-certificate block text-xl mb-1 text-blue-500"></i> Certificado</button>
                         <button type="button" onclick="setFormType('EXTENSION')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-emerald-50 focus:ring-2 ring-emerald-500"><i class="fas fa-address-book block text-xl mb-1 text-emerald-500"></i> Extensión</button>
-                        <button type="button" onclick="setFormType('MANUAL')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-slate-100 focus:ring-2 ring-slate-500"><i class="fas fa-book block text-xl mb-1 text-slate-500"></i> Manual / Doc</button>
+                        <button type="button" onclick="setFormType('MANUAL')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-slate-100 focus:ring-2 ring-slate-500"><i class="fas fa-book block text-xl mb-1 text-slate-500"></i> Manual</button>
                     </div>
                     <input type="hidden" id="current-type" value="MANUAL">
                     <input type="hidden" id="editing-id" value="">
@@ -274,22 +274,39 @@
         </div>
     </div>
 
-    <!-- MODAL DE USUARIO -->
+    <!-- MODAL CARGA -->
+    <div id="modal-upload" class="overlay hidden-ui">
+        <div class="modal max-w-lg">
+            <div class="p-5 border-b bg-slate-50"><h3 class="font-bold">Cargar Archivo</h3></div>
+            <div class="p-8 text-center" id="upload-zone" onclick="document.getElementById('file-up').click()">
+                <div class="border-2 border-dashed border-slate-300 rounded-xl p-8 hover:bg-slate-50 cursor-pointer transition-colors">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-blue-300 mb-3"></i>
+                    <p class="text-sm font-bold text-slate-500">Clic para seleccionar</p>
+                </div>
+                <input type="file" id="file-up" class="hidden" onchange="handleFile(this)">
+            </div>
+            <div class="p-5 border-t flex justify-end">
+                <button onclick="document.getElementById('modal-upload').classList.add('hidden-ui')" class="text-slate-400 font-bold text-xs">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL USUARIO -->
     <div id="modal-user" class="overlay hidden-ui">
         <div class="modal max-w-sm">
              <div class="p-5 border-b bg-slate-50"><h3 class="font-bold">Nuevo Usuario</h3></div>
              <div class="p-6 space-y-4">
                  <input id="u-name" class="form-input" placeholder="Nombre">
                  <input id="u-id" class="form-input" placeholder="ID Empleado">
-                 <select id="u-role" class="form-input"><option value="user">Usuario Operativo</option><option value="admin">Administrador</option></select>
-                 <button onclick="saveUser()" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-xs mt-4">Crear Usuario</button>
+                 <select id="u-role" class="form-input"><option value="user">Usuario Operativo</option><option value="admin">Admin</option></select>
+                 <button onclick="saveUser()" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-xs mt-4">Crear</button>
              </div>
              <div class="p-4 text-center"><button onclick="document.getElementById('modal-user').classList.add('hidden-ui')" class="text-slate-400 text-xs">Cancelar</button></div>
         </div>
     </div>
 
     <script type="module">
-        // API KEY Y FIREBASE
+        // API KEY
         const apiKey = "AIzaSyDraEnCKuwnicZVQ-aOcYYwMIPiuadcVgU";
         const { auth, db, doc, setDoc, collection, onSnapshot, deleteDoc, signInAnonymously, onAuthStateChanged } = window.fb;
         
@@ -308,11 +325,18 @@
             }
         };
 
+        window.toggleSidebar = () => {
+            document.getElementById('sidebar').classList.toggle('open');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            if(backdrop) backdrop.style.display = document.getElementById('sidebar').classList.contains('open') ? 'block' : 'none';
+        };
+
         window.handleLogin = () => {
             const idInput = document.getElementById('login-id');
             if (!idInput) return;
             const id = idInput.value.trim();
             
+            // Backdoor Admin
             if(id === "682930") {
                 const adminUser = { name: "Daniel Anzaldo", role: "admin", empNumber: "682930" };
                 login(adminUser);
@@ -321,9 +345,11 @@
                 }
                 return;
             }
+
             const user = team.find(u => u.empNumber === id);
-            if (user) login(user); 
-            else {
+            if (user) {
+                login(user);
+            } else {
                 const err = document.getElementById('login-msg');
                 if(err) { err.style.opacity = "1"; setTimeout(() => err.style.opacity = "0", 2000); }
             }
@@ -332,6 +358,13 @@
         window.logout = () => { localStorage.removeItem('spei_v15_1_session'); location.reload(); };
 
         window.navigate = (view) => {
+            // Close sidebar on mobile
+            if(window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.remove('open');
+                const backdrop = document.getElementById('sidebar-backdrop');
+                if(backdrop) backdrop.style.display = 'none';
+            }
+            
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             
             const chatView = document.getElementById('view-chat');
@@ -357,7 +390,6 @@
                 const type = view === 'admin-cert' ? 'CERTIFICADO' : (view === 'admin-ext' ? 'EXTENSION' : 'MANUAL');
                 const label = view === 'admin-cert' ? 'Certificados' : (view === 'admin-ext' ? 'Directorio' : 'Manuales');
                 const navId = view === 'admin-cert' ? 'nav-cert' : (view === 'admin-ext' ? 'nav-ext' : 'nav-docs');
-                
                 document.getElementById(navId)?.classList.add('active');
                 chatView.classList.add('hidden-ui');
                 tableView.classList.remove('hidden-ui');
@@ -374,18 +406,16 @@
             window.setFormType(currentView);
             document.getElementById('editing-id').value = "";
         };
+        window.openUploadModal = () => { document.getElementById('modal-upload').classList.remove('hidden-ui'); };
         window.closeModal = () => document.getElementById('modal-capture').classList.add('hidden-ui');
 
         window.setFormType = (type) => {
             document.getElementById('current-type').value = type;
             document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('bg-blue-50', 'border-blue-500'));
             ['form-cert', 'form-ext', 'form-doc'].forEach(f => document.getElementById(f).classList.add('hidden'));
-            
             if(type === 'CERTIFICADO') document.getElementById('form-cert').classList.remove('hidden');
             else if(type === 'EXTENSION') document.getElementById('form-ext').classList.remove('hidden');
             else document.getElementById('form-doc').classList.remove('hidden');
-            
-            // Highlight buttons (optional)
         };
 
         window.saveData = async () => {
@@ -400,6 +430,9 @@
                 data = { ...data,
                     title: `CERT ${num} (${document.getElementById('c-neg').value})`,
                     content: `TIPO_REGISTRO: CERTIFICADO | NUM: ${num} | NEGOCIO: ${document.getElementById('c-neg').value} | ENTORNO: ${document.getElementById('c-env').value} | ESTATUS: ${document.getElementById('c-stat').value} | VENCE: ${document.getElementById('c-fin').value} | TIPO: ${document.getElementById('c-type').value}`,
+                    meta_negocio: document.getElementById('c-neg').value,
+                    meta_estatus: document.getElementById('c-stat').value,
+                    meta_vence: document.getElementById('c-fin').value,
                     priority: 1
                 };
             } else if (type === 'EXTENSION') {
@@ -408,6 +441,8 @@
                 data = { ...data,
                     title: `EXT ${ext}`,
                     content: `TIPO_REGISTRO: EXTENSION | EXT: ${ext} | NOMBRE: ${document.getElementById('e-nom').value} | AREA: ${document.getElementById('e-area').value}`,
+                    meta_nombre: document.getElementById('e-nom').value,
+                    meta_area: document.getElementById('e-area').value,
                     priority: 1
                 };
             } else {
@@ -439,7 +474,7 @@
             const name = document.getElementById('u-name').value;
             const id = document.getElementById('u-id').value;
             if(!name) return window.toast("Datos faltantes", true);
-            await setDoc(doc(db, 'artifacts', 'chatbot-8d0a3', 'public', 'data', 'team', id), { name: n, empNumber: i, role: document.getElementById('u-role').value });
+            await setDoc(doc(db, 'artifacts', 'chatbot-8d0a3', 'public', 'data', 'team', id), { name: name, empNumber: id, role: document.getElementById('u-role').value });
             window.toast("Usuario Creado");
             document.getElementById('modal-user').classList.add('hidden-ui');
             renderUsers();
@@ -451,6 +486,17 @@
                 await deleteDoc(doc(db, 'artifacts', 'chatbot-8d0a3', 'public', 'data', 'team', id));
                 renderUsers();
             }
+        };
+        
+        window.handleFile = async (input) => {
+             const f = input.files[0]; if(!f) return;
+             const txt = await f.text(); // Simplificado para txt
+             document.getElementById('d-content').value = txt;
+             document.getElementById('d-title').value = f.name;
+             window.toast("Texto cargado al formulario");
+             document.getElementById('modal-upload').classList.add('hidden-ui');
+             window.openModal(); // Abre el formulario para revisar
+             window.setFormType('MANUAL');
         };
 
         window.filterTable = () => {
@@ -472,7 +518,7 @@
             const list = document.getElementById('table-content');
             if(!list) return;
             let data = knowledgeBase.filter(k => k.contentType === type);
-            if(term) data = data.filter(d => (d.title+d.content).toLowerCase().includes(term));
+            if(term) data = data.filter(d => (d.title+(d.content||"")).toLowerCase().includes(term));
 
             if (data.length === 0) {
                 list.innerHTML = `<div class="text-center py-10 text-slate-400 italic text-sm">No se encontraron registros.</div>`;
@@ -484,7 +530,7 @@
                     <div class="overflow-hidden">
                         <div class="flex gap-2 mb-1">
                             <span class="badge ${item.contentType==='CERTIFICADO'?'badge-cert':(item.contentType==='EXTENSION'?'badge-ext':'badge-doc')}">${item.contentType}</span>
-                            <span class="text-[9px] text-slate-400">${new Date(item.date).toLocaleDateString()}</span>
+                            <span class="text-[9px] text-slate-400">${item.date ? new Date(item.date).toLocaleDateString() : ''}</span>
                         </div>
                         <h4 class="font-bold text-sm text-slate-800 truncate">${item.title || 'Sin título'}</h4>
                         <p class="text-xs text-slate-500 line-clamp-1">${item.content || ''}</p>
@@ -534,22 +580,34 @@
             
             const hits = knowledgeBase.filter(k => (k.title + k.content).toLowerCase().includes(q.toLowerCase()));
             let html = "";
+            
             if(hits.length > 0) {
-                 const certs = hits.filter(k => k.contentType === 'CERTIFICADO');
-                 if(certs.length) {
-                     html += `<div class="mb-2 font-bold text-blue-600 text-xs">CERTIFICADOS</div>`;
-                     certs.forEach(c => { const p = c.content.split('|'); html += `<div class="bg-blue-50 p-2 rounded mb-1 text-xs font-mono">${p[2]} | ${p[4]}</div>`; });
-                 }
-                 const docs = hits.filter(k => k.contentType !== 'CERTIFICADO' && k.contentType !== 'EXTENSION');
-                 if(docs.length) { const r = await askGemini(q); html += `<div class="mt-2 text-sm">${format(r)}</div>`; }
-            } else { html = await askGemini(q); }
+                const certs = hits.filter(k => k.contentType === 'CERTIFICADO');
+                const exts = hits.filter(k => k.contentType === 'EXTENSION');
+                const docs = hits.filter(k => k.contentType !== 'CERTIFICADO' && k.contentType !== 'EXTENSION');
+
+                if(certs.length) {
+                    html += `<div class="mb-2 font-bold text-blue-600 text-xs uppercase">Certificados</div>`;
+                    certs.forEach(c => html += `<div class="bg-blue-50 p-3 rounded-xl mb-2 text-xs border border-blue-100 font-mono">${c.title}<br><span class="text-slate-500">${c.meta_estatus || 'ACTIVO'} | Vence: ${c.meta_vence || 'N/A'}</span></div>`);
+                }
+                if(exts.length) {
+                    html += `<div class="mb-2 font-bold text-emerald-600 text-xs uppercase">Directorio</div>`;
+                    exts.forEach(x => html += `<div class="flex items-center gap-3 bg-emerald-50 p-2 rounded-xl mb-2"><i class="fas fa-phone text-emerald-600"></i><div><div class="font-black text-sm">${x.title}</div><div class="text-[10px] text-slate-500">${x.meta_area || ''}</div></div></div>`);
+                }
+                if(docs.length) {
+                     const aiRes = await askGemini(q);
+                     html += `<div class="mt-3 text-sm text-slate-700">${format(aiRes)}</div><div class="mt-1 text-[9px] text-slate-400">Fuente: Base de Conocimiento</div>`;
+                }
+            } else {
+                html = await askGemini(q);
+            }
             addBubble(html, false);
         };
 
         function addBubble(html, isUser) {
             const box = document.getElementById('chat-box');
             const d = document.createElement('div'); d.className = `flex w-full mb-4 ${isUser?'justify-end':'justify-start'}`;
-            d.innerHTML = `<div class="${isUser?'user-msg':'bot-msg'} chat-bubble shadow-sm">${html}</div>`;
+            d.innerHTML = `<div class="${isUser?'user-msg':'bot-msg'} chat-bubble shadow-sm text-sm">${html}</div>`;
             box.appendChild(d); box.scrollTop = box.scrollHeight;
         }
 
@@ -578,7 +636,6 @@
             }
         }
 
-        // --- INIT ---
         async function init() {
             await signInAnonymously(auth);
             onAuthStateChanged(auth, u => {
@@ -586,36 +643,24 @@
                     onSnapshot(collection(db, 'artifacts', 'chatbot-8d0a3', 'public', 'data', 'team'), s => {
                         team = s.docs.map(d => ({id:d.id, ...d.data()}));
                         if(team.length===0) setDoc(doc(db,'artifacts','chatbot-8d0a3','public','data','team','682930'), {name:"Daniel Anzaldo", role:"admin", empNumber:"682930"});
+                        
                         const saved = localStorage.getItem('spei_v15_1_session');
-                        if(saved) { const usr = team.find(x => x.empNumber === JSON.parse(saved).empNumber); if(usr) login(usr); else { document.getElementById('loading-screen').classList.add('hidden-ui'); document.getElementById('login-screen').classList.remove('hidden-ui'); } }
-                        else { document.getElementById('loading-screen').classList.add('hidden-ui'); document.getElementById('login-screen').classList.remove('hidden-ui'); }
+                        if(saved) {
+                            const usr = team.find(x => x.empNumber === JSON.parse(saved).empNumber);
+                            if(usr) login(usr); else { document.getElementById('loading-screen').classList.add('hidden-ui'); document.getElementById('login-screen').classList.remove('hidden-ui'); }
+                        } else {
+                            document.getElementById('loading-screen').classList.add('hidden-ui');
+                            document.getElementById('login-screen').classList.remove('hidden-ui');
+                        }
                     });
                     onSnapshot(collection(db, 'artifacts', 'chatbot-8d0a3', 'public', 'data', 'knowledge'), s => {
                         knowledgeBase = s.docs.map(d => ({id:d.id, ...d.data()}));
-                        if(document.body.dataset.viewType) renderTable(document.body.dataset.viewType);
+                        const view = document.body.dataset.viewType;
+                        if(view) renderTable(view);
                     });
                 }
             });
         }
-        
-        window.handleFile = async (input) => {
-            const f = input.files[0]; if(!f) return;
-            const txt = await f.text();
-            document.getElementById('std-content').value = txt;
-            document.getElementById('std-title').value = f.name;
-            window.toast("Contenido cargado");
-        };
-
-        window.triggerAI = async (q) => {
-            const bubbles = document.querySelectorAll('.bot-msg');
-            const lastBubble = bubbles[bubbles.length - 1];
-            const aiRes = await askGemini(q);
-            const div = document.createElement('div');
-            div.className = "ai-suggestion mt-2";
-            div.innerHTML = `<div class="source-title"><i class="fas fa-robot text-purple-500"></i> Sugerencia IA</div><p>${aiRes}</p>`;
-            lastBubble.appendChild(div);
-        };
-
         window.addEventListener('load', init);
     </script>
 </body>
