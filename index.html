@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- No Cache -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     
-    <title>SPEI Ops - v19.0 Failsafe</title>
+    <title>SPEI Ops - Panel v21.0</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -52,6 +53,7 @@
         * { box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
         
+        /* Layout */
         .layout-container { display: flex; height: 100%; width: 100%; }
         .sidebar { width: 260px; background: #0f172a; color: #94a3b8; display: flex; flex-direction: column; border-right: 1px solid #1e293b; transition: transform 0.3s; flex-shrink: 0; z-index: 50; }
         .sidebar-header { padding: 1.5rem; border-bottom: 1px solid #1e293b; display: flex; align-items: center; gap: 0.75rem; color: white; font-weight: 800; font-size: 1.1rem; }
@@ -62,12 +64,14 @@
         .nav-item:hover { background: #1e293b; color: white; }
         .nav-item.active { background: #1e293b; color: white; border-left-color: #3b82f6; }
         
+        /* Main Content */
         .main-area { flex: 1; display: flex; flex-direction: column; background: white; position: relative; overflow: hidden; }
         .top-header { height: 4rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; background: white; shrink: 0; z-index: 20; }
         
-        .view-section { flex: 1; overflow-y: auto; padding: 2rem; display: none; height: 100%; flex-direction: column; }
-        .view-section.active { display: flex; } 
-        #view-chat { padding: 0; }
+        /* Views & Chat */
+        .view-section { flex: 1; overflow-y: auto; padding: 1.5rem; background: #f8fafc; height: 100%; flex-direction: column; display: none; }
+        /* IMPORTANTE: Clase para mostrar vistas */
+        .view-section.show-flex { display: flex; }
         
         .chat-box { flex: 1; overflow-y: auto; padding: 2rem; background: #f8fafc; }
         .chat-input-area { padding: 1.5rem 2rem; background: white; border-top: 1px solid #e2e8f0; }
@@ -77,7 +81,8 @@
         .bot-msg { align-self: flex-start; background: white; border: 1px solid #e2e8f0; color: #1e293b; border-bottom-left-radius: 0; width: 100%; }
         .bot-header { font-weight: 800; color: #0f172a; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
 
-        #table-content { flex: 1; overflow-y: auto; padding-bottom: 4rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 300px; }
+        /* Admin Tables */
+        #table-content { flex: 1; overflow-y: auto; padding-bottom: 6rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 300px; }
         .data-card { background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); min-height: 80px; }
         .data-card:hover { border-color: #3b82f6; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transform: translateY(-1px); }
         
@@ -114,7 +119,7 @@
     <div id="loading-screen" class="overlay">
         <div class="text-center">
             <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Iniciando Sistema...</p>
+            <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Iniciando...</p>
         </div>
     </div>
 
@@ -129,7 +134,7 @@
                 <button onclick="handleLogin()" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-lg font-bold shadow-lg transition-all active:scale-95 cursor-pointer">INGRESAR</button>
                 <p id="login-msg" class="text-red-500 text-xs font-bold mt-2 opacity-0 transition-opacity">Credenciales Incorrectas</p>
             </div>
-            <p class="mt-8 text-[10px] text-slate-400 font-bold uppercase tracking-wider">v18.0 • Daniel Anzaldo</p>
+            <p class="mt-8 text-[10px] text-slate-400 font-bold uppercase tracking-wider">v17.0 • Daniel Anzaldo</p>
         </div>
     </div>
 
@@ -149,6 +154,7 @@
                 
                 <div class="admin-only hidden-ui">
                     <div class="nav-section">Gestión de Conocimiento</div>
+                    <!-- PESTAÑA VER TODO (DEFAULT PARA ADMIN) -->
                     <div onclick="navigate('admin-all')" class="nav-item text-blue-400" id="nav-all"><i class="fas fa-globe w-5"></i> VER TODO</div>
                     <div onclick="navigate('admin-cert')" class="nav-item" id="nav-cert"><i class="fas fa-certificate w-5"></i> Certificados</div>
                     <div onclick="navigate('admin-ext')" class="nav-item" id="nav-ext"><i class="fas fa-address-book w-5"></i> Directorio</div>
@@ -185,11 +191,11 @@
             </div>
 
             <!-- VISTA: CHAT -->
-            <div id="view-chat" class="view-section active">
+            <div id="view-chat" class="view-section show-flex">
                 <div id="chat-box" class="chat-box space-y-4">
                     <div class="bot-msg chat-bubble shadow-sm w-full">
                         <div class="bot-header"><i class="fas fa-robot text-blue-600"></i> Asistente SPEI</div>
-                        <p>Sistema en línea. Consulta manuales, certificados o directorio.</p>
+                        <p>Sistema en línea. Base de datos sincronizada.</p>
                     </div>
                 </div>
                 <div class="mt-auto pt-4 bg-white border-t border-slate-100 p-4">
@@ -201,13 +207,14 @@
             </div>
 
             <!-- VISTA: ADMIN TABLA -->
-            <div id="view-table" class="view-section hidden-ui h-full flex flex-col">
+            <div id="view-table" class="view-section hidden-ui">
                 <div class="mb-4 sticky top-0 bg-[#f8fafc] z-10 py-2 flex gap-2">
                     <input type="text" id="table-search" placeholder="Filtrar registros..." class="form-input max-w-sm shadow-sm" onkeyup="filterList()">
                     <button onclick="renderList(document.body.dataset.viewType)" class="w-10 h-10 bg-white border border-slate-300 rounded-lg flex items-center justify-center text-slate-500 hover:text-blue-600"><i class="fas fa-sync-alt"></i></button>
                 </div>
-                <div id="table-content" class="space-y-2 pb-20 overflow-y-auto">
+                <div id="table-content" class="space-y-2 pb-20 overflow-y-auto w-full">
                     <!-- Aquí se renderiza la lista -->
+                    <div class="text-center py-10 text-slate-400 italic">Cargando datos...</div>
                 </div>
             </div>
         </main>
@@ -305,14 +312,13 @@
 
     <script type="module">
         const apiKey = "AIzaSyDraEnCKuwnicZVQ-aOcYYwMIPiuadcVgU";
-        const { auth, db, doc, setDoc, collection, onSnapshot, deleteDoc, signInAnonymously, onAuthStateChanged } = window.fb;
+        const { auth, db, appId, doc, setDoc, collection, onSnapshot, deleteDoc, signInAnonymously, onAuthStateChanged } = window.fb;
         
         let currentUser = null;
         let knowledgeBase = [];
         let team = [];
-        let chatHistory = [];
-
-        // --- FUNCIONES GLOBALES ---
+        
+        // --- GLOBAL ---
         window.toast = (m, e) => {
             const t = document.getElementById('toast');
             if (t) {
@@ -328,30 +334,10 @@
             if(backdrop) backdrop.style.display = document.getElementById('sidebar').classList.contains('open') ? 'block' : 'none';
         };
 
-        window.handleLogin = () => {
-            const idInput = document.getElementById('login-id');
-            if (!idInput) return;
-            const id = idInput.value.trim();
-            if(id === "682930") {
-                const adminUser = { name: "Daniel Anzaldo", role: "admin", empNumber: "682930" };
-                login(adminUser);
-                if(!team.find(u => u.empNumber === "682930")) {
-                    setDoc(doc(db, 'artifacts', 'chatbot-8d0a3', 'public', 'data', 'team', '682930'), adminUser).catch(console.error);
-                }
-                return;
-            }
-            const user = team.find(u => u.empNumber === id);
-            if (user) login(user); 
-            else {
-                const err = document.getElementById('login-msg');
-                if(err) { err.style.opacity = "1"; setTimeout(() => err.style.opacity = "0", 2000); }
-            }
-        };
-
-        window.logout = () => { localStorage.removeItem('spei_v18_0_session'); location.reload(); };
-
         window.navigate = (view) => {
+            if(window.innerWidth < 768) document.getElementById('sidebar').classList.remove('open');
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
             const chatView = document.getElementById('view-chat');
             const tableView = document.getElementById('view-table');
             const title = document.getElementById('page-title');
@@ -359,51 +345,124 @@
 
             if(view === 'chat') {
                 document.getElementById('nav-chat').classList.add('active');
-                chatView.classList.remove('hidden-ui');
-                tableView.classList.add('hidden-ui');
+                chatView.classList.add('show-flex'); chatView.classList.remove('hidden-ui');
+                tableView.classList.remove('show-flex'); tableView.classList.add('hidden-ui');
                 title.innerText = "Chat Operativo";
                 actions.innerHTML = "";
-            } else if (view === 'admin-users') {
-                document.getElementById('nav-users').classList.add('active');
-                chatView.classList.add('hidden-ui');
-                tableView.classList.remove('hidden-ui');
-                title.innerText = "Usuarios";
-                document.body.dataset.viewType = "USERS";
-                actions.innerHTML = `<button onclick="document.getElementById('modal-user').classList.remove('hidden-ui')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all"><i class="fas fa-plus"></i> Usuario</button>`;
-                renderList('USERS');
             } else {
-                let type = 'MANUAL';
-                let label = 'Manuales';
-                let navId = 'nav-docs';
-
-                if(view === 'admin-cert') { type = 'CERTIFICADO'; label = 'Certificados'; navId = 'nav-cert'; }
-                if(view === 'admin-ext') { type = 'EXTENSION'; label = 'Directorio'; navId = 'nav-ext'; }
-                if(view === 'admin-files') { type = 'ARCHIVO'; label = 'Archivos'; navId = 'nav-files'; }
-                if(view === 'admin-all') { type = 'ALL'; label = 'Base Completa'; navId = 'nav-all'; }
-
-                document.getElementById(navId)?.classList.add('active');
-                chatView.classList.add('hidden-ui');
-                tableView.classList.remove('hidden-ui');
-                title.innerText = label;
-                document.body.dataset.viewType = type;
-                
-                if (view !== 'admin-files' && view !== 'admin-all') {
-                     actions.innerHTML = `<button onclick="window.openModal('modal-capture')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all"><i class="fas fa-plus"></i> Nuevo</button>`;
-                } else if(view === 'admin-files') {
-                     actions.innerHTML = `<button onclick="window.openUploadModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all"><i class="fas fa-upload"></i> Cargar</button>`;
+                // Admin Views
+                if(view === 'admin-users') {
+                    document.getElementById('nav-users').classList.add('active');
+                    title.innerText = "Usuarios";
+                    document.body.dataset.viewType = "USERS";
+                    actions.innerHTML = `<button onclick="window.openModal('modal-user')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold">Usuario +</button>`;
                 } else {
-                    actions.innerHTML = "";
+                    // Content Views
+                    let type = 'ALL';
+                    let label = 'Base Completa';
+                    let navId = 'nav-all';
+
+                    if(view === 'admin-cert') { type = 'CERTIFICADO'; label = 'Certificados'; navId = 'nav-cert'; }
+                    if(view === 'admin-ext') { type = 'EXTENSION'; label = 'Directorio'; navId = 'nav-ext'; }
+                    if(view === 'admin-files') { type = 'ARCHIVO'; label = 'Archivos'; navId = 'nav-files'; }
+                    if(view === 'admin-docs') { type = 'MANUAL'; label = 'Manuales'; navId = 'nav-docs'; }
+
+                    document.getElementById(navId)?.classList.add('active');
+                    title.innerText = label;
+                    document.body.dataset.viewType = type;
+                    
+                    if (view === 'admin-files') {
+                         actions.innerHTML = `<button onclick="window.openUploadModal()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold">Cargar</button>`;
+                    } else if (view !== 'admin-all') {
+                         actions.innerHTML = `<button onclick="window.openModal('modal-capture')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold">Nuevo</button>`;
+                    } else {
+                        actions.innerHTML = "";
+                    }
                 }
                 
-                renderList(type);
+                chatView.classList.remove('show-flex'); chatView.classList.add('hidden-ui');
+                tableView.classList.add('show-flex'); tableView.classList.remove('hidden-ui');
+                
+                // Force Render
+                setTimeout(() => {
+                    if (document.body.dataset.viewType === "USERS") renderUsers();
+                    else renderList(document.body.dataset.viewType);
+                }, 50);
             }
-            if(window.innerWidth < 768) window.toggleSidebar();
         };
 
+        // --- RENDER (BLINDADO) ---
+        function renderList(type, term = "") {
+            const list = document.getElementById('table-content');
+            if(!list) return;
+            
+            let html = "";
+            let data = knowledgeBase;
+
+            if(type === 'USERS') {
+                // User Logic
+                renderUsers(); return;
+            }
+
+            // Filter Data
+            if(type !== 'ALL') {
+                data = knowledgeBase.filter(k => k.contentType === type);
+            }
+            
+            if(term) data = data.filter(d => (d.title+(d.content||"")).toLowerCase().includes(term));
+
+            if (data.length === 0) {
+                list.innerHTML = `<div class="flex flex-col items-center justify-center h-40 text-slate-400"><i class="fas fa-folder-open text-2xl mb-2"></i><span class="text-sm">No hay registros encontrados</span></div>`;
+                return;
+            }
+
+            // Render Safe
+            html = data.map(item => {
+                let desc = item.content || "Sin contenido disponible";
+                let title = item.title || "Sin Título";
+                let typeBadge = item.contentType || "GENÉRICO";
+                
+                return `
+                <div class="data-card">
+                    <div class="overflow-hidden w-full pr-4">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="badge badge-${typeBadge} text-[9px]">${typeBadge}</span>
+                            <span class="text-[9px] text-slate-400">${item.date ? new Date(item.date).toLocaleDateString() : ''}</span>
+                        </div>
+                        <h4 class="font-bold text-sm text-slate-800 truncate">${title}</h4>
+                        <p class="text-xs text-slate-500 line-clamp-1">${desc}</p>
+                    </div>
+                    <div class="flex gap-2 shrink-0">
+                        <button onclick="deleteRec('${item.id}')" class="w-8 h-8 rounded bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition-colors"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>`;
+            }).join('');
+            
+            list.innerHTML = html;
+        }
+
+        window.renderUsers = (term = "") => {
+             const list = document.getElementById('table-content');
+             if(!list) return;
+             let data = team;
+             if(term) data = data.filter(u => u.name.toLowerCase().includes(term) || u.empNumber.includes(term));
+             list.innerHTML = data.map(u => `
+                <div class="data-card">
+                    <div>
+                        <h4 class="font-bold text-sm text-slate-800">${u.name}</h4>
+                        <p class="text-xs text-slate-500">${u.empNumber} • <span class="uppercase font-bold">${u.role}</span></p>
+                    </div>
+                    <button onclick="deleteUser('${u.empNumber}')" class="text-red-400 hover:bg-red-50 p-2 rounded"><i class="fas fa-trash"></i></button>
+                </div>
+            `).join('');
+        };
+        
+        // --- RESTO DE FUNCIONES (MODALES, LOGIN, CHAT) ---
         window.openModal = (id = 'modal-capture') => {
             document.getElementById(id).classList.remove('hidden-ui');
             if(id === 'modal-capture') {
                 const currentView = document.body.dataset.viewType;
+                // Default to Manual if view is ALL
                 const validType = (currentView === 'CERTIFICADO' || currentView === 'EXTENSION') ? currentView : 'MANUAL';
                 window.setFormType(validType);
                 document.getElementById('editing-id').value = "";
@@ -424,167 +483,39 @@
 
         window.saveRegistry = async () => {
             const type = document.getElementById('current-type').value;
-            const editId = document.getElementById('editing-id').value;
-            const id = editId || "doc_" + Date.now();
-            let data = { contentType: type, date: new Date().toISOString(), author: currentUser.name };
+            const id = "doc_" + Date.now();
+            let data = { contentType: type, date: new Date().toISOString(), author: currentUser?.name || 'Admin' };
 
-            // GUARDADO ESTRUCTURADO (BLINDADO)
             if(type === 'CERTIFICADO') {
-                const num = document.getElementById('c-num').value.trim().toUpperCase();
-                if(num.length !== 4) return alert("El certificado debe tener 4 dígitos");
+                const num = document.getElementById('c-num').value.trim();
                 data.title = `CERT ${num} (${document.getElementById('c-neg').value})`;
-                // Campos Reales para la ficha
-                data.negocio = document.getElementById('c-neg').value;
-                data.entorno = document.getElementById('c-env').value;
-                data.estatus = document.getElementById('c-stat').value;
-                data.vigenciaInicio = document.getElementById('c-ini').value;
-                data.vigenciaFin = document.getElementById('c-fin').value;
-                data.tipoCert = document.getElementById('c-type').value;
-                data.num = num;
-                // Texto plano para búsqueda simple
-                data.content = `CERTIFICADO ${num} | ${data.negocio} | ${data.entorno} | ${data.estatus}`;
+                data.content = `CERTIFICADO | NUM: ${num} | NEGOCIO: ${document.getElementById('c-neg').value} | ENTORNO: ${document.getElementById('c-env').value} | ESTATUS: ${document.getElementById('c-stat').value} | VENCE: ${document.getElementById('c-fin').value}`;
             } else if (type === 'EXTENSION') {
                 const ext = document.getElementById('e-num').value.trim();
-                if(!ext) return window.toast("Falta extensión", true);
                 data.title = `EXT ${ext}`;
-                data.content = `Extensión ${ext}`;
-                data.ext = ext;
-                data.nombre = document.getElementById('e-nom').value;
-                data.area = document.getElementById('e-area').value;
-                data.content = `EXTENSIÓN ${ext} | ${data.nombre} | ${data.area}`;
+                data.content = `EXTENSION | ${ext} | ${document.getElementById('e-nom').value} | AREA: ${document.getElementById('e-area').value}`;
             } else {
                 data.title = document.getElementById('d-title').value;
                 data.content = document.getElementById('d-content').value;
-                if(!data.title) return window.toast("Falta título", true);
             }
 
-            try {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), data, {merge:true});
-                window.toast("Guardado");
-                window.closeModal('modal-capture');
-                document.querySelectorAll('input,textarea').forEach(i => i.value='');
-                const currentView = document.body.dataset.viewType;
-                // Forzar recarga de lista si estamos viendo la tabla
-                if(currentView) renderList(currentView);
-            } catch(e) { window.toast("Error al guardar", true); }
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), data);
+            window.toast("Guardado");
+            window.closeModal('modal-capture');
+            // Refresh current view
+            const currentView = document.body.dataset.viewType;
+            if(currentView) renderList(currentView);
         };
-
+        
         window.deleteRec = async (id) => {
-            if(confirm("¿Estás seguro de eliminar este registro permanentemente?")) {
+            if(confirm("¿Eliminar registro permanentemente?")) {
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id));
-                const currentView = document.body.dataset.viewType;
-                if(currentView) renderList(currentView);
+                // Snapshot updates automatically, but we can force refresh
             }
         };
 
-        window.saveUser = async () => {
-            const name = document.getElementById('u-name').value;
-            const id = document.getElementById('u-id').value;
-            if(!name) return window.toast("Datos faltantes", true);
-            await setDoc(doc(db, 'artifacts', 'chatbot-8d0a3', 'public', 'data', 'team', id), { name: name, empNumber: id, role: document.getElementById('u-role').value });
-            window.toast("Usuario Creado");
-            document.getElementById('modal-user').classList.add('hidden-ui');
-            renderList('USERS');
-        };
-        
-        window.deleteUser = async (id) => {
-            if(id === '682930') return alert("No se puede borrar al Admin Principal");
-            if(confirm("¿Eliminar usuario?")) {
-                await deleteDoc(doc(db, 'artifacts', 'chatbot-8d0a3', 'public', 'data', 'team', id));
-                renderList('USERS');
-            }
-        };
-        
-        window.handleFile = async (input) => {
-             const f = input.files[0]; if(!f) return;
-             const txt = await f.text();
-             const id = "file_" + Date.now();
-             await setDoc(doc(db, 'artifacts', 'chatbot-8d0a3', 'public', 'data', 'knowledge', id), {
-                 contentType: "ARCHIVO", title: f.name, content: txt, date: new Date().toISOString()
-             });
-             window.toast("Archivo cargado");
-             document.getElementById('modal-upload').classList.add('hidden-ui');
-             if(document.body.dataset.viewType === 'ARCHIVO') renderList('ARCHIVO');
-        };
-
-        window.filterList = () => {
-             const term = document.getElementById('table-search').value.toLowerCase();
-             const currentView = document.body.dataset.viewType;
-             renderList(currentView, term);
-        };
-        
-        window.editEntry = (id) => {
-            const e = knowledgeBase.find(x => x.id === id); if(!e) return;
-            window.openModal('modal-capture');
-            window.setFormType(e.contentType || 'MANUAL');
-            document.getElementById('editing-id').value = id;
-            if(e.contentType === 'MANUAL') { document.getElementById('d-title').value = e.title; document.getElementById('d-content').value = e.content; }
-        };
-
-        // --- RENDER ROBUSTO ---
-        function renderList(type, term = "") {
-            const list = document.getElementById('table-content');
-            if(!list) return;
-            
-            let html = "";
-            
-            try {
-                if(type === 'USERS') {
-                    let data = team;
-                    if(term) data = data.filter(u => u.name.toLowerCase().includes(term) || u.empNumber.includes(term));
-                    html = data.map(u => `
-                        <div class="data-card">
-                            <div><div class="font-bold text-sm">${u.name}</div><div class="text-xs text-slate-500">${u.empNumber} • ${u.role}</div></div>
-                            <button onclick="deleteUser('${u.empNumber}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
-                        </div>`).join('');
-                } else {
-                    let data = knowledgeBase;
-                    if(type !== 'ALL') {
-                        data = knowledgeBase.filter(k => k.contentType === type);
-                    }
-                    
-                    if(term) data = data.filter(d => (d.title+(d.content||"")).toLowerCase().includes(term));
-
-                    if (data.length === 0) {
-                        html = `<div class="text-center py-10 text-slate-400 italic text-sm">No se encontraron registros.</div>`;
-                    } else {
-                        html = data.map(item => {
-                            let desc = item.content || "Sin contenido";
-                            // Fallback visual si es certificado estructurado
-                            if (item.contentType === 'CERTIFICADO') {
-                                desc = `${item.negocio || 'N/A'} - ${item.estatus || 'N/A'}`;
-                            }
-                            // Formateo de fecha seguro
-                            let dateStr = "";
-                            try { dateStr = item.date ? new Date(item.date).toLocaleDateString() : 'Sin fecha'; } catch(e) { dateStr = "Error fecha"; }
-                            
-                            return `
-                            <div class="data-card">
-                                <div class="overflow-hidden w-full">
-                                    <div class="flex justify-between items-center mb-1">
-                                        <span class="badge ${item.contentType==='CERTIFICADO'?'badge-cert':(item.contentType==='EXTENSION'?'badge-ext':'badge-doc')}">${item.contentType || 'DOC'}</span>
-                                        <span class="text-[9px] text-slate-400">${dateStr}</span>
-                                    </div>
-                                    <h4 class="font-bold text-sm text-slate-800 truncate">${item.title || 'Sin título'}</h4>
-                                    <p class="text-xs text-slate-500 line-clamp-1">${desc}</p>
-                                </div>
-                                <div class="flex gap-2 shrink-0 ml-4">
-                                    <button onclick="editEntry('${item.id}')" class="w-8 h-8 rounded bg-blue-50 text-blue-500 hover:bg-blue-100 flex items-center justify-center transition-colors"><i class="fas fa-pen"></i></button>
-                                    <button onclick="deleteRec('${item.id}')" class="w-8 h-8 rounded bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition-colors"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </div>
-                        `;}).join('');
-                    }
-                }
-            } catch (err) {
-                console.error(err);
-                html = `<div class="text-center py-10 text-red-400 italic text-sm">Error al mostrar datos. Intenta recargar.</div>`;
-            }
-            list.innerHTML = html;
-        }
-
-        // --- CHAT DETALLADO ---
-        function format(t) { return t.replace(/REGISTRO:|CONTENIDO:|\[.*?\]|\|/g, "").replace(/###/g, "").trim().replace(/\n/g, '<br>'); }
+        // Chat Logic
+        function format(t) { return t.replace(/\|/g, "").replace(/###/g, "").trim().replace(/\n/g, '<br>'); }
         
         async function askGemini(q) {
             const kb = knowledgeBase.map(k => `[${k.contentType}] ${k.title}: ${k.content}`).join('\n\n');
@@ -607,45 +538,12 @@
             
             if(hits.length > 0) {
                 hits.forEach(item => {
-                    // RENDERIZADO DETALLADO EN CHAT
-                    if (item.contentType === 'CERTIFICADO') {
-                        responseHTML += `
-                        <div class="bg-blue-50 p-4 rounded-xl mb-3 text-xs border border-blue-100 shadow-sm">
-                            <div class="flex items-center gap-2 mb-2 font-black text-blue-800 uppercase">
-                                <i class="fas fa-certificate"></i> ${item.title || 'Certificado'}
-                            </div>
-                            <div class="grid grid-cols-2 gap-2 text-slate-600">
-                                <div><span class="font-bold block text-[10px] text-blue-400">Negocio</span>${item.negocio || 'N/A'}</div>
-                                <div><span class="font-bold block text-[10px] text-blue-400">Entorno</span>${item.entorno || 'N/A'}</div>
-                                <div><span class="font-bold block text-[10px] text-blue-400">Inicio</span>${item.vigenciaInicio || 'N/A'}</div>
-                                <div><span class="font-bold block text-[10px] text-blue-400">Fin</span>${item.vigenciaFin || 'N/A'}</div>
-                                <div><span class="font-bold block text-[10px] text-blue-400">Tipo</span>${item.tipoCert || 'N/A'}</div>
-                                <div><span class="font-bold block text-[10px] text-blue-400">Estatus</span><span class="${(item.estatus||'').includes('VIGENTE') ? 'text-emerald-600' : 'text-red-500'} font-bold">${item.estatus || 'N/A'}</span></div>
-                            </div>
-                        </div>`;
-                    } else if (item.contentType === 'EXTENSION') {
-                        responseHTML += `
-                        <div class="flex items-center gap-4 bg-emerald-50 p-3 rounded-xl mb-2 border border-emerald-100 shadow-sm">
-                            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-emerald-600 text-lg shadow-sm"><i class="fas fa-phone"></i></div>
-                            <div>
-                                <div class="font-black text-lg text-slate-800">${item.ext || 'N/A'}</div>
-                                <div class="text-xs font-bold text-emerald-700">${item.nombre || 'Sin nombre'}</div>
-                                <div class="text-[10px] text-slate-500 uppercase font-bold tracking-wide">${item.area || ''}</div>
-                            </div>
-                        </div>`;
-                    } else {
-                        responseHTML += `
-                        <div class="bg-white p-3 border border-slate-200 rounded-lg mb-2 text-xs shadow-sm">
-                            <div class="font-bold text-slate-800 mb-1 flex items-center gap-2"><i class="fas fa-file-alt text-blue-500"></i> ${item.title || 'Documento'}</div>
-                            <div class="text-slate-500 leading-relaxed whitespace-pre-wrap">${item.content || 'Sin contenido'}</div>
-                        </div>`;
-                    }
+                    responseHTML += `<div class="bg-white p-3 border border-slate-200 rounded-lg mb-2 text-xs shadow-sm"><div class="font-bold text-slate-800 mb-1 flex items-center gap-2"><i class="fas fa-info-circle text-blue-500"></i> ${item.title}</div><div class="text-slate-500 leading-relaxed whitespace-pre-wrap">${item.content || ''}</div></div>`;
                 });
             } else {
                 const aiRes = await askGemini(q);
                 responseHTML = `<div class="ai-suggestion"><div class="res-header"><i class="fas fa-robot text-purple-500"></i> Sugerencia IA</div>${format(aiRes)}</div>`;
             }
-            
             addBubble(responseHTML, false, true);
         };
         
@@ -656,23 +554,26 @@
             box.appendChild(d); box.scrollTop = box.scrollHeight;
         }
 
-        // --- INIT ---
+        // Init
+        window.handleLogin = () => {
+            const id = document.getElementById('login-id').value;
+            if(id === "682930") {
+                 login({name:"Daniel Anzaldo", role:"admin"});
+                 return;
+            }
+            // Standard check
+        };
+        
         function login(user) {
             currentUser = user;
-            localStorage.setItem('spei_v18_0_session', JSON.stringify(user));
-            document.body.setAttribute('data-role', user.role);
-            
+            localStorage.setItem('spei_v19_0', JSON.stringify(user));
             document.getElementById('login-screen').classList.add('hidden-ui');
             document.getElementById('loading-screen').classList.add('hidden-ui');
             document.getElementById('app-layout').classList.remove('hidden-ui');
             
-            document.getElementById('user-name-display').innerText = user.name;
-            document.getElementById('user-role-display').innerText = user.role === 'admin' ? "ADMINISTRADOR" : "OPERATIVO";
-            
-            if(user.role !== 'admin') {
-                document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden-ui'));
-            } else {
-                document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden-ui'));
+            // Default View
+            if(user.role === 'admin') {
+                document.querySelectorAll('.admin-only').forEach(e => e.classList.remove('hidden-ui'));
             }
         }
 
@@ -680,31 +581,23 @@
             await signInAnonymously(auth);
             onAuthStateChanged(auth, u => {
                 if(u) {
-                    onSnapshot(collection(db, 'artifacts', 'chatbot-8d0a3', 'public', 'data', 'team'), s => {
-                        team = s.docs.map(d => ({id:d.id, ...d.data()}));
-                        if(team.length===0) setDoc(doc(db,'artifacts','chatbot-8d0a3','public','data','team','682930'), {name:"Daniel Anzaldo", role:"admin", empNumber:"682930"});
-                        
-                        const saved = localStorage.getItem('spei_v18_0_session');
-                        if(saved) {
-                            const usr = team.find(x => x.empNumber === JSON.parse(saved).empNumber);
-                            if(usr) login(usr); else { document.getElementById('loading-screen').classList.add('hidden-ui'); document.getElementById('login-screen').classList.remove('hidden-ui'); }
-                        } else {
-                            document.getElementById('loading-screen').classList.add('hidden-ui');
-                            document.getElementById('login-screen').classList.remove('hidden-ui');
-                        }
-                    });
-                    onSnapshot(collection(db, 'artifacts', 'chatbot-8d0a3', 'public', 'data', 'knowledge'), s => {
+                    onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'knowledge'), s => {
                         knowledgeBase = s.docs.map(d => ({id:d.id, ...d.data()}));
-                        window.toast(`Sincronizados ${knowledgeBase.length} registros`);
-                        const adminView = document.getElementById('view-table');
-                        if(adminView && !adminView.classList.contains('hidden-ui')) {
-                             const currentView = document.body.dataset.viewType;
-                             if(currentView) renderList(currentView);
-                        }
+                        window.toast(`Sincronizados: ${knowledgeBase.length}`);
+                        // Force refresh if active
+                        if(document.body.dataset.viewType) renderList(document.body.dataset.viewType);
                     });
+                    
+                    const saved = localStorage.getItem('spei_v19_0');
+                    if(saved) login(JSON.parse(saved));
+                    else {
+                        document.getElementById('loading-screen').classList.add('hidden-ui');
+                        document.getElementById('login-screen').classList.remove('hidden-ui');
+                    }
                 }
             });
         }
+        
         window.addEventListener('load', init);
     </script>
 </body>
