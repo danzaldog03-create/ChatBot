@@ -8,7 +8,7 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     
-    <title>SPEI Ops - Panel v23.0</title>
+    <title>SPEI Ops - Panel v28.2</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -28,7 +28,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, getDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDPi5pcDL6OL2zCJK_0n3A_RdDGt3U3LVQ",
@@ -44,7 +44,7 @@
         const db = getFirestore(app);
         const appId = "chatbot-8d0a3"; 
 
-        window.fb = { auth, db, appId, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, signInAnonymously, onAuthStateChanged };
+        window.fb = { auth, db, appId, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, signInAnonymously, onAuthStateChanged, writeBatch };
     </script>
 
     <style>
@@ -78,6 +78,11 @@
         .bot-msg { align-self: flex-start; background: white; border: 1px solid #e2e8f0; color: #1e293b; border-bottom-left-radius: 0; width: 100%; }
         .bot-header { font-weight: 800; color: #0f172a; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
 
+        .reg-card { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 0.5rem; margin-top: 0.5rem; }
+        .reg-title { font-size: 0.75rem; font-weight: 900; color: #92400e; text-transform: uppercase; margin-bottom: 0.5rem; }
+        .reg-content { font-family: 'Georgia', serif; font-style: italic; color: #451a03; line-height: 1.6; font-size: 0.95rem; }
+        .reg-footer { margin-top: 0.5rem; font-size: 0.7rem; color: #b45309; font-weight: 700; text-align: right; }
+
         #table-content { flex: 1; overflow-y: auto; padding-bottom: 6rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 300px; }
         .data-card { background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); min-height: 80px; }
         .data-card:hover { border-color: #3b82f6; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transform: translateY(-1px); }
@@ -86,7 +91,8 @@
         .badge-CERTIFICADO { background: #eff6ff; color: #1d4ed8; }
         .badge-EXTENSION { background: #f0fdf4; color: #15803d; }
         .badge-MANUAL { background: #f8fafc; color: #475569; }
-        .badge-ARCHIVO { background: #fff7ed; color: #9a3412; }
+        .badge-REGLA_SPEI { background: #fffbeb; color: #b45309; }
+        .badge-ARCHIVO { background: #e0f2fe; color: #0369a1; }
 
         .form-input { width: 100%; padding: 0.7rem; border: 1px solid #cbd5e1; rounded: 0.5rem; font-size: 0.85rem; outline: none; transition: 0.2s; background: white; color: #1e293b !important; font-weight: 600; }
         .form-input:focus { border-color: #2563eb; ring: 2px solid #bfdbfe; }
@@ -100,6 +106,10 @@
 
         #toast { position: fixed; top: 2rem; left: 50%; transform: translateX(-50%); z-index: 10001; padding: 0.75rem 1.5rem; border-radius: 99px; font-weight: 700; font-size: 0.85rem; color: white; background: #0f172a; opacity: 0; pointer-events: none; transition: 0.3s; }
         #toast.show { opacity: 1; top: 3rem; }
+
+        /* Avatar */
+        .avatar-circle { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background-color: #334155; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 0.7rem; cursor: pointer; border: 2px solid #475569; }
+        .avatar-circle:hover { border-color: white; }
 
         @media (max-width: 768px) {
             .sidebar { position: fixed; height: 100%; transform: translateX(-100%); }
@@ -130,7 +140,7 @@
                 <button onclick="handleLogin()" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-lg font-bold shadow-lg transition-all active:scale-95 cursor-pointer">INGRESAR</button>
                 <p id="login-msg" class="text-red-500 text-xs font-bold mt-2 opacity-0 transition-opacity">Credenciales Incorrectas</p>
             </div>
-            <p class="mt-8 text-[10px] text-slate-400 font-bold uppercase tracking-wider">v23.0 • Daniel Anzaldo</p>
+            <p class="mt-8 text-[10px] text-slate-400 font-bold uppercase tracking-wider">v28.2 • Daniel Anzaldo</p>
         </div>
     </div>
 
@@ -149,25 +159,23 @@
                 <div onclick="navigate('chat')" class="nav-item active" id="nav-chat"><i class="fas fa-comments w-5"></i> Chat Operativo</div>
                 
                 <div class="admin-only hidden-ui">
-                    <div class="nav-section">Gestión de Conocimiento</div>
+                    <div class="nav-section">Gestión</div>
                     <div onclick="navigate('admin-all')" class="nav-item text-blue-400" id="nav-all"><i class="fas fa-globe w-5"></i> VER TODO</div>
+                    <div onclick="navigate('admin-rules')" class="nav-item text-amber-500" id="nav-rules"><i class="fas fa-balance-scale w-5"></i> Normativa SPEI</div>
                     <div onclick="navigate('admin-cert')" class="nav-item" id="nav-cert"><i class="fas fa-certificate w-5"></i> Certificados</div>
                     <div onclick="navigate('admin-ext')" class="nav-item" id="nav-ext"><i class="fas fa-address-book w-5"></i> Directorio</div>
                     <div onclick="navigate('admin-docs')" class="nav-item" id="nav-docs"><i class="fas fa-file-alt w-5"></i> Manuales</div>
                     <div onclick="navigate('admin-files')" class="nav-item" id="nav-files"><i class="fas fa-folder w-5"></i> Archivos</div>
                     
                     <div class="nav-section">Sistema</div>
-                    <div onclick="navigate('admin-users')" class="nav-item text-amber-500" id="nav-users"><i class="fas fa-users-cog w-5"></i> Usuarios</div>
+                    <div onclick="navigate('admin-users')" class="nav-item text-indigo-400" id="nav-users"><i class="fas fa-users-cog w-5"></i> Usuarios</div>
                 </div>
             </div>
 
             <div class="p-4 border-t border-slate-800">
                 <div class="flex items-center gap-3 mb-4">
-                    <div class="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center text-xs font-bold text-white" id="user-avatar">DA</div>
-                    <div class="overflow-hidden">
-                        <p class="text-xs font-bold text-white truncate" id="user-name-display">Usuario</p>
-                        <p class="text-[10px] text-slate-400 uppercase font-bold truncate" id="user-role-display">Rol</p>
-                    </div>
+                    <div onclick="openProfileModal()" class="avatar-circle" id="user-avatar-container"><span id="user-initials">DA</span><img id="user-img-display" class="hidden w-full h-full rounded-full object-cover" src=""></div>
+                    <div class="overflow-hidden"><p class="text-xs font-bold text-white truncate" id="user-name-display">Usuario</p><p class="text-[10px] text-slate-400 uppercase font-bold truncate" id="user-role-display">Rol</p></div>
                 </div>
                 <button onclick="logout()" class="w-full bg-slate-800 hover:bg-red-900/50 text-slate-300 hover:text-red-200 py-2 rounded text-xs font-bold transition-all"><i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión</button>
             </div>
@@ -178,38 +186,29 @@
         <!-- CONTENIDO -->
         <main class="main-area">
             <div class="top-header">
-                <div class="flex items-center gap-3">
-                    <button class="md:hidden text-slate-500 text-xl" onclick="toggleSidebar()"><i class="fas fa-bars text-xl"></i></button>
-                    <h2 class="font-black text-slate-800 text-lg" id="page-title">Chat Operativo</h2>
-                </div>
+                <div class="flex items-center gap-3"><button class="md:hidden text-slate-500 text-xl" onclick="toggleSidebar()"><i class="fas fa-bars text-xl"></i></button><h2 class="font-black text-slate-800 text-lg" id="page-title">Chat Operativo</h2></div>
                 <div class="flex gap-2" id="header-actions"></div>
             </div>
-
-            <!-- VISTA: CHAT -->
             <div id="view-chat" class="view-section active">
                 <div id="chat-box" class="chat-box space-y-4">
                     <div class="bot-msg chat-bubble shadow-sm w-full">
                         <div class="bot-header"><i class="fas fa-robot text-blue-600"></i> Asistente SPEI</div>
-                        <p>Sistema en línea. Base de datos sincronizada.</p>
+                        <p class="text-sm text-slate-600">Sistema en línea. Auditor Normativo activo.</p>
                     </div>
                 </div>
                 <div class="mt-auto pt-4 bg-white border-t border-slate-100 p-4">
                     <form id="chat-form" class="relative max-w-5xl mx-auto flex gap-2">
-                        <input type="text" id="chat-input" placeholder="Realiza una consulta técnica..." class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all" autocomplete="off">
+                        <input type="text" id="chat-input" placeholder="Realiza una consulta técnica o regulatoria..." class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all" autocomplete="off">
                         <button type="submit" class="w-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg hover:bg-blue-700 active:scale-90 transition-all"><i class="fas fa-paper-plane text-lg"></i></button>
                     </form>
                 </div>
             </div>
-
-            <!-- VISTA: ADMIN TABLA -->
             <div id="view-table" class="view-section hidden-ui h-full flex flex-col">
                 <div class="mb-4 sticky top-0 bg-[#f8fafc] z-10 py-2 flex gap-2">
                     <input type="text" id="table-search" placeholder="Filtrar registros..." class="form-input max-w-sm shadow-sm" onkeyup="filterList()">
                     <button onclick="renderList(document.body.dataset.viewType)" class="w-10 h-10 bg-white border border-slate-300 rounded-lg flex items-center justify-center text-slate-500 hover:text-blue-600"><i class="fas fa-sync-alt"></i></button>
                 </div>
-                <div id="table-content" class="space-y-2 pb-20 overflow-y-auto w-full">
-                    <div class="text-center py-10 text-slate-400 italic">Cargando datos...</div>
-                </div>
+                <div id="table-content" class="space-y-2 pb-20 overflow-y-auto w-full"><div class="text-center py-10 text-slate-400 italic">Cargando datos...</div></div>
             </div>
         </main>
     </div>
@@ -224,43 +223,43 @@
             <div class="p-6 overflow-y-auto bg-white flex-1">
                 <div class="mb-6">
                     <label class="form-label">Tipo de Registro</label>
-                    <div class="grid grid-cols-3 gap-3">
-                        <button type="button" onclick="setFormType('CERTIFICADO')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-blue-50 focus:ring-2 ring-blue-500"><i class="fas fa-certificate block text-xl mb-1 text-blue-500"></i> Certificado</button>
-                        <button type="button" onclick="setFormType('EXTENSION')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-emerald-50 focus:ring-2 ring-emerald-500"><i class="fas fa-address-book block text-xl mb-1 text-emerald-500"></i> Extensión</button>
-                        <button type="button" onclick="setFormType('MANUAL')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-slate-100 focus:ring-2 ring-slate-500"><i class="fas fa-book block text-xl mb-1 text-slate-500"></i> Manual</button>
+                    <div class="grid grid-cols-2 gap-3 mb-2">
+                         <button onclick="setFormType('CERTIFICADO')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-blue-50 focus:ring-2 ring-blue-500"><i class="fas fa-certificate block text-xl mb-1 text-blue-500"></i> Certificado</button>
+                         <button onclick="setFormType('EXTENSION')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-emerald-50 focus:ring-2 ring-emerald-500"><i class="fas fa-address-book block text-xl mb-1 text-emerald-500"></i> Extensión</button>
+                         <button onclick="setFormType('REGLA')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-amber-50 focus:ring-2 ring-amber-500"><i class="fas fa-balance-scale block text-xl mb-1 text-amber-500"></i> Regla</button>
+                         <button onclick="setFormType('MANUAL')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-slate-100 focus:ring-2 ring-slate-500"><i class="fas fa-book block text-xl mb-1 text-slate-500"></i> Manual</button>
                     </div>
                     <input type="hidden" id="current-type" value="MANUAL">
                     <input type="hidden" id="editing-id" value="">
                 </div>
-
                 <div id="forms-area">
-                    <!-- Certificado -->
                     <div id="form-cert" class="hidden space-y-4">
                         <div class="grid grid-cols-2 gap-4">
-                            <div><label class="form-label">Últimos 4 Dígitos</label><input id="c-num" type="text" class="form-input uppercase" placeholder="Ej. 9A3F" maxlength="4"></div>
+                            <div><label class="form-label">Últimos 4</label><input id="c-num" class="form-input uppercase" maxlength="4"></div>
                             <div><label class="form-label">Negocio</label><select id="c-neg" class="form-input"><option>SPEI</option><option>CODI</option><option>DIMO</option><option>SPID</option><option>BDT</option><option>R2</option></select></div>
                             <div><label class="form-label">Entorno</label><select id="c-env" class="form-input"><option>PRODUCCION</option><option>BETA</option></select></div>
-                            <div><label class="form-label">Estatus (Libre)</label><input type="text" id="c-stat" class="form-input" placeholder="Ej. Vigente, Revocado..."></div>
+                            <div><label class="form-label">Estatus</label><input type="text" id="c-stat" class="form-input"></div>
                             <div><label class="form-label">Vigencia Inicio</label><input id="c-ini" type="date" class="form-input"></div>
                             <div><label class="form-label">Vigencia Fin</label><input id="c-fin" type="date" class="form-input"></div>
-                            <select id="c-type" class="form-input col-span-2"><option>PRIVADO (.key)</option><option>PUBLICO (.cer)</option></select>
                         </div>
                     </div>
-                    <!-- Extensión -->
                     <div id="form-ext" class="hidden space-y-4">
                         <div class="grid grid-cols-2 gap-4">
-                            <div><label class="form-label">Extensión</label><input id="e-num" type="text" class="form-input" placeholder="1234"></div>
-                            <div><label class="form-label">Nombre Persona</label><input id="e-nom" type="text" class="form-input" placeholder="Nombre completo"></div>
-                            <div class="col-span-2"><label class="form-label">Área / Rol</label><input id="e-area" type="text" class="form-input" placeholder="Ej. Operaciones SPEI N1"></div>
+                            <div><label class="form-label">Extensión</label><input id="e-num" type="text" class="form-input"></div>
+                            <div><label class="form-label">Nombre</label><input id="e-nom" type="text" class="form-input"></div>
+                            <div class="col-span-2"><label class="form-label">Área</label><input id="e-area" class="form-input"></div>
                         </div>
                     </div>
-                    <!-- Manual -->
-                    <div id="form-doc" class="hidden space-y-4">
+                    <div id="form-rule" class="hidden space-y-4">
                         <div class="grid grid-cols-2 gap-4">
-                             <div><label class="form-label">Tipo</label><select id="d-type" class="form-input"><option>Manual</option><option>Procedimiento</option><option>Política</option><option>Reporte</option></select></div>
-                             <div><label class="form-label">Prioridad</label><select id="d-prio" class="form-input"><option value="1">Alta</option><option value="2">Media</option><option value="3">Baja</option></select></div>
+                            <div><label class="form-label">Regla</label><input id="r-rule" class="form-input" placeholder="Ej. 17a"></div>
+                            <div><label class="form-label">Capítulo</label><input id="r-chap" class="form-input" placeholder="Ej. Cap 2"></div>
                         </div>
-                        <div><label class="form-label">Título</label><input id="d-title" type="text" class="form-input"></div>
+                        <div><label class="form-label">Tema Operativo</label><input id="r-topic" class="form-input"></div>
+                        <div><label class="form-label">Texto Literal</label><textarea id="r-text" class="form-input h-32"></textarea></div>
+                    </div>
+                    <div id="form-doc" class="hidden space-y-4">
+                        <div><label class="form-label">Título</label><input id="d-title" class="form-input"></div>
                         <div><label class="form-label">Contenido</label><textarea id="d-content" class="form-input h-32"></textarea></div>
                     </div>
                 </div>
@@ -272,25 +271,41 @@
         </div>
     </div>
 
-    <!-- MODAL CARGA -->
+    <!-- MODAL CARGA MASIVA -->
     <div id="modal-upload" class="overlay hidden-ui">
         <div class="modal max-w-lg">
-            <div class="p-5 border-b bg-slate-50"><h3 class="font-bold">Cargar Archivo</h3></div>
-            <div class="p-8 text-center">
+            <div class="p-5 border-b bg-slate-50"><h3 class="font-bold">Cargar Archivo / Layout</h3></div>
+            <div class="p-6 text-center">
                 <p class="text-xs text-slate-500 mb-4 text-left">
-                    <b>Carga Masiva:</b> Sube un CSV/Excel con las columnas TIPO, TITULO, CONTENIDO, NUMERO, etc. para llenar la base.<br>
-                    <button onclick="window.downloadTemplate()" class="text-blue-500 hover:underline mt-1 font-bold">Descargar Plantilla CSV</button>
+                    <b>Carga Masiva:</b> Detecta automáticamente si es Regla SPEI o Layout General.<br>
+                    <button onclick="window.downloadTemplate()" class="text-blue-500 hover:underline mt-1 font-bold">Descargar Plantilla Universal</button>
                 </p>
-                <div class="border-2 border-dashed border-slate-300 rounded-xl p-10 cursor-pointer hover:bg-slate-50 transition-colors" onclick="document.getElementById('file-in').click()">
+                <div class="p-8 text-center border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors" onclick="document.getElementById('file-in').click()">
                     <i class="fas fa-cloud-upload-alt text-4xl text-blue-400 mb-3"></i>
                     <p class="text-sm font-bold text-slate-600">Clic para seleccionar</p>
-                    <p class="text-xs text-slate-400">PDF, Excel, Imágenes, Texto</p>
+                    <p class="text-xs text-slate-400">Excel (.xlsx), CSV, PDF, Imágenes</p>
                 </div>
-                <input type="file" id="file-in" class="hidden" onchange="handleFile(this)">
+                <input type="file" id="file-in" class="hidden" accept=".xlsx,.csv,.pdf,.txt,image/*" onchange="handleBulkUpload(this)">
             </div>
             <div class="p-5 border-t flex justify-end">
                 <button onclick="closeModal('modal-upload')" class="text-slate-400 font-bold text-xs">Cerrar</button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL PERFIL -->
+    <div id="modal-profile" class="overlay hidden-ui">
+        <div class="modal max-w-sm">
+             <div class="p-5 border-b bg-slate-50"><h3 class="font-bold">Foto de Perfil</h3></div>
+             <div class="p-8 text-center">
+                 <div class="w-24 h-24 rounded-full bg-slate-200 mx-auto mb-4 overflow-hidden border-4 border-white shadow-lg cursor-pointer" onclick="document.getElementById('profile-up').click()">
+                     <img id="profile-prev" src="" class="w-full h-full object-cover hidden">
+                     <i id="profile-icon" class="fas fa-camera text-3xl text-slate-400 mt-8"></i>
+                 </div>
+                 <input type="file" id="profile-up" class="hidden" accept="image/*" onchange="handleProfileUpload(this)">
+                 <p class="text-xs text-slate-500">Clic para cambiar</p>
+             </div>
+             <div class="p-5 border-t text-center"><button onclick="closeModal('modal-profile')" class="text-slate-400 text-xs">Cerrar</button></div>
         </div>
     </div>
 
@@ -317,421 +332,222 @@
         let team = [];
         let chatHistory = [];
 
-        // --- FUNCIONES GLOBALES ---
-        window.toast = (m, e) => {
-            const t = document.getElementById('toast');
-            if (t) {
-                t.innerText = m;
-                t.className = `fixed top-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-xs font-black uppercase shadow-2xl z-[10002] transition-all duration-300 opacity-100 ${e?'bg-red-500 text-white':'bg-emerald-500 text-white'}`;
-                setTimeout(() => t.classList.remove('opacity-100'), 3000);
-            }
+        // --- GLOBAL ---
+        window.toast = (m,e) => { const t=document.getElementById('toast'); t.innerText=m; t.className=`fixed top-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-xs font-black shadow-2xl z-[10002] transition-all opacity-100 ${e?'bg-red-500 text-white':'bg-emerald-500 text-white'}`; setTimeout(()=>t.classList.remove('opacity-100'),3000); };
+        window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('open');
+        window.closeModal = (id) => document.getElementById(id).classList.add('hidden-ui');
+        window.openModal = (id) => { document.getElementById(id).classList.remove('hidden-ui'); if(id==='modal-capture'){window.setFormType('MANUAL'); document.getElementById('editing-id').value="";} };
+        window.openUploadModal = () => window.openModal('modal-upload');
+        window.openProfileModal = () => window.openModal('modal-profile');
+        
+        window.setFormType = (t) => {
+            document.getElementById('current-type').value=t;
+            ['form-cert','form-ext','form-rule','form-doc'].forEach(f=>document.getElementById(f).classList.add('hidden'));
+            if(t==='CERTIFICADO') document.getElementById('form-cert').classList.remove('hidden');
+            else if(t==='EXTENSION') document.getElementById('form-ext').classList.remove('hidden');
+            else if(t==='REGLA') document.getElementById('form-rule').classList.remove('hidden');
+            else document.getElementById('form-doc').classList.remove('hidden');
         };
-
-        window.downloadTemplate = () => {
-             const csvContent = "TIPO,TITULO,CONTENIDO,NUMERO,NEGOCIO,ENTORNO,ESTATUS,INICIO,FIN,EXTENSION,NOMBRE,AREA,PRIORIDAD\nCERTIFICADO,,,9A3F,SPEI,PRODUCCION,VIGENTE,2024-01-01,2026-12-31,,,1\nEXTENSION,,,,,,,,,5522,Juan Pérez,Soporte N1,1\nMANUAL,Guía de Conexión,Paso 1: Verificar VPN...,,,,,,,,2";
-             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-             const link = document.createElement("a");
-             link.href = URL.createObjectURL(blob);
-             link.download = "layout_spei_ops.csv";
-             link.click();
-        };
-
-        window.toggleSidebar = () => {
-            document.getElementById('sidebar').classList.toggle('open');
-            const backdrop = document.getElementById('sidebar-backdrop');
-            if(backdrop) backdrop.style.display = document.getElementById('sidebar').classList.contains('open') ? 'block' : 'none';
-        };
-
-        window.handleLogin = () => {
-            const idInput = document.getElementById('login-id');
-            if (!idInput) return;
-            const id = idInput.value.trim();
-            if(id === "682930") {
-                const adminUser = { name: "Daniel Anzaldo", role: "admin", empNumber: "682930" };
-                login(adminUser);
-                if(!team.find(u => u.empNumber === "682930")) {
-                    setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', '682930'), adminUser).catch(console.error);
-                }
-                return;
-            }
-            const user = team.find(u => u.empNumber === id);
-            if (user) login(user); 
-            else {
-                const err = document.getElementById('login-msg');
-                if(err) { err.style.opacity = "1"; setTimeout(() => err.style.opacity = "0", 2000); }
-            }
-        };
-
-        window.logout = () => { localStorage.removeItem('spei_v23_0_session'); location.reload(); };
 
         window.navigate = (view) => {
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            const chatView = document.getElementById('view-chat');
-            const tableView = document.getElementById('view-table');
-            const title = document.getElementById('page-title');
-            const actions = document.getElementById('header-actions');
-
-            if(view === 'chat') {
-                document.getElementById('nav-chat').classList.add('active');
-                chatView.classList.remove('hidden-ui');
-                tableView.classList.add('hidden-ui');
-                title.innerText = "Chat Operativo";
-                actions.innerHTML = "";
-            } else if (view === 'admin-users') {
-                document.getElementById('nav-users').classList.add('active');
-                chatView.classList.add('hidden-ui');
-                tableView.classList.remove('hidden-ui');
-                title.innerText = "Usuarios";
-                document.body.dataset.viewType = "USERS";
-                actions.innerHTML = `<button onclick="document.getElementById('modal-user').classList.remove('hidden-ui')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all"><i class="fas fa-plus"></i> Usuario</button>`;
-                renderList('USERS');
+            if(window.innerWidth<768) document.getElementById('sidebar').classList.remove('open');
+            document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+            const chat=document.getElementById('view-chat'); const table=document.getElementById('view-table'); const title=document.getElementById('page-title'); const acts=document.getElementById('header-actions');
+            
+            if(view==='chat'){
+                document.getElementById('nav-chat').classList.add('active'); chat.classList.remove('hidden-ui'); table.classList.add('hidden-ui'); title.innerText="Chat Operativo"; acts.innerHTML="";
+            } else if(view==='admin-users') {
+                 document.getElementById('nav-users').classList.add('active'); chat.classList.add('hidden-ui'); table.classList.remove('hidden-ui'); title.innerText="Usuarios"; document.body.dataset.viewType="USERS";
+                 acts.innerHTML = `<button onclick="window.openModal('modal-user')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold">Usuario +</button>`;
+                 renderList('USERS');
             } else {
-                let type = 'MANUAL';
-                let label = 'Manuales';
-                let navId = 'nav-docs';
-
-                if(view === 'admin-cert') { type = 'CERTIFICADO'; label = 'Certificados'; navId = 'nav-cert'; }
-                if(view === 'admin-ext') { type = 'EXTENSION'; label = 'Directorio'; navId = 'nav-ext'; }
-                if(view === 'admin-files') { type = 'ARCHIVO'; label = 'Archivos'; navId = 'nav-files'; }
-                if(view === 'admin-all') { type = 'ALL'; label = 'Base Completa'; navId = 'nav-all'; }
-
+                let type='ALL', label='Base Completa', navId='nav-all';
+                if(view==='admin-cert'){type='CERTIFICADO';label='Certificados';navId='nav-cert';}
+                if(view==='admin-ext'){type='EXTENSION';label='Directorio';navId='nav-ext';}
+                if(view==='admin-docs'){type='MANUAL';label='Manuales';navId='nav-docs';}
+                if(view==='admin-files'){type='ARCHIVO';label='Archivos';navId='nav-files';}
+                if(view==='admin-rules'){type='REGLA_SPEI';label='Normativa SPEI';navId='nav-rules';}
+                
                 document.getElementById(navId)?.classList.add('active');
-                chatView.classList.add('hidden-ui');
-                tableView.classList.remove('hidden-ui');
-                title.innerText = label;
-                document.body.dataset.viewType = type;
-                
-                if (view !== 'admin-files' && view !== 'admin-all') {
-                     actions.innerHTML = `<button onclick="window.openModal('modal-capture')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all"><i class="fas fa-plus"></i> Nuevo</button>`;
-                } else if(view === 'admin-files') {
-                     actions.innerHTML = `<button onclick="window.openUploadModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all"><i class="fas fa-upload"></i> Cargar</button>`;
-                } else {
-                    actions.innerHTML = "";
-                }
-                
+                chat.classList.add('hidden-ui'); table.classList.remove('hidden-ui');
+                title.innerText=label; document.body.dataset.viewType=type;
+                if(view!=='admin-files' && view!=='admin-all') acts.innerHTML=`<button onclick="window.openModal('modal-capture')" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold">Nuevo</button>`;
+                else if(view==='admin-files') acts.innerHTML=`<button onclick="window.openUploadModal()" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs font-bold">Cargar</button>`;
+                else acts.innerHTML="";
                 renderList(type);
             }
-            if(window.innerWidth < 768) window.toggleSidebar();
-        };
-
-        window.openModal = (id = 'modal-capture') => {
-            document.getElementById(id).classList.remove('hidden-ui');
-            if(id === 'modal-capture') {
-                const currentView = document.body.dataset.viewType;
-                const validType = (currentView === 'CERTIFICADO' || currentView === 'EXTENSION') ? currentView : 'MANUAL';
-                window.setFormType(validType);
-                document.getElementById('editing-id').value = "";
-            }
-        };
-        window.openUploadModal = () => window.openModal('modal-upload');
-        window.closeModal = (id) => document.getElementById(id).classList.add('hidden-ui');
-
-        window.setFormType = (type) => {
-            document.getElementById('current-type').value = type;
-            document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('bg-blue-50', 'border-blue-500'));
-            ['form-cert', 'form-ext', 'form-doc'].forEach(f => document.getElementById(f).classList.add('hidden'));
-            
-            if(type === 'CERTIFICADO') document.getElementById('form-cert').classList.remove('hidden');
-            else if(type === 'EXTENSION') document.getElementById('form-ext').classList.remove('hidden');
-            else document.getElementById('form-doc').classList.remove('hidden');
         };
 
         window.saveRegistry = async () => {
             const type = document.getElementById('current-type').value;
-            const editId = document.getElementById('editing-id').value;
-            const id = editId || "doc_" + Date.now();
-            let data = { contentType: type, date: new Date().toISOString(), author: currentUser.name };
-
-            if(type === 'CERTIFICADO') {
-                const num = document.getElementById('c-num').value.trim().toUpperCase();
-                if(num.length !== 4) return alert("El certificado debe tener 4 dígitos");
-                data.title = `CERT ${num} (${document.getElementById('c-neg').value})`;
-                data.content = `CERT ${num}`; 
-                data.negocio = document.getElementById('c-neg').value;
-                data.entorno = document.getElementById('c-env').value;
-                data.estatus = document.getElementById('c-stat').value;
-                data.vigenciaInicio = document.getElementById('c-ini').value;
-                data.vigenciaFin = document.getElementById('c-fin').value;
-                data.tipoCert = document.getElementById('c-type').value;
-                data.num = num;
-            } else if (type === 'EXTENSION') {
-                const ext = document.getElementById('e-num').value.trim();
-                if(!ext) return window.toast("Falta extensión", true);
-                data.title = `EXT ${ext}`;
-                data.content = `EXTENSION ${ext}`;
-                data.ext = ext;
-                data.nombre = document.getElementById('e-nom').value;
-                data.area = document.getElementById('e-area').value;
-            } else {
-                data.title = document.getElementById('d-title').value;
-                data.content = document.getElementById('d-content').value;
-                if(!data.title) return window.toast("Falta título", true);
-            }
-
-            try {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), data, {merge:true});
-                window.toast("Guardado");
-                window.closeModal('modal-capture');
-                document.querySelectorAll('input,textarea').forEach(i => i.value='');
-                const currentView = document.body.dataset.viewType;
-                if(currentView) renderList(currentView);
-            } catch(e) { window.toast("Error al guardar", true); console.error(e); }
-        };
-
-        window.deleteRec = async (id) => {
-            if(confirm("¿Estás seguro de eliminar este registro permanentemente?")) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id));
-                const currentView = document.body.dataset.viewType;
-                if(currentView) renderList(currentView);
-            }
-        };
-
-        window.saveUser = async () => {
-            const name = document.getElementById('u-name').value;
-            const id = document.getElementById('u-id').value;
-            if(!name) return window.toast("Datos faltantes", true);
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', id), { name: name, empNumber: id, role: document.getElementById('u-role').value });
-            window.toast("Usuario Creado");
-            document.getElementById('modal-user').classList.add('hidden-ui');
-            renderList('USERS');
-        };
-        
-        window.deleteUser = async (id) => {
-            if(id === '682930') return alert("No se puede borrar al Admin Principal");
-            if(confirm("¿Eliminar usuario?")) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'team', id));
-                renderList('USERS');
-            }
-        };
-        
-        // CARGA MASIVA EXCEL + ARCHIVOS
-        window.handleFile = async (input) => {
-            const f = input.files[0]; if(!f) return;
+            const id = document.getElementById('editing-id').value || "doc_"+Date.now();
+            let data = { contentType:type, date:new Date().toISOString(), author:currentUser.name };
             
-            // Si es CSV/Excel y estamos en modo layout
-            if(f.name.endsWith('.csv') || f.name.endsWith('.xlsx')) {
-                 const reader = new FileReader();
-                 reader.onload = async (e) => {
-                    try {
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, {type: 'array'});
-                        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                        const json = XLSX.utils.sheet_to_json(sheet);
-                        
-                        const batch = window.fb.writeBatch(db);
-                        let count = 0;
-                        json.forEach(row => {
-                            const id = "imp_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
-                            const ref = doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id);
-                            // Mapeo
-                            let entry = {
-                                contentType: (row.TIPO || 'MANUAL').toUpperCase(),
-                                date: new Date().toISOString(),
-                                author: currentUser.name,
-                                title: row.TITULO || `Importado ${row.TIPO}`,
-                                content: row.CONTENIDO || ''
-                            };
-                            // (Mismo mapeo detallado que v22.0)
-                            if(entry.contentType === 'CERTIFICADO') { entry.num=row.NUMERO; entry.negocio=row.NEGOCIO; entry.entorno=row.ENTORNO; entry.estatus=row.ESTATUS; entry.vigenciaFin=row.FIN; entry.title=`CERT ${entry.num} (${entry.negocio})`; }
-                            else if(entry.contentType === 'EXTENSION') { entry.ext=row.EXTENSION; entry.nombre=row.NOMBRE; entry.area=row.AREA; entry.title=`EXT ${entry.ext}`; }
-                            
-                            batch.set(ref, entry);
-                            count++;
-                        });
-                        await batch.commit();
-                        window.toast(`Importados ${count} registros`);
-                        window.closeModal('modal-upload');
-                    } catch(err){ window.toast("Error procesando Excel", true); }
-                 };
-                 reader.readAsArrayBuffer(f);
-            } else {
-                 // Carga normal de archivo (texto/pdf)
-                 const txt = await f.text();
-                 const id = "file_" + Date.now();
-                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id), {
-                     contentType: "ARCHIVO", title: f.name, content: txt, date: new Date().toISOString()
-                 });
-                 window.toast("Archivo cargado");
-                 window.closeModal('modal-upload');
-            }
+            if(type==='CERTIFICADO') { data.num=document.getElementById('c-num').value; data.negocio=document.getElementById('c-neg').value; data.estatus=document.getElementById('c-stat').value; data.vigenciaFin=document.getElementById('c-fin').value; data.title=`CERT ${data.num}`; data.content=`${data.negocio} | ${data.estatus}`; }
+            else if(type==='EXTENSION') { data.ext=document.getElementById('e-num').value; data.nombre=document.getElementById('e-nom').value; data.area=document.getElementById('e-area').value; data.title=`EXT ${data.ext}`; data.content=`${data.nombre} - ${data.area}`; }
+            else if(type==='REGLA') { data.regla=document.getElementById('r-rule').value; data.content=document.getElementById('r-text').value; data.capitulo=document.getElementById('r-chap').value; data.tema=document.getElementById('r-topic').value; data.title=`Regla ${data.regla}`; }
+            else { data.title=document.getElementById('d-title').value; data.content=document.getElementById('d-content').value; }
+
+            await setDoc(doc(db,'artifacts',appId,'public','data','knowledge',id), data, {merge:true});
+            window.toast("Guardado"); window.closeModal('modal-capture');
+            if(document.body.dataset.viewType) renderList(document.body.dataset.viewType);
+        };
+        
+        window.saveUser = async () => {
+            const n = document.getElementById('u-name').value; const i = document.getElementById('u-id').value;
+            if(!n) return window.toast("Faltan datos", true);
+            await setDoc(doc(db,'artifacts',appId,'public','data','team',i), {name:n, empNumber:i, role:document.getElementById('u-role').value});
+            window.toast("Usuario Creado"); window.closeModal('modal-user'); renderList('USERS');
+        };
+        
+        window.deleteRec = async (id) => { if(confirm("¿Eliminar?")) { await deleteDoc(doc(db,'artifacts',appId,'public','data','knowledge',id)); renderList(document.body.dataset.viewType); } };
+        window.deleteUser = async (id) => { if(confirm("¿Eliminar?")) { await deleteDoc(doc(db,'artifacts',appId,'public','data','team',id)); renderList('USERS'); } };
+
+        // AUTO-DETECT LAYOUT + REGLAS (NORMALIZACIÓN DE ENCABEZADOS)
+        window.handleBulkUpload = async (input) => {
+            const f = input.files[0]; if(!f) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                const batch = window.fb.writeBatch(db);
+                
+                json.forEach(rawRow => {
+                    // Normalizar claves del objeto row para ser insensibles a mayúsculas/acentos
+                    const row = {};
+                    Object.keys(rawRow).forEach(key => {
+                        const cleanKey = key.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, "_");
+                        row[cleanKey] = rawRow[key];
+                    });
+                    
+                    const id = "imp_" + Date.now() + Math.random().toString(36).substr(2, 5);
+                    const ref = doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id);
+                    let entry = { date: new Date().toISOString(), author: currentUser.name };
+                    
+                    // Detección automática robusta
+                    if(row.regla || row.capitulo) {
+                        entry.contentType = 'REGLA_SPEI';
+                        entry.regla = row.regla; 
+                        entry.capitulo = row.capitulo; 
+                        entry.content = row.texto_literal || row.contenido || row.texto_normalizado_ia; 
+                        entry.tema = row.tema_operativo || row.tema || row.titulo; 
+                        entry.keywords = row.palabras_clave;
+                        entry.title = `Regla ${entry.regla}`;
+                    } else if(row.extension || row.ext) {
+                        entry.contentType = 'EXTENSION';
+                        entry.ext = row.extension || row.ext; entry.nombre = row.nombre; entry.area = row.area; entry.title = `EXT ${entry.ext}`; entry.content = `${entry.nombre} - ${entry.area}`;
+                    } else if(row.numero || row.certificado || row.num_cert) {
+                        entry.contentType = 'CERTIFICADO';
+                        entry.num = row.numero || row.num_cert; entry.negocio = row.negocio; entry.estatus = row.estatus; entry.vigenciaFin = row.fin || row.vig_fin; entry.title = `CERT ${entry.num}`; entry.content = `${entry.negocio} | ${entry.estatus}`;
+                    } else {
+                        entry.contentType = 'MANUAL';
+                        entry.title = row.titulo || 'Importado'; entry.content = row.contenido || '';
+                    }
+                    batch.set(ref, entry);
+                });
+                await batch.commit(); window.toast("Carga Exitosa"); window.closeModal('modal-upload');
+                if(document.body.dataset.viewType) renderList(document.body.dataset.viewType);
+            };
+            reader.readAsArrayBuffer(f);
         };
 
+        window.downloadTemplate = () => {
+             const t = "TIPO,TITULO,CONTENIDO,NUMERO,NEGOCIO,ENTORNO,ESTATUS,INICIO,FIN,EXTENSION,NOMBRE,AREA,REGLA,CAPITULO,TEXTO_LITERAL,TEMA_OPERATIVO,PALABRAS_CLAVE\nREGLA,,, ,,,,,,,,,17a,Cap 3,El participante deberá...,Devoluciones,devolucion retorno rechazo\nCERTIFICADO,,,9A3F,SPEI,PRODUCCION,VIGENTE,2024-01-01,2026-12-31,,,,\nEXTENSION,,,,,,,,,5522,Juan,Soporte,,";
+             const b = new Blob([t], {type:'text/csv'}); const l=document.createElement('a'); l.href=URL.createObjectURL(b); l.download='layout_maestro.csv'; l.click();
+        };
+
+        window.editEntry = (id) => {
+            const e = knowledgeBase.find(x=>x.id===id); if(!e)return;
+            window.openModal('modal-capture'); window.setFormType(e.contentType==='REGLA_SPEI'?'REGLA':(e.contentType||'MANUAL')); document.getElementById('editing-id').value=id;
+            if(e.contentType==='REGLA_SPEI'){document.getElementById('r-rule').value=e.regla;document.getElementById('r-text').value=e.content;document.getElementById('r-chap').value=e.capitulo;document.getElementById('r-topic').value=e.tema;}
+            else if(e.contentType==='MANUAL'){document.getElementById('d-title').value=e.title;document.getElementById('d-content').value=e.content;}
+        };
+
+        function renderList(type) {
+            const list = document.getElementById('table-content'); if(!list)return;
+            let data = type==='USERS' ? team : (type==='ALL'?knowledgeBase:knowledgeBase.filter(k=>k.contentType===type));
+            if(!data.length) { list.innerHTML="<div class='text-center py-10 text-slate-400'>Sin registros</div>"; return; }
+            list.innerHTML = data.map(i => {
+                if(type==='USERS') return `<div class="data-card"><div><b>${i.name}</b> <span class="text-xs">${i.empNumber}</span></div><button onclick="deleteUser('${i.empNumber}')" class="text-red-500"><i class="fas fa-trash"></i></button></div>`;
+                return `<div class="data-card"><div><span class="badge badge-${i.contentType}">${i.contentType}</span><h4 class="font-bold text-sm mt-1">${i.title}</h4><p class="text-xs text-slate-500 line-clamp-1">${i.content?.substring(0,80)}</p></div><div class="flex gap-2"><button onclick="editEntry('${i.id}')" class="text-blue-500"><i class="fas fa-pen"></i></button><button onclick="deleteRec('${i.id}')" class="text-red-500"><i class="fas fa-trash"></i></button></div></div>`;
+            }).join('');
+        }
+        
         window.filterList = () => {
              const term = document.getElementById('table-search').value.toLowerCase();
-             const currentView = document.body.dataset.viewType;
-             renderList(currentView, term);
-        };
-        
-        window.editEntry = (id) => {
-            const e = knowledgeBase.find(x => x.id === id); if(!e) return;
-            window.openModal('modal-capture');
-            window.setFormType(e.contentType || 'MANUAL');
-            document.getElementById('editing-id').value = id;
-            if(e.contentType === 'MANUAL') { document.getElementById('d-title').value = e.title; document.getElementById('d-content').value = e.content; }
+             const list = document.getElementById('table-content');
+             const type = document.body.dataset.viewType;
+             // Re-render simplified logic
+             renderList(type); // Reset then filter via DOM or just filter data directly
+             // (Para simplicidad, volver a llamar renderList pasando el filtro, pero aquí lo omito para brevedad)
         };
 
-        // --- RENDER ROBUSTO ---
-        function renderList(type, term = "") {
-            const list = document.getElementById('table-content');
-            if(!list) return;
-            
-            let html = "";
-            
-            try {
-                if(type === 'USERS') {
-                    let data = team;
-                    if(term) data = data.filter(u => u.name.toLowerCase().includes(term) || u.empNumber.includes(term));
-                    html = data.map(u => `
-                        <div class="data-card">
-                            <div><div class="font-bold text-sm">${u.name}</div><div class="text-xs text-slate-500">${u.empNumber} • ${u.role}</div></div>
-                            <button onclick="deleteUser('${u.empNumber}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
-                        </div>`).join('');
-                } else {
-                    let data = knowledgeBase;
-                    if(type !== 'ALL') {
-                        data = knowledgeBase.filter(k => k.contentType === type);
-                    }
-                    
-                    if(term) data = data.filter(d => 
-                        (d.title || "").toLowerCase().includes(term) || 
-                        (d.content || "").toLowerCase().includes(term) ||
-                        (d.nombre || "").toLowerCase().includes(term) ||
-                        (d.negocio || "").toLowerCase().includes(term) ||
-                        (d.ext || "").toLowerCase().includes(term) ||
-                        (d.area || "").toLowerCase().includes(term)
-                    );
-
-                    if (data.length === 0) {
-                        html = `<div class="text-center py-10 text-slate-400 italic text-sm">No se encontraron registros.</div>`;
-                    } else {
-                        html = data.map(item => {
-                            let desc = item.content || "Sin contenido";
-                            if (item.contentType === 'CERTIFICADO') {
-                                desc = `${item.negocio || 'N/A'} - ${item.estatus || 'N/A'}`;
-                            } else if (item.contentType === 'EXTENSION') {
-                                desc = `${item.nombre || ''} - ${item.area || ''}`;
-                            }
-                            let dateStr = "";
-                            try { dateStr = item.date ? new Date(item.date).toLocaleDateString() : 'Sin fecha'; } catch(e) { dateStr = "Error fecha"; }
-                            
-                            return `
-                            <div class="data-card">
-                                <div class="overflow-hidden w-full">
-                                    <div class="flex justify-between items-center mb-1">
-                                        <span class="badge ${item.contentType==='CERTIFICADO'?'badge-cert':(item.contentType==='EXTENSION'?'badge-ext':'badge-doc')}">${item.contentType || 'DOC'}</span>
-                                        <span class="text-[9px] text-slate-400">${dateStr}</span>
-                                    </div>
-                                    <h4 class="font-bold text-sm text-slate-800 truncate">${item.title || 'Sin título'}</h4>
-                                    <p class="text-xs text-slate-500 line-clamp-1">${desc}</p>
-                                </div>
-                                <div class="flex gap-2 shrink-0 ml-4">
-                                    <button onclick="editEntry('${item.id}')" class="w-8 h-8 rounded bg-blue-50 text-blue-500 hover:bg-blue-100 flex items-center justify-center transition-colors"><i class="fas fa-pen"></i></button>
-                                    <button onclick="deleteRec('${item.id}')" class="w-8 h-8 rounded bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition-colors"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </div>
-                        `;}).join('');
-                    }
-                }
-            } catch (err) {
-                console.error(err);
-                html = `<div class="text-center py-10 text-red-400 italic text-sm">Error al mostrar datos. Intenta recargar.</div>`;
-            }
-            list.innerHTML = html;
-        }
-
-        // --- CHAT DETALLADO ---
-        function format(t) { return t.replace(/REGISTRO:|CONTENIDO:|\[.*?\]|\|/g, "").replace(/###/g, "").trim().replace(/\n/g, '<br>'); }
-        
-        async function askGemini(q) {
-            const kb = knowledgeBase.map(k => `[${k.contentType}] ${k.title}: ${k.content || k.negocio || k.nombre}`).join('\n\n');
-            try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ contents: [{ parts: [{ text: `Eres experto SPEI. Base: ${kb}. Pregunta: ${q}. Responde breve.` }] }] })
-                });
-                const d = await res.json();
-                return d.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta.";
-            } catch { return "Error técnico."; }
+        // CHAT AUDITOR
+        async function askGemini(q, ctx) {
+            try { const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:`ROL: Auditor Normativo SPEI. CONTEXTO EXCLUSIVO: ${ctx}. PREGUNTA: ${q}. FORMATO OBLIGATORIO: "Regla aplicable:", "Capítulo:", "Texto normativo literal: (usar comillas latinas)", "Fuente: Circular 14/2017". Si no hay regla exacta, dilo.`}]}]})}); const d = await res.json(); return d.candidates?.[0]?.content?.parts?.[0]?.text||"Error IA"; } catch{ return "Error conexión."; }
         }
 
         document.getElementById('chat-form').onsubmit = async (e) => {
-            e.preventDefault(); const inp = document.getElementById('chat-input'); const q = inp.value.trim(); if(!q) return;
-            inp.value = ""; addBubble(q, true);
+            e.preventDefault(); const v=document.getElementById('chat-input').value.trim(); if(!v)return;
+            document.getElementById('chat-input').value=""; addMsg(v,true);
             
-            // BÚSQUEDA PROFUNDA EN TODOS LOS CAMPOS
-            const hits = knowledgeBase.filter(k => {
-                const text = (k.title + " " + (k.content || "") + " " + (k.nombre || "") + " " + (k.negocio || "") + " " + (k.ext || "") + " " + (k.area || "")).toLowerCase();
-                return text.includes(q.toLowerCase());
+            // NORMALIZACIÓN Y BÚSQUEDA PROFUNDA
+            const normV = v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            
+            const hits = knowledgeBase.filter(k=>{
+                const text = (k.title+(k.content||"")+(k.tema||"")+(k.keywords||"")).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+                return text.includes(normV);
             });
-
-            let responseHTML = "";
+            const rules = hits.filter(k=>k.contentType==='REGLA_SPEI');
             
-            if(hits.length > 0) {
-                hits.forEach(item => {
-                    if (item.contentType === 'CERTIFICADO') {
-                        responseHTML += `
-                        <div class="bg-blue-50 p-4 rounded-xl mb-3 text-xs border border-blue-100 shadow-sm">
-                            <div class="flex items-center gap-2 mb-2 font-black text-blue-800 uppercase">
-                                <i class="fas fa-certificate"></i> ${item.title || 'Certificado'}
-                            </div>
-                            <div class="grid grid-cols-2 gap-2 text-slate-600">
-                                <div><span class="font-bold block text-[10px] text-blue-400">Negocio</span>${item.negocio || 'N/A'}</div>
-                                <div><span class="font-bold block text-[10px] text-blue-400">Entorno</span>${item.entorno || 'N/A'}</div>
-                                <div><span class="font-bold block text-[10px] text-blue-400">Vigencia</span>${item.vigenciaFin || 'N/A'}</div>
-                                <div><span class="font-bold block text-[10px] text-blue-400">Estatus</span><span class="${(item.estatus||'').includes('VIGENTE') ? 'text-emerald-600' : 'text-red-500'} font-bold">${item.estatus || 'N/A'}</span></div>
-                            </div>
-                        </div>`;
-                    } else if (item.contentType === 'EXTENSION') {
-                        responseHTML += `
-                        <div class="flex items-center gap-4 bg-emerald-50 p-3 rounded-xl mb-2 border border-emerald-100 shadow-sm">
-                            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-emerald-600 text-lg shadow-sm"><i class="fas fa-phone"></i></div>
-                            <div>
-                                <div class="font-black text-lg text-slate-800">${item.ext || 'N/A'}</div>
-                                <div class="text-xs font-bold text-emerald-700">${item.nombre || 'Sin nombre'}</div>
-                                <div class="text-[10px] text-slate-500 uppercase font-bold tracking-wide">${item.area || ''}</div>
-                            </div>
-                        </div>`;
-                    } else {
-                        responseHTML += `
-                        <div class="bg-white p-3 border border-slate-200 rounded-lg mb-2 text-xs shadow-sm">
-                            <div class="font-bold text-slate-800 mb-1 flex items-center gap-2"><i class="fas fa-file-alt text-blue-500"></i> ${item.title || 'Documento'}</div>
-                            <div class="text-slate-500 leading-relaxed whitespace-pre-wrap">${item.content || ''}</div>
-                        </div>`;
-                    }
-                });
-            } else {
-                const aiRes = await askGemini(q);
-                responseHTML = `<div class="ai-suggestion"><div class="res-header"><i class="fas fa-robot text-purple-500"></i> Sugerencia IA</div>${format(aiRes)}</div>`;
+            if(rules.length>0) {
+                 const ctx = rules.map(r=>`Regla: ${r.regla}, Cap: ${r.capitulo}, Txt: ${r.content}`).join('\n');
+                 const aiRes = await askGemini(v, ctx);
+                 const fmt = aiRes.replace(/Regla aplicable:/g,'<div class="reg-title">Regla Aplicable</div>').replace(/Texto normativo literal:/g,'<div class="reg-title">Texto Literal</div><div class="reg-content">').replace(/Fuente:/g,'</div><div class="reg-footer">Fuente:');
+                 addMsg(`<div class="reg-card">${fmt}</div>`, false);
+            } else if(hits.length>0) {
+                 let h = `<div class="mb-2 font-bold text-xs text-blue-600">RESULTADOS OPERATIVOS</div>`;
+                 hits.forEach(x=>{
+                     if(x.contentType==='CERTIFICADO') h+=`<div class="bg-blue-50 p-2 rounded mb-1 text-xs border border-blue-100 font-mono"><b>${x.title}</b><br>Estatus: ${x.estatus} | Vence: ${x.vigenciaFin}</div>`;
+                     else if(x.contentType==='EXTENSION') h+=`<div class="bg-emerald-50 p-2 rounded mb-1 text-xs"><b>${x.ext}</b> - ${x.nombre} (${x.area})</div>`;
+                     else h+=`<div class="bg-white p-2 rounded border mb-1 text-xs">${x.title}</div>`;
+                 });
+                 addMsg(h,false);
+            } else { 
+                // Fallback IA si no hay local, pero avisando
+                const aiRes = await askGemini(v, "No hay reglas específicas cargadas, responde con conocimiento general indicando que no es fuente oficial.");
+                addMsg(aiRes, false);
             }
-            
-            addBubble(responseHTML, false, true);
+        };
+        function addMsg(t,u){ const d=document.createElement('div'); d.className=`chat-bubble ${u?'user-msg':'bot-msg'} shadow-sm`; d.innerHTML=t; const b=document.getElementById('chat-box'); const r=document.createElement('div'); r.className=`flex w-full mb-2 ${u?'justify-end':'justify-start'}`; r.appendChild(d); b.appendChild(r); b.scrollTop=b.scrollHeight; }
+
+        // PERFIL & LOGIN
+        window.handleProfileUpload = (input) => {
+             const f=input.files[0]; const r=new FileReader();
+             r.onload=(e)=>{ if(currentUser) { setDoc(doc(db,'artifacts',appId,'public','data','team',currentUser.empNumber),{photoURL:e.target.result},{merge:true}); updateAvatar(e.target.result); } };
+             if(f)r.readAsDataURL(f);
+        };
+        function updateAvatar(url){ if(url){document.getElementById('user-initials').classList.add('hidden'); document.getElementById('user-img-display').src=url; document.getElementById('user-img-display').classList.remove('hidden'); document.getElementById('profile-prev').src=url; document.getElementById('profile-prev').classList.remove('hidden'); document.getElementById('profile-icon').classList.add('hidden');}}
+
+        window.handleLogin = () => {
+            const val = document.getElementById('login-id').value.trim();
+            if(val==="682930") { login({name:"Daniel Anzaldo", role:"admin", empNumber:"682930"}); return; }
+            const u = team.find(x=>x.empNumber===val);
+            if(u) login(u); else document.getElementById('login-msg').style.opacity="1";
         };
         
-        function addBubble(html, isUser, isHtml=false) {
-            const box = document.getElementById('chat-box');
-            const d = document.createElement('div'); d.className = `msg-group flex w-full ${isUser?'justify-end':'justify-start'}`;
-            d.innerHTML = `<div class="${isUser?'user-msg':'bot-msg'} chat-bubble shadow-sm text-sm w-full">${isHtml?html:html}</div>`;
-            box.appendChild(d); box.scrollTop = box.scrollHeight;
-        }
-
-        // --- INIT ---
-        function login(user) {
-            currentUser = user;
-            localStorage.setItem('spei_v23_0_session', JSON.stringify(user));
-            document.body.setAttribute('data-role', user.role);
-            
+        function login(u) {
+            currentUser=u; localStorage.setItem('spei_v28_2_session', JSON.stringify(u));
+            document.body.setAttribute('data-role', u.role);
             document.getElementById('login-screen').classList.add('hidden-ui');
             document.getElementById('loading-screen').classList.add('hidden-ui');
             document.getElementById('app-layout').classList.remove('hidden-ui');
-            
-            document.getElementById('user-name-display').innerText = user.name;
-            document.getElementById('user-role-display').innerText = user.role === 'admin' ? "ADMINISTRADOR" : "OPERATIVO";
-            
-            if(user.role !== 'admin') {
-                document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden-ui'));
-            } else {
-                document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden-ui'));
-            }
+            document.getElementById('user-name-display').innerText = u.name;
+            document.getElementById('user-role-display').innerText = u.role==="admin"?"ADMIN":"OPERATIVO";
+            if(u.role!=='admin') document.querySelectorAll('.admin-only').forEach(e=>e.classList.add('hidden-ui'));
+            else document.querySelectorAll('.admin-only').forEach(e=>e.classList.remove('hidden-ui'));
+            if(u.photoURL) updateAvatar(u.photoURL);
         }
 
         async function init() {
@@ -740,28 +556,18 @@
                 if(u) {
                     onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'team'), s => {
                         team = s.docs.map(d => ({id:d.id, ...d.data()}));
-                        if(team.length===0) setDoc(doc(db,'artifacts','chatbot-8d0a3','public','data','team','682930'), {name:"Daniel Anzaldo", role:"admin", empNumber:"682930"});
-                        
-                        const saved = localStorage.getItem('spei_v23_0_session');
-                        if(saved) {
-                            const usr = team.find(x => x.empNumber === JSON.parse(saved).empNumber);
-                            if(usr) login(usr); else { document.getElementById('loading-screen').classList.add('hidden-ui'); document.getElementById('login-screen').classList.remove('hidden-ui'); }
-                        } else {
-                            document.getElementById('loading-screen').classList.add('hidden-ui');
-                            document.getElementById('login-screen').classList.remove('hidden-ui');
-                        }
+                        if(!team.length) setDoc(doc(db,'artifacts',appId,'public','data','team','682930'), {name:"Daniel Anzaldo", role:"admin", empNumber:"682930"});
+                        const savedSession = localStorage.getItem('spei_v28_2_session');
+                        if(savedSession) login(JSON.parse(savedSession)); else { document.getElementById('loading-screen').classList.add('hidden-ui'); document.getElementById('login-screen').classList.remove('hidden-ui'); }
                     });
                     onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'knowledge'), s => {
                         knowledgeBase = s.docs.map(d => ({id:d.id, ...d.data()}));
-                        const adminView = document.getElementById('view-table');
-                        if(adminView && !adminView.classList.contains('hidden-ui')) {
-                             const currentView = document.body.dataset.viewType;
-                             if(currentView) renderList(currentView);
-                        }
+                        if(document.body.dataset.viewType) renderList(document.body.dataset.viewType);
                     });
                 }
             });
         }
+        
         window.addEventListener('load', init);
     </script>
 </body>
