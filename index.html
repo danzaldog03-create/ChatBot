@@ -8,7 +8,7 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     
-    <title>SPEI Ops - Panel v28.2</title>
+    <title>SPEI Ops - Panel v28.9</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -27,10 +27,11 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        // Importamos signInWithCustomToken para arreglar permisos
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = {
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "AIzaSyDPi5pcDL6OL2zCJK_0n3A_RdDGt3U3LVQ",
             authDomain: "chatbot-8d0a3.firebaseapp.com",
             projectId: "chatbot-8d0a3",
@@ -42,9 +43,10 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = "chatbot-8d0a3"; 
+        // Usar __app_id del entorno si existe para rutas correctas
+        const appId = typeof __app_id !== 'undefined' ? __app_id : "chatbot-8d0a3"; 
 
-        window.fb = { auth, db, appId, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, signInAnonymously, onAuthStateChanged, writeBatch };
+        window.fb = { auth, db, appId, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, signInAnonymously, signInWithCustomToken, onAuthStateChanged, writeBatch, GEMINI_API_KEY: "AIzaSyDraEnCKuwnicZVQ-aOcYYwMIPiuadcVgU" };
     </script>
 
     <style>
@@ -53,6 +55,7 @@
         * { box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; height: 100vh; width: 100vw; overflow: hidden; display: flex; flex-direction: column; }
         
+        /* Layout */
         .layout-container { display: flex; height: 100%; width: 100%; }
         .sidebar { width: 260px; background: #0f172a; color: #94a3b8; display: flex; flex-direction: column; border-right: 1px solid #1e293b; transition: transform 0.3s; flex-shrink: 0; z-index: 50; }
         .sidebar-header { padding: 1.5rem; border-bottom: 1px solid #1e293b; display: flex; align-items: center; gap: 0.75rem; color: white; font-weight: 800; font-size: 1.1rem; }
@@ -63,13 +66,16 @@
         .nav-item:hover { background: #1e293b; color: white; }
         .nav-item.active { background: #1e293b; color: white; border-left-color: #3b82f6; }
         
+        /* Main Content */
         .main-area { flex: 1; display: flex; flex-direction: column; background: white; position: relative; overflow: hidden; }
         .top-header { height: 4rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; background: white; shrink: 0; z-index: 20; }
         
+        /* Views */
         .view-section { flex: 1; overflow-y: auto; padding: 2rem; display: none; height: 100%; flex-direction: column; }
         .view-section.active { display: flex; } 
         #view-chat { padding: 0; }
         
+        /* Chat UI */
         .chat-box { flex: 1; overflow-y: auto; padding: 2rem; background: #f8fafc; }
         .chat-input-area { padding: 1.5rem 2rem; background: white; border-top: 1px solid #e2e8f0; }
         
@@ -78,11 +84,13 @@
         .bot-msg { align-self: flex-start; background: white; border: 1px solid #e2e8f0; color: #1e293b; border-bottom-left-radius: 0; width: 100%; }
         .bot-header { font-weight: 800; color: #0f172a; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
 
+        /* Estilo Regulatorio */
         .reg-card { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 0.5rem; margin-top: 0.5rem; }
         .reg-title { font-size: 0.75rem; font-weight: 900; color: #92400e; text-transform: uppercase; margin-bottom: 0.5rem; }
         .reg-content { font-family: 'Georgia', serif; font-style: italic; color: #451a03; line-height: 1.6; font-size: 0.95rem; }
         .reg-footer { margin-top: 0.5rem; font-size: 0.7rem; color: #b45309; font-weight: 700; text-align: right; }
 
+        /* Admin Tables */
         #table-content { flex: 1; overflow-y: auto; padding-bottom: 6rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 300px; }
         .data-card { background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); min-height: 80px; }
         .data-card:hover { border-color: #3b82f6; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transform: translateY(-1px); }
@@ -140,7 +148,7 @@
                 <button onclick="handleLogin()" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-lg font-bold shadow-lg transition-all active:scale-95 cursor-pointer">INGRESAR</button>
                 <p id="login-msg" class="text-red-500 text-xs font-bold mt-2 opacity-0 transition-opacity">Credenciales Incorrectas</p>
             </div>
-            <p class="mt-8 text-[10px] text-slate-400 font-bold uppercase tracking-wider">v28.2 • Daniel Anzaldo</p>
+            <p class="mt-8 text-[10px] text-slate-400 font-bold uppercase tracking-wider">v28.9 • Daniel Anzaldo</p>
         </div>
     </div>
 
@@ -277,13 +285,13 @@
             <div class="p-5 border-b bg-slate-50"><h3 class="font-bold">Cargar Archivo / Layout</h3></div>
             <div class="p-6 text-center">
                 <p class="text-xs text-slate-500 mb-4 text-left">
-                    <b>Carga Masiva:</b> Detecta automáticamente si es Regla SPEI o Layout General.<br>
-                    <button onclick="window.downloadTemplate()" class="text-blue-500 hover:underline mt-1 font-bold">Descargar Plantilla Universal</button>
+                    <b>Carga Masiva:</b> Sube un CSV/Excel con las columnas TIPO, TITULO, CONTENIDO, NUMERO, etc. para llenar la base.<br>
+                    <button onclick="window.downloadTemplate()" class="text-blue-500 hover:underline mt-1 font-bold">Descargar Plantilla CSV</button>
                 </p>
                 <div class="p-8 text-center border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors" onclick="document.getElementById('file-in').click()">
                     <i class="fas fa-cloud-upload-alt text-4xl text-blue-400 mb-3"></i>
                     <p class="text-sm font-bold text-slate-600">Clic para seleccionar</p>
-                    <p class="text-xs text-slate-400">Excel (.xlsx), CSV, PDF, Imágenes</p>
+                    <p class="text-xs text-slate-400">Excel (.xlsx), CSV, PDF, Imágenes, Texto</p>
                 </div>
                 <input type="file" id="file-in" class="hidden" accept=".xlsx,.csv,.pdf,.txt,image/*" onchange="handleBulkUpload(this)">
             </div>
@@ -324,31 +332,30 @@
     </div>
 
     <script type="module">
-        const apiKey = "AIzaSyDraEnCKuwnicZVQ-aOcYYwMIPiuadcVgU";
-        const { auth, db, appId, doc, setDoc, collection, onSnapshot, deleteDoc, signInAnonymously, onAuthStateChanged, writeBatch } = window.fb;
+        const apiKey = window.fb.GEMINI_API_KEY;
+        const { auth, db, appId, doc, setDoc, collection, onSnapshot, deleteDoc, signInAnonymously, signInWithCustomToken, onAuthStateChanged, writeBatch } = window.fb;
         
         let currentUser = null;
         let knowledgeBase = [];
         let team = [];
-        let chatHistory = [];
 
         // --- GLOBAL ---
-        window.toast = (m,e) => { const t=document.getElementById('toast'); t.innerText=m; t.className=`fixed top-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-xs font-black shadow-2xl z-[10002] transition-all opacity-100 ${e?'bg-red-500 text-white':'bg-emerald-500 text-white'}`; setTimeout(()=>t.classList.remove('opacity-100'),3000); };
+        window.toast = (m,e) => { const t=document.getElementById('toast'); t.innerText=m; t.className=`fixed top-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-xs font-black uppercase shadow-2xl z-[10002] transition-all duration-300 opacity-100 ${e?'bg-red-500 text-white':'bg-emerald-500 text-white'}`; setTimeout(()=>t.classList.remove('opacity-100'),3000); };
         window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('open');
         window.closeModal = (id) => document.getElementById(id).classList.add('hidden-ui');
         window.openModal = (id) => { document.getElementById(id).classList.remove('hidden-ui'); if(id==='modal-capture'){window.setFormType('MANUAL'); document.getElementById('editing-id').value="";} };
         window.openUploadModal = () => window.openModal('modal-upload');
         window.openProfileModal = () => window.openModal('modal-profile');
-        
-        window.setFormType = (t) => {
-            document.getElementById('current-type').value=t;
-            ['form-cert','form-ext','form-rule','form-doc'].forEach(f=>document.getElementById(f).classList.add('hidden'));
-            if(t==='CERTIFICADO') document.getElementById('form-cert').classList.remove('hidden');
-            else if(t==='EXTENSION') document.getElementById('form-ext').classList.remove('hidden');
-            else if(t==='REGLA') document.getElementById('form-rule').classList.remove('hidden');
-            else document.getElementById('form-doc').classList.remove('hidden');
-        };
 
+        window.handleLogin = () => {
+            const val = document.getElementById('login-id').value.trim();
+            if(val==="682930") { login({name:"Daniel Anzaldo", role:"admin", empNumber:"682930"}); return; }
+            const u = team.find(x=>x.empNumber===val);
+            if(u) login(u); else document.getElementById('login-msg').style.opacity="1";
+        };
+        window.logout = () => { localStorage.removeItem('spei_v28_9_session'); location.reload(); };
+
+        // NAV
         window.navigate = (view) => {
             if(window.innerWidth<768) document.getElementById('sidebar').classList.remove('open');
             document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -378,6 +385,15 @@
             }
         };
 
+        window.setFormType = (t) => {
+            document.getElementById('current-type').value=t;
+            ['form-cert','form-ext','form-rule','form-doc'].forEach(f=>document.getElementById(f).classList.add('hidden'));
+            if(t==='CERTIFICADO') document.getElementById('form-cert').classList.remove('hidden');
+            else if(t==='EXTENSION') document.getElementById('form-ext').classList.remove('hidden');
+            else if(t==='REGLA') document.getElementById('form-rule').classList.remove('hidden');
+            else document.getElementById('form-doc').classList.remove('hidden');
+        };
+
         window.saveRegistry = async () => {
             const type = document.getElementById('current-type').value;
             const id = document.getElementById('editing-id').value || "doc_"+Date.now();
@@ -403,7 +419,7 @@
         window.deleteRec = async (id) => { if(confirm("¿Eliminar?")) { await deleteDoc(doc(db,'artifacts',appId,'public','data','knowledge',id)); renderList(document.body.dataset.viewType); } };
         window.deleteUser = async (id) => { if(confirm("¿Eliminar?")) { await deleteDoc(doc(db,'artifacts',appId,'public','data','team',id)); renderList('USERS'); } };
 
-        // AUTO-DETECT LAYOUT + REGLAS (NORMALIZACIÓN DE ENCABEZADOS)
+        // AUTO-DETECT LAYOUT
         window.handleBulkUpload = async (input) => {
             const f = input.files[0]; if(!f) return;
             const reader = new FileReader();
@@ -412,37 +428,29 @@
                 const workbook = XLSX.read(data, {type: 'array'});
                 const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
                 const batch = window.fb.writeBatch(db);
-                
-                json.forEach(rawRow => {
-                    // Normalizar claves del objeto row para ser insensibles a mayúsculas/acentos
-                    const row = {};
-                    Object.keys(rawRow).forEach(key => {
-                        const cleanKey = key.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, "_");
-                        row[cleanKey] = rawRow[key];
-                    });
-                    
-                    const id = "imp_" + Date.now() + Math.random().toString(36).substr(2, 5);
+                json.forEach(row => {
+                    const id = "imp_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
                     const ref = doc(db, 'artifacts', appId, 'public', 'data', 'knowledge', id);
                     let entry = { date: new Date().toISOString(), author: currentUser.name };
                     
-                    // Detección automática robusta
-                    if(row.regla || row.capitulo) {
+                    if(row.Regla || row.REGLA) {
                         entry.contentType = 'REGLA_SPEI';
-                        entry.regla = row.regla; 
-                        entry.capitulo = row.capitulo; 
-                        entry.content = row.texto_literal || row.contenido || row.texto_normalizado_ia; 
-                        entry.tema = row.tema_operativo || row.tema || row.titulo; 
-                        entry.keywords = row.palabras_clave;
+                        entry.regla = row.Regla || row.REGLA; 
+                        entry.capitulo = row.Capítulo || row.CAPITULO; 
+                        entry.content = row.Texto_literal || row.TEXTO_LITERAL || row.CONTENIDO; 
+                        entry.tema = row.Tema_operativo || row.TEMA || row.TITULO; 
+                        entry.keywords = row.Palabras_clave || row.PALABRAS_CLAVE || '';
+                        entry.ia_text = row.Texto_normalizado_IA || '';
                         entry.title = `Regla ${entry.regla}`;
-                    } else if(row.extension || row.ext) {
+                    } else if(row.EXTENSION || row.EXT) {
                         entry.contentType = 'EXTENSION';
-                        entry.ext = row.extension || row.ext; entry.nombre = row.nombre; entry.area = row.area; entry.title = `EXT ${entry.ext}`; entry.content = `${entry.nombre} - ${entry.area}`;
-                    } else if(row.numero || row.certificado || row.num_cert) {
+                        entry.ext = row.EXTENSION || row.EXT; entry.nombre = row.NOMBRE; entry.area = row.AREA; entry.title = `EXT ${entry.ext}`; entry.content = `${entry.nombre} - ${entry.area}`;
+                    } else if(row.NUMERO || row.CERTIFICADO) {
                         entry.contentType = 'CERTIFICADO';
-                        entry.num = row.numero || row.num_cert; entry.negocio = row.negocio; entry.estatus = row.estatus; entry.vigenciaFin = row.fin || row.vig_fin; entry.title = `CERT ${entry.num}`; entry.content = `${entry.negocio} | ${entry.estatus}`;
+                        entry.num = row.NUMERO; entry.negocio = row.NEGOCIO; entry.estatus = row.ESTATUS; entry.vigenciaFin = row.FIN; entry.title = `CERT ${entry.num}`; entry.content = `${entry.negocio} | ${entry.estatus}`;
                     } else {
                         entry.contentType = 'MANUAL';
-                        entry.title = row.titulo || 'Importado'; entry.content = row.contenido || '';
+                        entry.title = row.TITULO || 'Importado'; entry.content = row.CONTENIDO || '';
                     }
                     batch.set(ref, entry);
                 });
@@ -453,8 +461,8 @@
         };
 
         window.downloadTemplate = () => {
-             const t = "TIPO,TITULO,CONTENIDO,NUMERO,NEGOCIO,ENTORNO,ESTATUS,INICIO,FIN,EXTENSION,NOMBRE,AREA,REGLA,CAPITULO,TEXTO_LITERAL,TEMA_OPERATIVO,PALABRAS_CLAVE\nREGLA,,, ,,,,,,,,,17a,Cap 3,El participante deberá...,Devoluciones,devolucion retorno rechazo\nCERTIFICADO,,,9A3F,SPEI,PRODUCCION,VIGENTE,2024-01-01,2026-12-31,,,,\nEXTENSION,,,,,,,,,5522,Juan,Soporte,,";
-             const b = new Blob([t], {type:'text/csv'}); const l=document.createElement('a'); l.href=URL.createObjectURL(b); l.download='layout_maestro.csv'; l.click();
+             const t = "TIPO,TITULO,CONTENIDO,NUMERO,NEGOCIO,ENTORNO,ESTATUS,INICIO,FIN,EXTENSION,NOMBRE,AREA,REGLA,CAPITULO,TEXTO_LITERAL,TEMA_OPERATIVO,PALABRAS_CLAVE,TEXTO_NORMALIZADO_IA\nREGLA,,, ,,,,,,,,,17a,Cap 3,El participante deberá...,Devoluciones,devolucion retorno rechazo,el participante debe regresar...\nCERTIFICADO,,,9A3F,SPEI,PRODUCCION,VIGENTE,2024-01-01,2026-12-31,,,,\nEXTENSION,,,,,,,,,5522,Juan,Soporte,,";
+             const b = new Blob([t], {type:'text/csv'}); const l=document.createElement('a'); l.href=URL.createObjectURL(b); l.download='layout_maestro_ia.csv'; l.click();
         };
 
         window.editEntry = (id) => {
@@ -478,9 +486,7 @@
              const term = document.getElementById('table-search').value.toLowerCase();
              const list = document.getElementById('table-content');
              const type = document.body.dataset.viewType;
-             // Re-render simplified logic
-             renderList(type); // Reset then filter via DOM or just filter data directly
-             // (Para simplicidad, volver a llamar renderList pasando el filtro, pero aquí lo omito para brevedad)
+             renderList(type);
         };
 
         // CHAT AUDITOR
@@ -492,7 +498,6 @@
             e.preventDefault(); const v=document.getElementById('chat-input').value.trim(); if(!v)return;
             document.getElementById('chat-input').value=""; addMsg(v,true);
             
-            // NORMALIZACIÓN Y BÚSQUEDA PROFUNDA
             const normV = v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
             
             const hits = knowledgeBase.filter(k=>{
@@ -514,11 +519,7 @@
                      else h+=`<div class="bg-white p-2 rounded border mb-1 text-xs">${x.title}</div>`;
                  });
                  addMsg(h,false);
-            } else { 
-                // Fallback IA si no hay local, pero avisando
-                const aiRes = await askGemini(v, "No hay reglas específicas cargadas, responde con conocimiento general indicando que no es fuente oficial.");
-                addMsg(aiRes, false);
-            }
+            } else { addMsg("No se encontró información normativa ni operativa.",false); }
         };
         function addMsg(t,u){ const d=document.createElement('div'); d.className=`chat-bubble ${u?'user-msg':'bot-msg'} shadow-sm`; d.innerHTML=t; const b=document.getElementById('chat-box'); const r=document.createElement('div'); r.className=`flex w-full mb-2 ${u?'justify-end':'justify-start'}`; r.appendChild(d); b.appendChild(r); b.scrollTop=b.scrollHeight; }
 
@@ -530,15 +531,8 @@
         };
         function updateAvatar(url){ if(url){document.getElementById('user-initials').classList.add('hidden'); document.getElementById('user-img-display').src=url; document.getElementById('user-img-display').classList.remove('hidden'); document.getElementById('profile-prev').src=url; document.getElementById('profile-prev').classList.remove('hidden'); document.getElementById('profile-icon').classList.add('hidden');}}
 
-        window.handleLogin = () => {
-            const val = document.getElementById('login-id').value.trim();
-            if(val==="682930") { login({name:"Daniel Anzaldo", role:"admin", empNumber:"682930"}); return; }
-            const u = team.find(x=>x.empNumber===val);
-            if(u) login(u); else document.getElementById('login-msg').style.opacity="1";
-        };
-        
         function login(u) {
-            currentUser=u; localStorage.setItem('spei_v28_2_session', JSON.stringify(u));
+            currentUser=u; localStorage.setItem('spei_v28_9_session', JSON.stringify(u));
             document.body.setAttribute('data-role', u.role);
             document.getElementById('login-screen').classList.add('hidden-ui');
             document.getElementById('loading-screen').classList.add('hidden-ui');
@@ -550,15 +544,25 @@
             if(u.photoURL) updateAvatar(u.photoURL);
         }
 
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (e) { console.error(e); }
+        };
+
         async function init() {
-            await signInAnonymously(auth);
+            await initAuth();
             onAuthStateChanged(auth, u => {
                 if(u) {
                     onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'team'), s => {
                         team = s.docs.map(d => ({id:d.id, ...d.data()}));
                         if(!team.length) setDoc(doc(db,'artifacts',appId,'public','data','team','682930'), {name:"Daniel Anzaldo", role:"admin", empNumber:"682930"});
-                        const savedSession = localStorage.getItem('spei_v28_2_session');
-                        if(savedSession) login(JSON.parse(savedSession)); else { document.getElementById('loading-screen').classList.add('hidden-ui'); document.getElementById('login-screen').classList.remove('hidden-ui'); }
+                        const saved = localStorage.getItem('spei_v28_9_session');
+                        if(saved) login(JSON.parse(saved)); else { document.getElementById('loading-screen').classList.add('hidden-ui'); document.getElementById('login-screen').classList.remove('hidden-ui'); }
                     });
                     onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'knowledge'), s => {
                         knowledgeBase = s.docs.map(d => ({id:d.id, ...d.data()}));
