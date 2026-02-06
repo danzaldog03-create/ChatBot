@@ -335,7 +335,6 @@
     </div>
 
     <script type="module">
-        const apiKey = window.fb.GEMINI_API_KEY;
         const { auth, db, appId, doc, setDoc, collection, onSnapshot, deleteDoc, signInAnonymously, onAuthStateChanged, signInWithCustomToken, writeBatch } = window.fb;
         
         let currentUser = null;
@@ -503,7 +502,6 @@
             const e = knowledgeBase.find(x=>x.id===id); if(!e)return;
             window.openModal('modal-capture'); window.setFormType(e.contentType==='REGLA_SPEI'?'REGLA':(e.contentType||'MANUAL')); document.getElementById('editing-id').value=id;
             if(e.contentType==='REGLA_SPEI'){document.getElementById('r-rule').value=e.regla;document.getElementById('r-text').value=e.content;document.getElementById('r-chap').value=e.capitulo;document.getElementById('r-topic').value=e.tema;}
-            // Mapeo simple para otros
             else if(e.contentType==='MANUAL'){document.getElementById('d-title').value=e.title;document.getElementById('d-content').value=e.content;}
         };
 
@@ -535,24 +533,32 @@
         }
         
         window.filterList = () => {
-             const term = document.getElementById('table-search').value.toLowerCase();
-             const list = document.getElementById('table-content');
              const type = document.body.dataset.viewType;
-             // Re-render simplified logic
-             renderList(type); // Reset then filter via DOM or just filter data directly
-             // (Para simplicidad, volver a llamar renderList pasando el filtro, pero aquí lo omito para brevedad)
+             renderList(type);
         };
 
-        // CHAT AUDITOR
+        // CHAT AUDITOR (AHORA LLAMA A TU ENDPOINT SEGURO EN VERCEL)
         async function askGemini(q, ctx) {
-            try { const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:`ROL: Auditor Normativo SPEI. CONTEXTO EXCLUSIVO: ${ctx}. PREGUNTA: ${q}. FORMATO OBLIGATORIO: "Regla aplicable:", "Capítulo:", "Texto normativo literal: (usar comillas latinas)", "Fuente: Circular 14/2017". Si no hay regla exacta, dilo.`}]}]})}); const d = await res.json(); return d.candidates?.[0]?.content?.parts?.[0]?.text||"Error IA"; } catch{ return "Error conexión."; }
+            try {
+                const prompt = `ROL: Auditor Normativo SPEI. CONTEXTO EXCLUSIVO: ${ctx}. PREGUNTA: ${q}. FORMATO OBLIGATORIO: "Regla aplicable:", "Capítulo:", "Texto normativo literal: (usar comillas latinas)", "Fuente: Circular 14/2017". Si no hay regla exacta, dilo.`;
+
+                const res = await fetch("/api/gemini", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const d = await res.json();
+                return d.candidates?.[0]?.content?.parts?.[0]?.text || "Error IA";
+            } catch {
+                return "Error conexión.";
+            }
         }
 
         document.getElementById('chat-form').onsubmit = async (e) => {
             e.preventDefault(); const v=document.getElementById('chat-input').value.trim(); if(!v)return;
             document.getElementById('chat-input').value=""; addMsg(v,true);
             
-            // NORMALIZACIÓN Y BÚSQUEDA PROFUNDA
             const normV = v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
             
             const hits = knowledgeBase.filter(k=>{
@@ -564,7 +570,10 @@
             if(rules.length>0) {
                  const ctx = rules.map(r=>`Regla: ${r.regla}, Cap: ${r.capitulo}, Txt: ${r.content}`).join('\n');
                  const aiRes = await askGemini(v, ctx);
-                 const fmt = aiRes.replace(/Regla aplicable:/g,'<div class="reg-title">Regla Aplicable</div>').replace(/Texto normativo literal:/g,'<div class="reg-title">Texto Literal</div><div class="reg-content">').replace(/Fuente:/g,'</div><div class="reg-footer">Fuente:');
+                 const fmt = aiRes
+                   .replace(/Regla aplicable:/g,'<div class="reg-title">Regla Aplicable</div>')
+                   .replace(/Texto normativo literal:/g,'<div class="reg-title">Texto Literal</div><div class="reg-content">')
+                   .replace(/Fuente:/g,'</div><div class="reg-footer">Fuente:');
                  addMsg(`<div class="reg-card">${fmt}</div>`, false);
             } else if(hits.length>0) {
                  let h = `<div class="mb-2 font-bold text-xs text-blue-600">RESULTADOS OPERATIVOS</div>`;
@@ -576,7 +585,18 @@
                  addMsg(h,false);
             } else { addMsg("No se encontró información normativa ni operativa.",false); }
         };
-        function addMsg(t,u){ const d=document.createElement('div'); d.className=`chat-bubble ${u?'user-msg':'bot-msg'} shadow-sm`; d.innerHTML=t; const b=document.getElementById('chat-box'); const r=document.createElement('div'); r.className=`flex w-full mb-2 ${u?'justify-end':'justify-start'}`; r.appendChild(d); b.appendChild(r); b.scrollTop=b.scrollHeight; }
+
+        function addMsg(t,u){
+            const d=document.createElement('div');
+            d.className=`chat-bubble ${u?'user-msg':'bot-msg'} shadow-sm`;
+            d.innerHTML=t;
+            const b=document.getElementById('chat-box');
+            const r=document.createElement('div');
+            r.className=`flex w-full mb-2 ${u?'justify-end':'justify-start'}`;
+            r.appendChild(d);
+            b.appendChild(r);
+            b.scrollTop=b.scrollHeight;
+        }
 
         // PERFIL & LOGIN
         window.handleProfileUpload = (input) => {
@@ -584,7 +604,17 @@
              r.onload=(e)=>{ if(currentUser) { setDoc(doc(db,'artifacts',appId,'public','data','team',currentUser.empNumber),{photoURL:e.target.result},{merge:true}); updateAvatar(e.target.result); } };
              if(f)r.readAsDataURL(f);
         };
-        function updateAvatar(url){ if(url){document.getElementById('user-initials').classList.add('hidden'); document.getElementById('user-img-display').src=url; document.getElementById('user-img-display').classList.remove('hidden'); document.getElementById('profile-prev').src=url; document.getElementById('profile-prev').classList.remove('hidden'); document.getElementById('profile-icon').classList.add('hidden');}}
+
+        function updateAvatar(url){
+            if(url){
+                document.getElementById('user-initials').classList.add('hidden');
+                document.getElementById('user-img-display').src=url;
+                document.getElementById('user-img-display').classList.remove('hidden');
+                document.getElementById('profile-prev').src=url;
+                document.getElementById('profile-prev').classList.remove('hidden');
+                document.getElementById('profile-icon').classList.add('hidden');
+            }
+        }
 
         function login(u) {
             currentUser=u; localStorage.setItem('spei_v30_2_session', JSON.stringify(u));
