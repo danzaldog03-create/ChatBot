@@ -537,37 +537,37 @@
              renderList(type);
         };
 
-        // CHAT AUDITOR (via Vercel API, sin exponer API Key)
-async function askGemini(q, ctx) {
-  try {
-    const prompt = `ROL: Auditor Normativo SPEI.
-CONTEXTO EXCLUSIVO: ${ctx}
-PREGUNTA: ${q}
+         // CHAT AUDITOR (via Vercel API, sin exponer API Key)
+         async function askGemini(q, ctx) {
+           try {
+             const prompt = `ROL: Auditor Normativo SPEI.
+         CONTEXTO EXCLUSIVO: ${ctx}
+         PREGUNTA: ${q}
 
-FORMATO OBLIGATORIO:
-"Regla aplicable:"
-"Capítulo:"
-"Texto normativo literal: (usar comillas latinas)"
-"Fuente: Circular 14/2017"
-Si no hay regla exacta, dilo.`;
+         FORMATO OBLIGATORIO:
+         "Regla aplicable:"
+         "Capítulo:"
+         "Texto normativo literal: (usar comillas latinas)"
+         "Fuente: Circular 14/2017"
+         Si no hay regla exacta, dilo.`;
 
-    const res = await fetch("/api/gemini", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt }),
-    });
+         const res = await fetch("/api/gemini", {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ prompt }),
+         });
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      return `Error API (${res.status}): ${err?.error || "No se pudo consultar la IA"}`;
+         if (!res.ok) {
+         const err = await res.json().catch(() => ({}));
+         return `Error API (${res.status}): ${err?.error || "No se pudo consultar la IA"}`;
+      }
+
+        const data = await res.json();
+        return data?.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta de IA.";
+      } catch (e) {
+       return "Error conexión.";
     }
-
-    const data = await res.json();
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta de IA.";
-  } catch (e) {
-    return "Error conexión.";
   }
-}
 
         document.getElementById('chat-form').onsubmit = async (e) => {
             e.preventDefault(); const v=document.getElementById('chat-input').value.trim(); if(!v)return;
