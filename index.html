@@ -49,9 +49,6 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-
-        // Llave Gemini
-        window.GEMINI_API_KEY = "AIzaSyDraEnCKuwnicZVQ-aOcYYwMIPiuadcVgU";
         
         // Exportar a global
         window.fb = { auth, db, appId, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, signInAnonymously, signInWithCustomToken, onAuthStateChanged, writeBatch };
