@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <!-- Metaetiquetas para forzar actualización inmediata -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
-  <title>SPEI Ops - Speikito IA PRO v4</title>
+  <title>SPEI Ops - Speikito v30.2</title>
 
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -15,91 +16,21 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-    * { box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+  <script>
+    window.MathJax = { tex: { inlineMath: [["$", "$"]] }, options: { enableMenu: false } };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-    .layout-container { display: flex; height: 100%; width: 100%; }
-    .sidebar { width: 280px; background: #0f172a; color: #94a3b8; display: flex; flex-direction: column; border-right: 1px solid #1e293b; transition: transform 0.3s; flex-shrink: 0; z-index: 50; }
-    .sidebar-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid #1e293b; display: flex; align-items: center; gap: 0.75rem; color: white; font-weight: 800; font-size: 1.05rem; }
-    .nav-scroll { flex: 1; overflow-y: auto; padding: 1rem 0; }
-    .nav-section { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: #475569; padding: 1rem 1.5rem 0.5rem; letter-spacing: 0.05em; }
-    .nav-item { padding: 0.75rem 1.5rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; font-size: 0.85rem; font-weight: 600; transition: all 0.2s; border-left: 3px solid transparent; }
-    .nav-item:hover { background: #1e293b; color: white; }
-    .nav-item.active { background: #1e293b; color: white; border-left-color: #3b82f6; }
-
-    .main-area { flex: 1; display: flex; flex-direction: column; background: white; position: relative; overflow: hidden; }
-    .top-header { height: 4rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; background: white; flex-shrink: 0; z-index: 20; }
-    .view-section { flex: 1; overflow-y: auto; padding: 1.5rem; display: none; height: 100%; flex-direction: column; }
-    .view-section.active { display: flex; }
-    #view-chat { padding: 0; }
-
-    .chat-box { flex: 1; overflow-y: auto; padding: 1.5rem; background: #f8fafc; }
-    .chat-input-area { padding: 1rem 1.25rem; background: white; border-top: 1px solid #e2e8f0; }
-
-    .chat-bubble { max-width: 92%; padding: 1rem 1.25rem; border-radius: 1rem; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .user-msg { align-self: flex-end; background: #2563eb; color: white; border-bottom-right-radius: 0; margin-left: auto; }
-    .bot-msg { align-self: flex-start; background: white; border: 1px solid #e2e8f0; color: #0f172a; border-bottom-left-radius: 0; width: 100%; }
-    .bot-header { font-weight: 900; color: #0f172a; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
-
-    .reg-card { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 0.75rem; }
-    .reg-title { font-size: 0.7rem; font-weight: 900; color: #92400e; text-transform: uppercase; margin-bottom: 0.35rem; letter-spacing: .06em; }
-    .reg-content { color: #451a03; line-height: 1.6; font-size: 0.92rem; white-space: pre-wrap; }
-    .reg-footer { margin-top: 0.6rem; font-size: 0.7rem; color: #b45309; font-weight: 800; text-align: right; }
-
-    .info-card { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 0.9rem; border-radius: 0.75rem; color: #0f172a; }
-    .info-card b { font-weight: 900; }
-
-    .pill { display:inline-flex; align-items:center; gap:.4rem; font-size:.72rem; font-weight:900; padding:.25rem .6rem; border-radius:999px; border:1px solid #e2e8f0; background:#fff; color:#0f172a; }
-    .pill.on { background:#0f172a; color:#fff; border-color:#0f172a; }
-
-    #table-content { flex: 1; overflow-y: auto; padding-bottom: 7rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 260px; }
-    .data-card { background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-    .data-card:hover { border-color: #3b82f6; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transform: translateY(-1px); }
-
-    .badge { font-size: 0.65rem; font-weight: 900; text-transform: uppercase; padding: 0.25rem 0.5rem; border-radius: 999px; display: inline-block; margin-bottom: 0.25rem; letter-spacing: .06em; }
-    .badge-CERTIFICADO { background: #eff6ff; color: #1d4ed8; }
-    .badge-EXTENSION { background: #f0fdf4; color: #15803d; }
-    .badge-MANUAL { background: #f8fafc; color: #475569; }
-    .badge-REGLA_SPEI { background: #fffbeb; color: #b45309; }
-    .badge-ARCHIVO { background: #e0f2fe; color: #0369a1; }
-    .badge-USUARIO { background:#eef2ff; color:#4338ca; }
-
-    .form-input { width: 100%; padding: 0.7rem; border: 1px solid #cbd5e1; border-radius: 0.6rem; font-size: 0.85rem; outline: none; transition: 0.2s; background: white; color: #0f172a !important; font-weight: 650; }
-    .form-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
-    .form-label { font-size: 0.7rem; font-weight: 900; color: #64748b; margin-bottom: 0.25rem; display: block; text-transform: uppercase; letter-spacing:.06em; }
-
-    .overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.92); backdrop-filter: blur(4px); z-index: 60; display: flex; align-items: center; justify-content: center; }
-    .modal { background: white; width: 92%; max-width: 860px; max-height: 92vh; border-radius: 1rem; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
-    .hidden-ui { display: none !important; opacity: 0; pointer-events: none; }
-
-    #toast { position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%); z-index: 10001; padding: 0.75rem 1.25rem; border-radius: 999px; font-weight: 900; font-size: 0.8rem; color: white; background: #0f172a; opacity: 0; pointer-events: none; transition: 0.3s; }
-    #toast.show { opacity: 1; top: 2.25rem; }
-
-    .select-row { width: 1.1rem; height: 1.1rem; cursor: pointer; accent-color: #2563eb; }
-    .avatar-circle { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background-color: #334155; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 0.72rem; cursor: pointer; border: 2px solid #475569; }
-    .avatar-circle:hover { border-color: white; }
-
-    .hint { font-size:.72rem; color:#64748b; line-height:1.45; }
-
-    @media (max-width: 768px) {
-      .sidebar { position: fixed; height: 100%; transform: translateX(-100%); }
-      .sidebar.open { transform: translateX(0); }
-      .chat-bubble { max-width: 96%; }
-    }
-  </style>
-
-  <!-- Firebase (Web modular) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // Configuración con fallback robusto (NO toques esto)
+    // Configuración con fallback robusto
     let firebaseConfig;
     try {
       firebaseConfig = JSON.parse(window.__firebase_config);
@@ -119,47 +50,372 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    window.fb = { auth, db, appId, doc, setDoc, collection, onSnapshot, deleteDoc, signInAnonymously, signInWithCustomToken, onAuthStateChanged, writeBatch };
+    window.fb = {
+      auth, db, appId,
+      doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, writeBatch,
+      signInAnonymously, signInWithCustomToken, onAuthStateChanged
+    };
   </script>
+
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+    @import url("https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,700;1,300&display=swap");
+
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Inter", sans-serif;
+      background-color: #f1f5f9;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Layout */
+    .layout-container { display: flex; height: 100%; width: 100%; }
+    .sidebar {
+      width: 280px;
+      background: #0f172a;
+      color: #94a3b8;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #1e293b;
+      transition: transform 0.3s;
+      flex-shrink: 0;
+      z-index: 50;
+    }
+    .sidebar-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: white;
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+    .nav-scroll { flex: 1; overflow-y: auto; padding: 1rem 0; }
+    .nav-section {
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #475569;
+      padding: 1rem 1.5rem 0.5rem;
+      letter-spacing: 0.05em;
+    }
+    .nav-item {
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover { background: #1e293b; color: white; }
+    .nav-item.active { background: #1e293b; color: white; border-left-color: #3b82f6; }
+
+    .main-area { flex: 1; display: flex; flex-direction: column; background: white; position: relative; overflow: hidden; }
+    .top-header {
+      height: 4rem;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      background: white;
+      shrink: 0;
+      z-index: 20;
+    }
+
+    .view-section { flex: 1; overflow-y: auto; padding: 2rem; display: none; height: 100%; flex-direction: column; }
+    .view-section.active { display: flex; }
+    #view-chat { padding: 0; }
+
+    .chat-box { flex: 1; overflow-y: auto; padding: 2rem; background: #f8fafc; }
+    .chat-input-area { padding: 1.5rem 2rem; background: white; border-top: 1px solid #e2e8f0; }
+
+    .chat-bubble { max-width: 85%; padding: 1rem 1.25rem; border-radius: 1rem; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .user-msg { align-self: flex-end; background: #2563eb; color: white; border-bottom-right-radius: 0; margin-left: auto; }
+    .bot-msg { align-self: flex-start; background: white; border: 1px solid #e2e8f0; color: #1e293b; border-bottom-left-radius: 0; width: 100%; }
+    .bot-header { font-weight: 800; color: #0f172a; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+
+    .reg-card { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 0.5rem; margin-top: 0.5rem; }
+    .reg-title { font-size: 0.75rem; font-weight: 900; color: #92400e; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .reg-content { font-family: "Georgia", serif; font-style: italic; color: #451a03; line-height: 1.6; font-size: 0.95rem; }
+    .reg-footer { margin-top: 0.5rem; font-size: 0.7rem; color: #b45309; font-weight: 700; text-align: right; }
+
+    #table-content { flex: 1; overflow-y: auto; padding-bottom: 6rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 300px; }
+    .data-card { background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); min-height: 80px; }
+    .data-card:hover { border-color: #3b82f6; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transform: translateY(-1px); }
+
+    .badge { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 0.25rem 0.5rem; border-radius: 99px; display: inline-block; margin-bottom: 0.25rem; }
+    .badge-CERTIFICADO { background: #eff6ff; color: #1d4ed8; }
+    .badge-EXTENSION { background: #f0fdf4; color: #15803d; }
+    .badge-MANUAL { background: #f8fafc; color: #475569; }
+    .badge-REGLA_SPEI { background: #fffbeb; color: #b45309; }
+    .badge-ARCHIVO { background: #e0f2fe; color: #0369a1; }
+    .badge-USER { background: #eef2ff; color: #4338ca; }
+
+    .form-input { width: 100%; padding: 0.7rem; border: 1px solid #cbd5e1; rounded: 0.5rem; font-size: 0.85rem; outline: none; transition: 0.2s; background: white; color: #1e293b !important; font-weight: 600; }
+    .form-input:focus { border-color: #2563eb; ring: 2px solid #bfdbfe; }
+    .form-label { font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 0.25rem; display: block; text-transform: uppercase; }
+
+    .overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.95); backdrop-filter: blur(4px); z-index: 60; display: flex; align-items: center; justify-content: center; }
+    .modal { background: white; width: 90%; max-width: 800px; max-height: 90vh; border-radius: 1rem; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+
+    .hidden-ui { display: none !important; opacity: 0; pointer-events: none; }
+    .admin-only.hidden-ui { display: none !important; }
+
+    #toast { position: fixed; top: 2rem; left: 50%; transform: translateX(-50%); z-index: 10001; padding: 0.75rem 1.5rem; border-radius: 99px; font-weight: 700; font-size: 0.85rem; color: white; background: #0f172a; opacity: 0; pointer-events: none; transition: 0.3s; }
+    #toast.show { opacity: 1; top: 3rem; }
+
+    .select-row { width: 1.2rem; height: 1.2rem; margin-right: 1rem; cursor: pointer; accent-color: #2563eb; }
+
+    .avatar-circle { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background-color: #334155; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 0.7rem; cursor: pointer; border: 2px solid #475569; }
+    .avatar-circle:hover { border-color: white; }
+
+    @media (max-width: 768px) {
+      .sidebar { position: fixed; height: 100%; transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+    }
+
+    /* =======================
+       LOGIN - MODO PRO (NEW)
+       ======================= */
+
+    #login-screen.overlay {
+      background:
+        radial-gradient(1200px 600px at 20% 20%, rgba(59,130,246,0.35), transparent 60%),
+        radial-gradient(900px 500px at 80% 70%, rgba(245,158,11,0.25), transparent 60%),
+        linear-gradient(rgba(2,6,23,0.55), rgba(2,6,23,0.65)),
+        url("speikitologin.png") center center / cover no-repeat !important;
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.35s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.99); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .login-pro-shell {
+      width: 100%;
+      max-width: 560px;
+      padding: 28px;
+      border-radius: 24px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 25px 70px rgba(0,0,0,0.45);
+      backdrop-filter: blur(18px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-pro-shell::before {
+      content: "";
+      position: absolute;
+      inset: -40px;
+      background:
+        radial-gradient(400px 220px at 15% 10%, rgba(59,130,246,0.25), transparent 60%),
+        radial-gradient(380px 240px at 85% 40%, rgba(245,158,11,0.18), transparent 60%);
+      filter: blur(6px);
+      pointer-events: none;
+    }
+
+    .login-pro-inner { position: relative; z-index: 2; color: white; text-align: center; }
+
+    .login-pro-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 12px;
+      margin-bottom: 16px;
+    }
+
+    .login-pro-title {
+      font-size: 30px;
+      font-weight: 1000;
+      line-height: 1.15;
+      text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      margin-bottom: 10px;
+    }
+
+    .login-pro-sub {
+      font-size: 14px;
+      opacity: 0.92;
+      line-height: 1.55;
+      margin-bottom: 18px;
+    }
+
+    .login-pro-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: linear-gradient(180deg, rgba(59,130,246,0.95), rgba(37,99,235,0.95));
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 18px 40px rgba(37,99,235,0.35);
+      transition: transform 0.18s ease, filter 0.18s ease;
+      margin-bottom: 14px;
+    }
+
+    .login-pro-cta:hover { transform: translateY(-1px); filter: brightness(1.03); }
+    .login-pro-cta:active { transform: translateY(0px) scale(0.99); }
+
+    .login-pro-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 12px 0 16px;
+      opacity: 0.85;
+      font-weight: 800;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .login-pro-divider::before,
+    .login-pro-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.22);
+    }
+
+    .login-pro-input {
+      width: 100%;
+      max-width: 320px;
+      padding: 14px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(2,6,23,0.25);
+      color: #fff;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-align: center;
+      outline: none;
+      transition: 0.18s;
+    }
+    .login-pro-input:focus { border-color: rgba(59,130,246,0.95); box-shadow: 0 0 0 4px rgba(59,130,246,0.20); }
+
+    .login-pro-btn {
+      margin-top: 12px;
+      width: 100%;
+      max-width: 320px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(15,23,42,0.55);
+      color: rgba(255,255,255,0.92);
+      font-weight: 900;
+      cursor: pointer;
+      transition: 0.18s;
+    }
+    .login-pro-btn:hover { background: rgba(15,23,42,0.70); }
+    .login-pro-err {
+      margin-top: 10px;
+      font-size: 12px;
+      font-weight: 900;
+      color: #fecaca;
+      opacity: 0;
+      transition: 0.2s;
+    }
+
+    .login-pro-foot {
+      margin-top: 22px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+  </style>
 </head>
 
 <body>
   <div id="toast">Notificación</div>
 
-  <!-- LOADING -->
+  <!-- CARGA -->
   <div id="loading-screen" class="overlay">
-        #login-screen.overlay {
-        background:
-        linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)),
-        url('speikito-login.png') center center / cover no-repeat !important;
-    }
     <div class="text-center">
       <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-      <p class="text-xs font-black uppercase tracking-widest text-slate-300">Iniciando Speikito IA PRO...</p>
-      <p class="mt-3 text-[11px] text-slate-400">Si se queda aquí, revisa Firebase/Firestore reglas o conexión.</p>
+      <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Iniciando Sistema...</p>
     </div>
   </div>
 
-  <!-- LOGIN -->
+  <!-- LOGIN (MODO PRO) -->
   <div id="login-screen" class="overlay hidden-ui">
-    <div class="bg-white p-10 rounded-2xl shadow-2xl w-full max-w-sm text-center">
-      <div class="w-16 h-16 bg-slate-900 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-3xl"><i class="fas fa-fingerprint"></i></div>
-      <h1 class="text-2xl font-black text-slate-900 mb-1">SPEI Ops</h1>
-      <p class="text-slate-500 text-xs mb-8 font-black uppercase tracking-widest">Acceso Corporativo</p>
-      <div class="space-y-4">
-        <input type="text" id="login-id" placeholder="ID de Empleado" class="form-input text-center text-lg font-black tracking-widest border-slate-300 focus:border-blue-500 text-slate-900">
-        <button onclick="handleLogin()" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-lg font-black shadow-lg transition-all active:scale-95 cursor-pointer">INGRESAR</button>
-        <p id="login-msg" class="text-red-500 text-xs font-black mt-2 opacity-0 transition-opacity">Credenciales Incorrectas</p>
+    <div class="login-pro-shell">
+      <div class="login-pro-inner">
+        <div class="login-pro-badge">
+          <i class="fas fa-cat text-blue-300"></i>
+          SPEI OPS • ACCESO
+        </div>
+
+        <div class="login-pro-title">
+          Hola humano 👋<br/>
+          Soy <span style="color:#93c5fd;">Speikito</span>, tu asistente
+        </div>
+
+        <div class="login-pro-sub">
+          Entra con tu ID corporativo para consultar normativa, certificados, manuales y directorio.
+          <br/>Si eres <b>admin</b>, verás gestión completa.
+        </div>
+
+        <button class="login-pro-cta" onclick="focusLogin()">
+          <i class="fas fa-comment-dots"></i> Hablar con Speikito
+        </button>
+
+        <div class="login-pro-divider">Acceso corporativo</div>
+
+        <div style="display:flex; justify-content:center;">
+          <input
+            type="text"
+            id="login-id"
+            class="login-pro-input"
+            placeholder="ID DE EMPLEADO"
+            autocomplete="off"
+            inputmode="numeric"
+          />
+        </div>
+
+        <div style="display:flex; justify-content:center;">
+          <button onclick="handleLogin()" id="btn-login" class="login-pro-btn">
+            <i class="fas fa-fingerprint mr-2"></i> INGRESAR
+          </button>
+        </div>
+
+        <div id="login-msg" class="login-pro-err">Credenciales incorrectas</div>
+
+        <div class="login-pro-foot">v30.2 • Creado por Daniel Anzaldo</div>
       </div>
-      <p class="mt-8 text-[10px] text-slate-400 font-black uppercase tracking-wider">v4 • Creado por Daniel Anzaldo</p>
     </div>
   </div>
 
-  <!-- APP -->
+  <!-- APP PRINCIPAL -->
   <div id="app-layout" class="layout-container hidden-ui">
+    <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <i class="fas fa-cat text-blue-400 text-xl"></i> SPEI Ops
+        <i class="fas fa-cat text-blue-500 text-xl"></i> SPEI Ops
         <button class="ml-auto md:hidden text-slate-400" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
       </div>
 
@@ -167,31 +423,32 @@
         <div class="nav-section">Operación</div>
         <div onclick="navigate('chat')" class="nav-item active" id="nav-chat"><i class="fas fa-comments w-5"></i> Speikito</div>
 
-        <div class="admin-only hidden-ui" id="admin-menu">
+        <div class="admin-only hidden-ui">
           <div class="nav-section">Gestión</div>
-          <div onclick="navigate('admin-all')" class="nav-item text-blue-300" id="nav-all"><i class="fas fa-globe w-5"></i> VER TODO</div>
-          <div onclick="navigate('admin-rules')" class="nav-item text-amber-400" id="nav-rules"><i class="fas fa-balance-scale w-5"></i> Normativa</div>
+          <div onclick="navigate('admin-all')" class="nav-item text-blue-400" id="nav-all"><i class="fas fa-globe w-5"></i> VER TODO</div>
+          <div onclick="navigate('admin-rules')" class="nav-item text-amber-500" id="nav-rules"><i class="fas fa-balance-scale w-5"></i> Normativa SPEI</div>
           <div onclick="navigate('admin-cert')" class="nav-item" id="nav-cert"><i class="fas fa-certificate w-5"></i> Certificados</div>
           <div onclick="navigate('admin-ext')" class="nav-item" id="nav-ext"><i class="fas fa-address-book w-5"></i> Directorio</div>
-          <div onclick="navigate('admin-docs')" class="nav-item" id="nav-docs"><i class="fas fa-book w-5"></i> Manuales</div>
+          <div onclick="navigate('admin-docs')" class="nav-item" id="nav-docs"><i class="fas fa-file-alt w-5"></i> Manuales</div>
+          <div onclick="navigate('admin-files')" class="nav-item" id="nav-files"><i class="fas fa-folder w-5"></i> Archivos</div>
 
           <div class="nav-section">Sistema</div>
-          <div onclick="navigate('admin-users')" class="nav-item text-indigo-300" id="nav-users"><i class="fas fa-users-cog w-5"></i> Usuarios</div>
-          <div onclick="openSettings()" class="nav-item text-slate-300" id="nav-settings"><i class="fas fa-sliders w-5"></i> Ajustes IA</div>
+          <div onclick="navigate('admin-users')" class="nav-item text-indigo-400" id="nav-users"><i class="fas fa-users-cog w-5"></i> Usuarios</div>
         </div>
       </div>
 
       <div class="p-4 border-t border-slate-800">
         <div class="flex items-center gap-3 mb-4">
           <div onclick="openProfileModal()" class="avatar-circle" id="user-avatar-container">
-            <span id="user-initials">DA</span><img id="user-img-display" class="hidden w-full h-full rounded-full object-cover" src="">
+            <span id="user-initials">DA</span>
+            <img id="user-img-display" class="hidden w-full h-full rounded-full object-cover" src="" />
           </div>
           <div class="overflow-hidden">
-            <p class="text-xs font-black text-white truncate" id="user-name-display">Usuario</p>
-            <p class="text-[10px] text-slate-400 uppercase font-black truncate" id="user-role-display">Rol</p>
+            <p class="text-xs font-bold text-white truncate" id="user-name-display">Usuario</p>
+            <p class="text-[10px] text-slate-400 uppercase font-bold truncate" id="user-role-display">Rol</p>
           </div>
         </div>
-        <button onclick="logout()" class="w-full bg-slate-800 hover:bg-red-900/50 text-slate-300 hover:text-red-200 py-2 rounded text-xs font-black transition-all">
+        <button onclick="logout()" class="w-full bg-slate-800 hover:bg-red-900/50 text-slate-300 hover:text-red-200 py-2 rounded text-xs font-bold transition-all">
           <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
         </button>
       </div>
@@ -199,34 +456,35 @@
 
     <div class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" id="sidebar-backdrop" onclick="toggleSidebar()"></div>
 
+    <!-- CONTENIDO -->
     <main class="main-area">
       <div class="top-header">
         <div class="flex items-center gap-3">
           <button class="md:hidden text-slate-500 text-xl" onclick="toggleSidebar()"><i class="fas fa-bars text-xl"></i></button>
           <h2 class="font-black text-slate-800 text-lg" id="page-title">Chat Operativo</h2>
         </div>
-        <div class="flex gap-2 items-center" id="header-actions"></div>
+        <div class="flex gap-2" id="header-actions"></div>
       </div>
 
-      <!-- CHAT -->
       <div id="view-chat" class="view-section active">
         <div id="chat-box" class="chat-box space-y-4">
           <div class="bot-msg chat-bubble shadow-sm w-full">
-            <div class="bot-header"><i class="fas fa-cat text-blue-600"></i> Speikito IA PRO</div>
-            <p class="text-sm text-slate-700">
-              Hola 🐱. Primero busco en tu <b>base interna</b>. Si quieres que use IA, activa el switch <b>“Usar IA”</b>.
+            <div class="bot-header"><i class="fas fa-cat text-blue-600"></i> Speikito</div>
+            <p class="text-sm text-slate-600">
+              Hola. Soy <b>Speikito</b> 🐱. Puedo consultar tu base interna y también la IA cuando aplique.
             </p>
-            <div class="mt-3 flex flex-wrap gap-2">
-              <span id="pill-ai" class="pill" onclick="toggleAI()"><i class="fas fa-wand-magic-sparkles"></i> Usar IA: <span id="ai-state">OFF</span></span>
-              <span id="pill-showhits" class="pill on" onclick="toggleShowHits()"><i class="fas fa-layer-group"></i> Mostrar coincidencias</span>
-            </div>
-            <p class="mt-3 hint">Tip: si no hay coincidencias exactas, Speikito te dará lo más cercano y (si IA está ON) te lo explicará.</p>
           </div>
         </div>
 
         <div class="chat-input-area">
           <form id="chat-form" class="relative max-w-5xl mx-auto flex gap-2">
-            <input type="text" id="chat-input" placeholder="Ej: ¿qué regla aplica a devoluciones? / ¿cuándo vence el cert SPEI?" class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none focus:border-blue-500 transition-all" autocomplete="off">
+            <input
+              type="text"
+              id="chat-input"
+              placeholder="Ej: ¿Qué regla aplica para devoluciones?"
+              class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-500 transition-all"
+              autocomplete="off"
+            />
             <button type="submit" class="w-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg hover:bg-blue-700 active:scale-90 transition-all">
               <i class="fas fa-paper-plane text-lg"></i>
             </button>
@@ -234,284 +492,208 @@
         </div>
       </div>
 
-      <!-- TABLA ADMIN -->
       <div id="view-table" class="view-section hidden-ui h-full flex flex-col">
-        <div class="mb-4 sticky top-0 bg-white z-10 py-2 flex gap-2 items-center border-b">
-          <input type="checkbox" id="select-all" class="ml-2 w-4 h-4 accent-blue-600" onchange="toggleSelectAll(this)">
-          <input type="text" id="table-search" placeholder="Filtrar..." class="form-input max-w-sm shadow-sm flex-1" onkeyup="filterList()">
-          <button onclick="renderList(document.body.dataset.viewType)" class="w-10 h-10 bg-white border border-slate-300 rounded-lg flex items-center justify-center text-slate-500 hover:text-blue-600"><i class="fas fa-sync-alt"></i></button>
+        <div class="mb-4 sticky top-0 bg-[#f8fafc] z-10 py-2 flex gap-2 items-center">
+          <input type="checkbox" id="select-all" class="ml-2 w-4 h-4 accent-blue-600" onchange="toggleSelectAll(this)" />
+          <input type="text" id="table-search" placeholder="Filtrar..." class="form-input max-w-sm shadow-sm flex-1" onkeyup="filterList()" />
+          <button onclick="renderList(document.body.dataset.viewType)" class="w-10 h-10 bg-white border border-slate-300 rounded-lg flex items-center justify-center text-slate-500 hover:text-blue-600">
+            <i class="fas fa-sync-alt"></i>
+          </button>
         </div>
-        <div id="table-content" class="space-y-2 pb-20 overflow-y-auto w-full"><div class="text-center py-10 text-slate-400 italic">Cargando datos...</div></div>
+        <div id="table-content" class="space-y-2 pb-20 overflow-y-auto w-full">
+          <div class="text-center py-10 text-slate-400 italic">Cargando datos...</div>
+        </div>
       </div>
     </main>
   </div>
 
-  <!-- MODAL REGISTRO (INDIVIDUAL) -->
+  <!-- MODAL REGISTRO -->
   <div id="modal-capture" class="overlay hidden-ui">
     <div class="modal">
       <div class="p-5 border-b flex justify-between items-center bg-slate-50">
-        <h3 class="font-black text-slate-800">Nuevo / Editar Registro</h3>
+        <h3 class="font-bold text-slate-800">Nuevo Registro</h3>
         <button onclick="closeModal('modal-capture')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
       </div>
       <div class="p-6 overflow-y-auto bg-white flex-1">
         <div class="mb-6">
-          <label class="form-label">Tipo</label>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-2">
-            <button onclick="setFormType('CERTIFICADO')" class="type-btn p-3 border rounded-xl text-xs font-black text-center hover:bg-blue-50 focus:ring-2 ring-blue-500"><i class="fas fa-certificate block text-xl mb-1 text-blue-500"></i> Certificado</button>
-            <button onclick="setFormType('EXTENSION')" class="type-btn p-3 border rounded-xl text-xs font-black text-center hover:bg-emerald-50 focus:ring-2 ring-emerald-500"><i class="fas fa-address-book block text-xl mb-1 text-emerald-500"></i> Directorio</button>
-            <button onclick="setFormType('REGLA')" class="type-btn p-3 border rounded-xl text-xs font-black text-center hover:bg-amber-50 focus:ring-2 ring-amber-500"><i class="fas fa-balance-scale block text-xl mb-1 text-amber-500"></i> Regla</button>
-            <button onclick="setFormType('MANUAL')" class="type-btn p-3 border rounded-xl text-xs font-black text-center hover:bg-slate-100 focus:ring-2 ring-slate-500"><i class="fas fa-book block text-xl mb-1 text-slate-500"></i> Manual</button>
+          <label class="form-label">Tipo de Registro</label>
+          <div class="grid grid-cols-2 gap-3 mb-2">
+            <button onclick="setFormType('CERTIFICADO')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-blue-50 focus:ring-2 ring-blue-500">
+              <i class="fas fa-certificate block text-xl mb-1 text-blue-500"></i> Certificado
+            </button>
+            <button onclick="setFormType('EXTENSION')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-emerald-50 focus:ring-2 ring-emerald-500">
+              <i class="fas fa-address-book block text-xl mb-1 text-emerald-500"></i> Extensión
+            </button>
+            <button onclick="setFormType('REGLA')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-amber-50 focus:ring-2 ring-amber-500">
+              <i class="fas fa-balance-scale block text-xl mb-1 text-amber-500"></i> Regla
+            </button>
+            <button onclick="setFormType('MANUAL')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-slate-100 focus:ring-2 ring-slate-500">
+              <i class="fas fa-book block text-xl mb-1 text-slate-500"></i> Manual
+            </button>
           </div>
-          <input type="hidden" id="current-type" value="MANUAL">
-          <input type="hidden" id="editing-id" value="">
+          <input type="hidden" id="current-type" value="MANUAL" />
+          <input type="hidden" id="editing-id" value="" />
         </div>
 
         <div id="forms-area">
           <div id="form-cert" class="hidden space-y-4">
             <div class="grid grid-cols-2 gap-4">
-              <div><label class="form-label">Últimos 4</label><input id="c-num" class="form-input uppercase" maxlength="4"></div>
+              <div><label class="form-label">Últimos 4</label><input id="c-num" class="form-input uppercase" maxlength="4" /></div>
               <div><label class="form-label">Negocio</label><select id="c-neg" class="form-input"><option>SPEI</option><option>CODI</option><option>DIMO</option><option>SPID</option><option>BDT</option><option>R2</option></select></div>
               <div><label class="form-label">Entorno</label><select id="c-env" class="form-input"><option>PRODUCCION</option><option>BETA</option></select></div>
-              <div><label class="form-label">Estatus</label><input type="text" id="c-stat" class="form-input"></div>
-              <div><label class="form-label">Vigencia Inicio</label><input id="c-ini" type="date" class="form-input"></div>
-              <div><label class="form-label">Vigencia Fin</label><input id="c-fin" type="date" class="form-input"></div>
+              <div><label class="form-label">Estatus</label><input type="text" id="c-stat" class="form-input" /></div>
+              <div><label class="form-label">Vigencia Inicio</label><input id="c-ini" type="date" class="form-input" /></div>
+              <div><label class="form-label">Vigencia Fin</label><input id="c-fin" type="date" class="form-input" /></div>
             </div>
           </div>
 
           <div id="form-ext" class="hidden space-y-4">
             <div class="grid grid-cols-2 gap-4">
-              <div><label class="form-label">Extensión</label><input id="e-num" type="text" class="form-input"></div>
-              <div><label class="form-label">Nombre</label><input id="e-nom" type="text" class="form-input"></div>
-              <div class="col-span-2"><label class="form-label">Área</label><input id="e-area" class="form-input"></div>
+              <div><label class="form-label">Extensión</label><input id="e-num" type="text" class="form-input" /></div>
+              <div><label class="form-label">Nombre</label><input id="e-nom" type="text" class="form-input" /></div>
+              <div class="col-span-2"><label class="form-label">Área</label><input id="e-area" class="form-input" /></div>
             </div>
           </div>
 
           <div id="form-rule" class="hidden space-y-4">
             <div class="grid grid-cols-2 gap-4">
-              <div><label class="form-label">Regla</label><input id="r-rule" class="form-input" placeholder="Ej. 17a"></div>
-              <div><label class="form-label">Capítulo</label><input id="r-chap" class="form-input" placeholder="Ej. Cap 2"></div>
+              <div><label class="form-label">Regla</label><input id="r-rule" class="form-input" placeholder="Ej. 17a" /></div>
+              <div><label class="form-label">Capítulo</label><input id="r-chap" class="form-input" placeholder="Ej. Cap 2" /></div>
             </div>
-            <div><label class="form-label">Tema</label><input id="r-topic" class="form-input"></div>
-            <div><label class="form-label">Palabras clave</label><input id="r-keywords" class="form-input" placeholder="devolución, retorno, rechazo..."></div>
-            <div><label class="form-label">Texto literal</label><textarea id="r-text" class="form-input h-32"></textarea></div>
+            <div><label class="form-label">Tema Operativo</label><input id="r-topic" class="form-input" /></div>
+            <div><label class="form-label">Texto Literal</label><textarea id="r-text" class="form-input h-32"></textarea></div>
           </div>
 
           <div id="form-doc" class="hidden space-y-4">
-            <div><label class="form-label">Título</label><input id="d-title" class="form-input"></div>
+            <div><label class="form-label">Título</label><input id="d-title" class="form-input" /></div>
             <div><label class="form-label">Contenido</label><textarea id="d-content" class="form-input h-32"></textarea></div>
           </div>
-        </div>
-
-        <div class="mt-6 info-card">
-          <b>Tip:</b> para carga masiva usa el botón <b>Importar</b> en cada sección (Normativa / Certificados / Directorio / Manuales).
         </div>
       </div>
 
       <div class="p-5 border-t bg-slate-50 flex justify-end gap-3">
-        <button onclick="closeModal('modal-capture')" class="text-slate-600 font-black text-xs px-4">Cancelar</button>
-        <button onclick="saveRegistry()" class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-xs shadow-lg hover:bg-blue-600 transition-all">GUARDAR</button>
+        <button onclick="closeModal('modal-capture')" class="text-slate-500 font-bold text-xs px-4">Cancelar</button>
+        <button onclick="saveRegistry()" class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-lg hover:bg-blue-600 transition-all">GUARDAR</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL IMPORT (MASIVO) -->
+  <!-- MODAL CARGA MASIVA -->
   <div id="modal-upload" class="overlay hidden-ui">
-    <div class="modal max-w-2xl">
-      <div class="p-5 border-b bg-slate-50 flex justify-between items-center">
-        <h3 class="font-black text-slate-900"><i class="fas fa-upload mr-2 text-blue-600"></i>Importar layout (carga masiva)</h3>
-        <button onclick="closeModal('modal-upload')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
-      </div>
-
-      <div class="p-6">
-        <p class="text-sm text-slate-600 leading-relaxed">
-          Sube tu archivo <b>.xlsx</b> o <b>.csv</b>. Puedes importar Certificados, Directorio, Manuales o Reglas.
-          El sistema <b>detecta por columnas</b> y conserva los campos actuales.
+    <div class="modal max-w-lg">
+      <div class="p-5 border-b bg-slate-50"><h3 class="font-bold text-amber-700">Cargar Layout Masivo</h3></div>
+      <div class="p-8 text-center">
+        <p class="text-xs text-slate-500 mb-4 text-left leading-relaxed">
+          Sube tu archivo (.xlsx/.csv) para cargar de forma masiva:
+          <b>Reglas, Certificados, Extensiones y Manuales</b>.
         </p>
-
-        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="bg-slate-50 border rounded-xl p-4">
-            <div class="font-black text-xs text-slate-700 mb-2 uppercase tracking-wider">Columnas soportadas</div>
-            <ul class="text-xs text-slate-600 space-y-1">
-              <li><b>Reglas:</b> REGLA, CAPITULO, TEXTO_LITERAL, TEMA_OPERATIVO, PALABRAS_CLAVE</li>
-              <li><b>Certificados:</b> ULT4/NUMERO, NEGOCIO, ENTORNO, ESTATUS, INICIO, FIN</li>
-              <li><b>Directorio:</b> EXTENSION, NOMBRE, AREA</li>
-              <li><b>Manuales:</b> TITULO, CONTENIDO</li>
-            </ul>
-          </div>
-          <div class="bg-white border rounded-xl p-4">
-            <div class="font-black text-xs text-slate-700 mb-2 uppercase tracking-wider">Acciones</div>
-            <button onclick="downloadTemplate()" class="w-full bg-slate-900 text-white py-2 rounded-lg font-black text-xs hover:bg-slate-800">
-              <i class="fas fa-file-arrow-down mr-2"></i>Descargar plantilla CSV
-            </button>
-            <div class="mt-3 p-4 border-2 border-dashed border-blue-300 bg-blue-50 rounded-xl cursor-pointer hover:bg-blue-100 transition-colors" onclick="document.getElementById('file-in').click()">
-              <p class="text-sm font-black text-blue-800"><i class="fas fa-cloud-arrow-up mr-2"></i>Seleccionar archivo</p>
-              <p class="text-xs text-blue-700 mt-1" id="file-name">.xlsx / .csv</p>
-            </div>
-            <input type="file" id="file-in" class="hidden" accept=".xlsx,.csv" onchange="handleBulkUpload(this)">
-            <button onclick="runBulkUpload()" class="mt-3 w-full bg-blue-600 text-white py-2 rounded-lg font-black text-xs hover:bg-blue-700">
-              <i class="fas fa-bolt mr-2"></i>Importar ahora
-            </button>
-            <p class="mt-2 text-[11px] text-slate-500">Tip: para evitar duplicados, el sistema genera IDs nuevos. Si necesitas “actualizar”, usa edición individual.</p>
-          </div>
+        <div class="p-8 text-center border-2 border-dashed border-amber-300 bg-amber-50 rounded-xl cursor-pointer hover:bg-amber-100 transition-colors" onclick="document.getElementById('file-in').click()">
+          <i class="fas fa-upload text-4xl text-amber-500 mb-3"></i>
+          <p class="text-sm font-bold text-amber-800">Seleccionar Archivo</p>
         </div>
+        <input type="file" id="file-in" class="hidden" accept=".xlsx,.csv" onchange="handleBulkUpload(this)" />
       </div>
-
-      <div class="p-4 border-t bg-slate-50 flex justify-end">
-        <button onclick="closeModal('modal-upload')" class="text-slate-500 font-black text-xs">Cerrar</button>
+      <div class="p-5 border-t flex justify-end">
+        <button onclick="document.getElementById('modal-upload').classList.add('hidden-ui')" class="text-slate-400 font-bold text-xs">Cerrar</button>
       </div>
-    </div>
-  </div>
-
-  <!-- MODAL USUARIOS -->
-  <div id="modal-user" class="overlay hidden-ui">
-    <div class="modal max-w-sm">
-      <div class="p-5 border-b bg-slate-50"><h3 class="font-black">Nuevo Usuario</h3></div>
-      <div class="p-6 space-y-4">
-        <input id="u-name" class="form-input" placeholder="Nombre">
-        <input id="u-id" class="form-input" placeholder="ID Empleado">
-        <select id="u-role" class="form-input">
-          <option value="user">Usuario Operativo</option>
-          <option value="admin">Administrador</option>
-        </select>
-        <button onclick="saveUser()" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg font-black text-xs mt-4">Crear</button>
-      </div>
-      <div class="p-4 text-center"><button onclick="closeModal('modal-user')" class="text-slate-400 text-xs font-black">Cancelar</button></div>
     </div>
   </div>
 
   <!-- MODAL PERFIL -->
   <div id="modal-profile" class="overlay hidden-ui">
     <div class="modal max-w-sm">
-      <div class="p-5 border-b bg-slate-50"><h3 class="font-black">Foto de Perfil</h3></div>
+      <div class="p-5 border-b bg-slate-50"><h3 class="font-bold">Foto de Perfil</h3></div>
       <div class="p-8 text-center">
         <div class="w-24 h-24 rounded-full bg-slate-200 mx-auto mb-4 overflow-hidden border-4 border-white shadow-lg cursor-pointer" onclick="document.getElementById('profile-up').click()">
-          <img id="profile-prev" src="" class="w-full h-full object-cover hidden">
+          <img id="profile-prev" src="" class="w-full h-full object-cover hidden" />
           <i id="profile-icon" class="fas fa-camera text-3xl text-slate-400 mt-8"></i>
         </div>
-        <input type="file" id="profile-up" class="hidden" accept="image/*" onchange="handleProfileUpload(this)">
-        <p class="text-xs text-slate-500 font-black">Clic para cambiar</p>
+        <input type="file" id="profile-up" class="hidden" accept="image/*" onchange="handleProfileUpload(this)" />
+        <p class="text-xs text-slate-500">Clic para cambiar</p>
       </div>
-      <div class="p-5 border-t text-center"><button onclick="closeModal('modal-profile')" class="text-slate-400 text-xs font-black">Cerrar</button></div>
+      <div class="p-5 border-t text-center"><button onclick="closeModal('modal-profile')" class="text-slate-400 text-xs">Cerrar</button></div>
     </div>
   </div>
 
-  <!-- MODAL AJUSTES IA -->
-  <div id="modal-settings" class="overlay hidden-ui">
-    <div class="modal max-w-lg">
-      <div class="p-5 border-b bg-slate-50 flex justify-between items-center">
-        <h3 class="font-black text-slate-900"><i class="fas fa-sliders mr-2 text-indigo-600"></i>Ajustes IA</h3>
-        <button onclick="closeModal('modal-settings')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
-      </div>
+  <!-- MODAL USUARIO -->
+  <div id="modal-user" class="overlay hidden-ui">
+    <div class="modal max-w-sm">
+      <div class="p-5 border-b bg-slate-50"><h3 class="font-bold">Nuevo Usuario</h3></div>
       <div class="p-6 space-y-4">
-        <div>
-          <label class="form-label">Modelo Gemini (server)</label>
-          <input id="ai-model" class="form-input" placeholder="Ej: gemini-2.5-flash">
-          <p class="hint mt-1">Esto se guarda en Firestore para tu app. El server lo leerá como hint (si habilitas lectura). Por defecto el server usa GEMINI_MODEL (env).</p>
-        </div>
-        <div class="info-card">
-          <b>Importante:</b> el modelo real se cambia en tu API (Vercel) con la variable de entorno <b>GEMINI_MODEL</b>.
-          Aquí solo guardamos una referencia y podrás verla en la UI.
-        </div>
-        <button onclick="saveSettings()" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-black text-xs hover:bg-indigo-700">
-          Guardar ajustes
-        </button>
-        <button onclick="testAPI()" class="w-full bg-slate-900 text-white py-2 rounded-lg font-black text-xs hover:bg-slate-800">
-          Probar /api/gemini
-        </button>
-        <p class="text-[11px] text-slate-500">Si falla la prueba, revisa en Vercel: Environment Variables (GEMINI_API_KEY y GEMINI_MODEL).</p>
+        <input id="u-name" class="form-input" placeholder="Nombre" />
+        <input id="u-id" class="form-input" placeholder="ID Empleado" />
+        <select id="u-role" class="form-input">
+          <option value="user">Usuario Operativo</option>
+          <option value="admin">Administrador</option>
+        </select>
+        <button onclick="saveUser()" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-xs mt-4">Crear</button>
       </div>
-      <div class="p-4 border-t bg-slate-50 flex justify-end">
-        <button onclick="closeModal('modal-settings')" class="text-slate-500 font-black text-xs">Cerrar</button>
-      </div>
+      <div class="p-4 text-center"><button onclick="closeModal('modal-user')" class="text-slate-400 text-xs">Cancelar</button></div>
     </div>
   </div>
 
   <script type="module">
     const { auth, db, appId, doc, setDoc, collection, onSnapshot, deleteDoc, signInAnonymously, onAuthStateChanged, signInWithCustomToken, writeBatch } = window.fb;
 
-    // Estado
     let currentUser = null;
     let knowledgeBase = [];
     let team = [];
-    let settings = { model_hint: "", ai_enabled_default: false };
-    let aiEnabled = false;
-    let showHits = true;
-    let pendingUploadFile = null;
 
-    // Util
-    const norm = (s) => (s || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-    const uniqBy = (arr, keyFn) => {
-      const seen = new Set();
-      return arr.filter(x => { const k = keyFn(x); if(seen.has(k)) return false; seen.add(k); return true; });
-    };
-    const tokenize = (q) => norm(q).split(/[^a-z0-9ñ]+/).filter(t => t.length >= 3);
-
-    window.toast = (m, err) => {
+    // --- GLOBAL ---
+    window.toast = (m, e) => {
       const t = document.getElementById("toast");
-      t.textContent = m;
-      t.className = `fixed top-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-xs font-black shadow-2xl z-[10002] transition-all ${err ? "bg-red-500" : "bg-emerald-600"} text-white`;
-      t.classList.add("show");
-      setTimeout(() => t.classList.remove("show"), 2800);
+      t.innerText = m;
+      t.className = `fixed top-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-xs font-black shadow-2xl z-[10002] transition-all opacity-100 ${e ? "bg-red-500 text-white" : "bg-emerald-500 text-white"}`;
+      setTimeout(() => t.classList.remove("opacity-100"), 3000);
     };
 
     window.toggleSidebar = () => document.getElementById("sidebar").classList.toggle("open");
     window.closeModal = (id) => document.getElementById(id).classList.add("hidden-ui");
-    window.openModal = (id) => document.getElementById(id).classList.remove("hidden-ui");
-    window.openProfileModal = () => window.openModal("modal-profile");
-    window.openSettings = () => {
-      document.getElementById("ai-model").value = settings.model_hint || "";
-      window.openModal("modal-settings");
+    window.openModal = (id) => {
+      document.getElementById(id).classList.remove("hidden-ui");
+      if (id === "modal-capture") { window.setFormType("MANUAL"); document.getElementById("editing-id").value = ""; }
     };
 
-    window.toggleAI = () => {
-      aiEnabled = !aiEnabled;
-      document.getElementById("ai-state").textContent = aiEnabled ? "ON" : "OFF";
-      document.getElementById("pill-ai").classList.toggle("on", aiEnabled);
-      window.toast(`IA ${aiEnabled ? "activada" : "desactivada"}`);
+    // LOGIN PRO helpers
+    window.focusLogin = () => {
+      const el = document.getElementById("login-id");
+      if (el) el.focus();
     };
 
-    window.toggleShowHits = () => {
-      showHits = !showHits;
-      document.getElementById("pill-showhits").classList.toggle("on", showHits);
-      window.toast(`${showHits ? "Mostrando" : "Ocultando"} coincidencias`);
-    };
-
-    // Login
-    window.handleLogin = () => {
-      const val = document.getElementById("login-id").value.trim();
-      if (val === "682930") { login({ name: "Daniel Anzaldo", role: "admin", empNumber: "682930" }); return; }
-      const u = team.find(x => x.empNumber === val);
-      if (u) login(u);
-      else document.getElementById("login-msg").style.opacity = "1";
-    };
-
-    window.logout = () => { localStorage.removeItem("spei_v4_session"); location.reload(); };
-
-    function login(u) {
-      currentUser = u;
-      localStorage.setItem("spei_v4_session", JSON.stringify(u));
-      document.body.setAttribute("data-role", u.role);
-
-      document.getElementById("login-screen").classList.add("hidden-ui");
-      document.getElementById("loading-screen").classList.add("hidden-ui");
-      document.getElementById("app-layout").classList.remove("hidden-ui");
-      document.getElementById("user-name-display").textContent = u.name;
-      document.getElementById("user-role-display").textContent = u.role === "admin" ? "ADMIN" : "OPERATIVO";
-
-      if (u.role !== "admin") document.querySelectorAll(".admin-only").forEach(e => e.classList.add("hidden-ui"));
-      else document.querySelectorAll(".admin-only").forEach(e => e.classList.remove("hidden-ui"));
-
-      if (u.photoURL) updateAvatar(u.photoURL);
-
-      // default IA por settings
-      if (settings.ai_enabled_default && !aiEnabled) window.toggleAI();
+    function showLoginError(msg = "Credenciales incorrectas") {
+      const p = document.getElementById("login-msg");
+      if (!p) return;
+      p.textContent = msg;
+      p.style.opacity = "1";
+      setTimeout(() => (p.style.opacity = "0"), 2200);
     }
 
-    // Navegación admin
+    window.handleLogin = () => {
+      const val = document.getElementById("login-id").value.trim();
+
+      // Admin hardcode (tú)
+      if (val === "682930") { login({ name: "Daniel Anzaldo", role: "admin", empNumber: "682930" }); return; }
+
+      const u = team.find((x) => x.empNumber === val);
+      if (u) login(u);
+      else showLoginError();
+    };
+
+    // Enter para ingresar
+    document.addEventListener("keydown", (e) => {
+      const loginVisible = !document.getElementById("login-screen").classList.contains("hidden-ui");
+      if (loginVisible && e.key === "Enter") {
+        e.preventDefault();
+        window.handleLogin();
+      }
+    });
+
+    window.logout = () => { localStorage.removeItem("spei_v30_2_session"); location.reload(); };
+
+    // NAV
     window.navigate = (view) => {
       if (window.innerWidth < 768) document.getElementById("sidebar").classList.remove("open");
-
-      document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+      document.querySelectorAll(".nav-item").forEach((n) => n.classList.remove("active"));
 
       const chat = document.getElementById("view-chat");
       const table = document.getElementById("view-table");
@@ -520,81 +702,59 @@
 
       if (view === "chat") {
         document.getElementById("nav-chat").classList.add("active");
-        chat.classList.remove("hidden-ui"); table.classList.add("hidden-ui");
-        title.textContent = "Chat Operativo";
+        chat.classList.remove("hidden-ui");
+        table.classList.add("hidden-ui");
+        title.innerText = "Chat Operativo";
         acts.innerHTML = "";
-        return;
-      }
+      } else {
+        let type = "ALL", label = "Base Completa", navId = "nav-all";
+        if (view === "admin-rules") { type = "REGLA_SPEI"; label = "Normativa SPEI"; navId = "nav-rules"; }
+        if (view === "admin-cert")  { type = "CERTIFICADO"; label = "Certificados"; navId = "nav-cert"; }
+        if (view === "admin-ext")   { type = "EXTENSION"; label = "Directorio"; navId = "nav-ext"; }
+        if (view === "admin-docs")  { type = "MANUAL"; label = "Manuales"; navId = "nav-docs"; }
+        if (view === "admin-files") { type = "ARCHIVO"; label = "Archivos"; navId = "nav-files"; }
 
-      // Solo admin
-      if (!currentUser || currentUser.role !== "admin") {
-        window.toast("Solo ADMIN puede ver esta sección", true);
-        return;
-      }
+        document.getElementById(navId)?.classList.add("active");
+        chat.classList.add("hidden-ui");
+        table.classList.remove("hidden-ui");
+        title.innerText = label;
+        document.body.dataset.viewType = type;
 
-      let type = "ALL", label = "Base Completa", navId = "nav-all";
-      if (view === "admin-rules") { type = "REGLA_SPEI"; label = "Normativa"; navId = "nav-rules"; }
-      if (view === "admin-cert") { type = "CERTIFICADO"; label = "Certificados"; navId = "nav-cert"; }
-      if (view === "admin-ext") { type = "EXTENSION"; label = "Directorio"; navId = "nav-ext"; }
-      if (view === "admin-docs") { type = "MANUAL"; label = "Manuales"; navId = "nav-docs"; }
+        if (view === "admin-users") {
+          title.innerText = "Usuarios";
+          document.body.dataset.viewType = "USERS";
+          acts.innerHTML = `<button onclick="document.getElementById('modal-user').classList.remove('hidden-ui')" class="bg-indigo-600 text-white px-3 py-1 rounded text-xs font-bold shadow hover:bg-indigo-700">Nuevo Usuario</button>`;
+          renderList("USERS");
+          return;
+        }
 
-      if (view === "admin-users") {
-        document.getElementById("nav-users").classList.add("active");
-        chat.classList.add("hidden-ui"); table.classList.remove("hidden-ui");
-        title.textContent = "Usuarios";
-        document.body.dataset.viewType = "USERS";
+        // Acciones admin
         acts.innerHTML = `
-          <button onclick="openModal('modal-user')" class="bg-indigo-600 text-white px-3 py-1 rounded-lg text-xs font-black shadow hover:bg-indigo-700">Nuevo Usuario</button>
+          <button onclick="window.openModal('modal-capture')" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold">Nuevo</button>
+          <button onclick="document.getElementById('modal-upload').classList.remove('hidden-ui')" class="bg-amber-600 text-white px-3 py-1 rounded text-xs font-bold shadow hover:bg-amber-700"><i class="fas fa-upload"></i> Carga masiva</button>
+          <button onclick="window.deleteSelected()" class="bg-red-50 text-red-600 px-3 py-1 rounded-lg text-xs font-bold shadow-sm hover:bg-red-100 transition-all"><i class="fas fa-trash-alt"></i> Borrar</button>
         `;
-        renderList("USERS");
-        return;
+
+        renderList(type);
       }
-
-      document.getElementById(navId)?.classList.add("active");
-      chat.classList.add("hidden-ui"); table.classList.remove("hidden-ui");
-      title.textContent = label;
-      document.body.dataset.viewType = type;
-
-      acts.innerHTML = `
-        <button onclick="openModal('modal-capture')" class="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs font-black hover:bg-blue-700"><i class="fas fa-plus mr-1"></i>Nuevo</button>
-        <button onclick="openModal('modal-upload')" class="bg-slate-900 text-white px-3 py-1 rounded-lg text-xs font-black hover:bg-slate-800"><i class="fas fa-upload mr-1"></i>Importar</button>
-        <button onclick="deleteSelected()" class="bg-red-50 text-red-600 px-3 py-1 rounded-lg text-xs font-black shadow-sm hover:bg-red-100 transition-all"><i class="fas fa-trash-alt mr-1"></i>Borrar</button>
-      `;
-
-      renderList(type);
     };
 
-    // Formularios individuales
     window.setFormType = (t) => {
       document.getElementById("current-type").value = t;
-      ["form-cert","form-ext","form-rule","form-doc"].forEach(f => document.getElementById(f).classList.add("hidden"));
+      ["form-cert", "form-ext", "form-rule", "form-doc"].forEach((f) => document.getElementById(f).classList.add("hidden"));
       if (t === "CERTIFICADO") document.getElementById("form-cert").classList.remove("hidden");
       else if (t === "EXTENSION") document.getElementById("form-ext").classList.remove("hidden");
       else if (t === "REGLA") document.getElementById("form-rule").classList.remove("hidden");
       else document.getElementById("form-doc").classList.remove("hidden");
     };
 
-    // Abrir modal captura limpia
-    const openCaptureDefault = () => {
-      window.setFormType("MANUAL");
-      document.getElementById("editing-id").value = "";
-      // limpiar campos rápidos
-      ["c-num","c-stat","c-ini","c-fin","e-num","e-nom","e-area","r-rule","r-chap","r-topic","r-keywords","r-text","d-title","d-content"].forEach(id=>{
-        const el=document.getElementById(id); if(el) el.value="";
-      });
-    };
-    const _openModal = window.openModal;
-    window.openModal = (id) => { _openModal(id); if(id==="modal-capture") openCaptureDefault(); };
-
     window.saveRegistry = async () => {
-      if (!currentUser) return window.toast("Sesión inválida", true);
-
       const type = document.getElementById("current-type").value;
-      const id = document.getElementById("editing-id").value || ("doc_" + Date.now());
-      let data = { contentType: type === "REGLA" ? "REGLA_SPEI" : type, date: new Date().toISOString(), author: currentUser.name };
+      const id = document.getElementById("editing-id").value || "doc_" + Date.now();
+      let data = { contentType: type, date: new Date().toISOString(), author: currentUser.name };
 
       if (type === "CERTIFICADO") {
-        data.num = (document.getElementById("c-num").value || "").toUpperCase();
+        data.num = document.getElementById("c-num").value;
         data.negocio = document.getElementById("c-neg").value;
         data.entorno = document.getElementById("c-env").value;
         data.estatus = document.getElementById("c-stat").value;
@@ -610,10 +770,9 @@
         data.content = `${data.nombre} - ${data.area}`;
       } else if (type === "REGLA") {
         data.regla = document.getElementById("r-rule").value;
+        data.content = document.getElementById("r-text").value;
         data.capitulo = document.getElementById("r-chap").value;
         data.tema = document.getElementById("r-topic").value;
-        data.keywords = document.getElementById("r-keywords").value;
-        data.content = document.getElementById("r-text").value;
         data.title = `Regla ${data.regla}`;
       } else {
         data.title = document.getElementById("d-title").value;
@@ -626,84 +785,147 @@
       if (document.body.dataset.viewType) renderList(document.body.dataset.viewType);
     };
 
-    // Usuarios
     window.saveUser = async () => {
-      const n = document.getElementById("u-name").value.trim();
-      const i = document.getElementById("u-id").value.trim();
-      const r = document.getElementById("u-role").value;
+      const n = document.getElementById("u-name").value;
+      const i = document.getElementById("u-id").value;
       if (!n || !i) return window.toast("Faltan datos", true);
-      await setDoc(doc(db, "artifacts", appId, "public", "data", "team", i), { name: n, empNumber: i, role: r }, { merge: true });
-      window.toast("Usuario creado");
+      await setDoc(doc(db, "artifacts", appId, "public", "data", "team", i), { name: n, empNumber: i, role: document.getElementById("u-role").value });
+      window.toast("Usuario Creado");
       window.closeModal("modal-user");
       renderList("USERS");
     };
 
-    window.deleteRec = async (id) => {
-      if (confirm("¿Eliminar registro?")) {
-        await deleteDoc(doc(db, "artifacts", appId, "public", "data", "knowledge", id));
-        renderList(document.body.dataset.viewType);
-      }
-    };
-    window.deleteUser = async (id) => {
-      if (confirm("¿Eliminar usuario?")) {
-        await deleteDoc(doc(db, "artifacts", appId, "public", "data", "team", id));
-        renderList("USERS");
-      }
-    };
+    window.deleteRec = async (id) => { if (confirm("¿Eliminar?")) { await deleteDoc(doc(db, "artifacts", appId, "public", "data", "knowledge", id)); renderList(document.body.dataset.viewType); } };
+    window.deleteUser = async (id) => { if (confirm("¿Eliminar?")) { await deleteDoc(doc(db, "artifacts", appId, "public", "data", "team", id)); renderList("USERS"); } };
 
-    // Borrado masivo
-    window.toggleSelectAll = (el) => document.querySelectorAll(".select-row").forEach(cb => cb.checked = el.checked);
+    // BORRADO MASIVO
+    window.toggleSelectAll = (el) => { document.querySelectorAll(".select-row").forEach((cb) => (cb.checked = el.checked)); };
 
     window.deleteSelected = async () => {
-      const selected = Array.from(document.querySelectorAll(".select-row:checked")).map(cb => cb.value);
-      if (!selected.length) return window.toast("Nada seleccionado", true);
+      const selected = Array.from(document.querySelectorAll(".select-row:checked")).map((cb) => cb.value);
+      if (selected.length === 0) return window.toast("Nada seleccionado", true);
 
-      if (!confirm(`¿Borrar ${selected.length} registros seleccionados?`)) return;
+      if (confirm(`¿Borrar ${selected.length} registros seleccionados?`)) {
+        const batch = window.fb.writeBatch(db);
+        const colName = document.body.dataset.viewType === "USERS" ? "team" : "knowledge";
 
-      const batch = writeBatch(db);
-      const colName = document.body.dataset.viewType === "USERS" ? "team" : "knowledge";
-      selected.forEach(id => batch.delete(doc(db, "artifacts", appId, "public", "data", colName, id)));
-      await batch.commit();
-      window.toast(`${selected.length} eliminados`);
-      renderList(document.body.dataset.viewType);
+        selected.forEach((id) => {
+          const ref = doc(db, "artifacts", appId, "public", "data", colName, id);
+          batch.delete(ref);
+        });
+
+        await batch.commit();
+        window.toast(`${selected.length} registros eliminados`);
+        if (document.body.dataset.viewType === "USERS") renderList("USERS");
+        else renderList(document.body.dataset.viewType);
+      }
     };
 
-    // Render List
+    // CARGA MASIVA (layout flexible)
+    window.handleBulkUpload = async (input) => {
+      const f = input.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+
+      reader.onload = async (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+
+        const batch = window.fb.writeBatch(db);
+
+        json.forEach((row) => {
+          const id = "imp_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+          const ref = doc(db, "artifacts", appId, "public", "data", "knowledge", id);
+          let entry = { date: new Date().toISOString(), author: currentUser?.name || "system" };
+
+          // Reglas
+          if (row.Regla || row.REGLA) {
+            entry.contentType = "REGLA_SPEI";
+            entry.regla = row.Regla || row.REGLA;
+            entry.capitulo = row.Capítulo || row.CAPITULO || row.CAPITULO_SPEI;
+            entry.content = row.Texto_literal || row.TEXTO_LITERAL || row.CONTENIDO || row.TEXTO;
+            entry.tema = row.Tema_operativo || row.TEMA || row.TITULO || row.TEMA_OPERATIVO;
+            entry.keywords = row.Palabras_clave || row.PALABRAS_CLAVE || "";
+            entry.ia_text = row.Texto_normalizado_IA || row.TEXTO_NORMALIZADO_IA || "";
+            entry.title = `Regla ${entry.regla}`;
+          }
+          // Extensiones
+          else if (row.EXTENSION || row.EXT || row.Extension) {
+            entry.contentType = "EXTENSION";
+            entry.ext = row.EXTENSION || row.EXT || row.Extension;
+            entry.nombre = row.NOMBRE || row.Nombre || "";
+            entry.area = row.AREA || row.Area || "";
+            entry.title = `EXT ${entry.ext}`;
+            entry.content = `${entry.nombre} - ${entry.area}`;
+          }
+          // Certificados
+          else if (row.NUMERO || row.CERTIFICADO || row.Numero) {
+            entry.contentType = "CERTIFICADO";
+            entry.num = row.NUMERO || row.CERTIFICADO || row.Numero;
+            entry.negocio = row.NEGOCIO || row.Negocio || "";
+            entry.entorno = row.ENTORNO || row.Entorno || "";
+            entry.estatus = row.ESTATUS || row.Estatus || "";
+            entry.vigenciaIni = row.INICIO || row.Inicio || row.VIGENCIA_INICIO || "";
+            entry.vigenciaFin = row.FIN || row.Fin || row.VIGENCIA_FIN || "";
+            entry.title = `CERT ${entry.num}`;
+            entry.content = `${entry.negocio} | ${entry.entorno} | ${entry.estatus}`;
+          }
+          // Manuales
+          else {
+            entry.contentType = "MANUAL";
+            entry.title = row.TITULO || row.Título || row.Title || "Importado";
+            entry.content = row.CONTENIDO || row.Contenido || row.Content || "";
+          }
+
+          batch.set(ref, entry);
+        });
+
+        await batch.commit();
+        window.toast("Carga Exitosa");
+        window.closeModal("modal-upload");
+        if (document.body.dataset.viewType) renderList(document.body.dataset.viewType);
+        input.value = "";
+      };
+
+      reader.readAsArrayBuffer(f);
+    };
+
     function renderList(type) {
       const list = document.getElementById("table-content");
       if (!list) return;
 
-      const q = norm(document.getElementById("table-search")?.value || "");
-      let data = (type === "USERS") ? team : (type === "ALL" ? knowledgeBase : knowledgeBase.filter(k => k.contentType === type));
+      let data = type === "USERS" ? team : (type === "ALL" ? knowledgeBase : knowledgeBase.filter((k) => k.contentType === type));
+      const q = (document.getElementById("table-search")?.value || "").trim().toLowerCase();
 
       if (q) {
-        data = data.filter(i => norm(JSON.stringify(i)).includes(q));
+        data = data.filter((i) => {
+          const blob = (JSON.stringify(i) || "").toLowerCase();
+          return blob.includes(q);
+        });
       }
 
-      if (!data.length) { list.innerHTML = "<div class='text-center py-10 text-slate-400 italic'>Sin registros</div>"; return; }
+      if (!data.length) { list.innerHTML = "<div class='text-center py-10 text-slate-400'>Sin registros</div>"; return; }
 
-      list.innerHTML = data.map(i => {
+      list.innerHTML = data.map((i) => {
         const isUser = type === "USERS";
         const id = isUser ? i.empNumber : i.id;
-        const badgeType = isUser ? "USUARIO" : (i.contentType || "MANUAL");
         const title = isUser ? i.name : i.title;
-        const desc = isUser ? `${i.role} • ${i.empNumber}` : (i.content?.substring(0, 90) || "");
-        const actions = isUser
-          ? `<button onclick="deleteUser('${id}')" class="text-red-500"><i class="fas fa-trash"></i></button>`
-          : `<button onclick="editEntry('${id}')" class="text-slate-500 hover:text-blue-600"><i class="fas fa-pen"></i></button>
-             <button onclick="deleteRec('${id}')" class="text-red-500"><i class="fas fa-trash"></i></button>`;
+        const desc = isUser ? i.role : (i.content?.substring(0, 90) || "");
 
         return `
           <div class="data-card">
             <div class="flex items-center w-full overflow-hidden">
-              <input type="checkbox" class="mr-3 select-row" value="${id}">
-              <div class="min-w-0">
-                <span class="badge badge-${badgeType}">${badgeType}</span>
-                <h4 class="font-black text-sm mt-1 truncate">${title || "(sin título)"}</h4>
-                <p class="text-xs text-slate-500 truncate">${desc}</p>
+              <input type="checkbox" class="mr-3 accent-blue-600 w-4 h-4 select-row" value="${id}">
+              <div class="overflow-hidden">
+                <span class="badge badge-${i.contentType || "USER"}">${i.contentType || "USUARIO"}</span>
+                <h4 class="font-bold text-sm mt-1 truncate">${title || "(sin título)"}</h4>
+                <p class="text-xs text-slate-500 line-clamp-1">${desc || ""}</p>
               </div>
             </div>
-            <div class="flex gap-3 items-center">${actions}</div>
+            <div class="flex gap-2">
+              <button onclick="${isUser ? `window.deleteUser('${id}')` : `window.deleteRec('${id}')`}" class="text-red-500"><i class="fas fa-trash"></i></button>
+            </div>
           </div>
         `;
       }).join("");
@@ -711,377 +933,155 @@
 
     window.filterList = () => renderList(document.body.dataset.viewType);
 
-    // Editar
-    window.editEntry = (id) => {
-      const e = knowledgeBase.find(x => x.id === id);
-      if (!e) return;
-      window.openModal("modal-capture");
-
-      if (e.contentType === "CERTIFICADO") {
-        window.setFormType("CERTIFICADO");
-        document.getElementById("c-num").value = e.num || "";
-        document.getElementById("c-neg").value = e.negocio || "SPEI";
-        document.getElementById("c-env").value = e.entorno || "PRODUCCION";
-        document.getElementById("c-stat").value = e.estatus || "";
-        document.getElementById("c-ini").value = e.vigenciaIni || "";
-        document.getElementById("c-fin").value = e.vigenciaFin || "";
-      } else if (e.contentType === "EXTENSION") {
-        window.setFormType("EXTENSION");
-        document.getElementById("e-num").value = e.ext || "";
-        document.getElementById("e-nom").value = e.nombre || "";
-        document.getElementById("e-area").value = e.area || "";
-      } else if (e.contentType === "REGLA_SPEI") {
-        window.setFormType("REGLA");
-        document.getElementById("r-rule").value = e.regla || "";
-        document.getElementById("r-chap").value = e.capitulo || "";
-        document.getElementById("r-topic").value = e.tema || "";
-        document.getElementById("r-keywords").value = e.keywords || "";
-        document.getElementById("r-text").value = e.content || "";
-      } else {
-        window.setFormType("MANUAL");
-        document.getElementById("d-title").value = e.title || "";
-        document.getElementById("d-content").value = e.content || "";
-      }
-      document.getElementById("editing-id").value = id;
-    };
-
-    // Import (bulk)
-    window.handleBulkUpload = (input) => {
-      const f = input.files?.[0];
-      if (!f) return;
-      pendingUploadFile = f;
-      document.getElementById("file-name").textContent = f.name;
-    };
-
-    window.runBulkUpload = async () => {
-      if (!currentUser) return window.toast("Sesión inválida", true);
-      if (!pendingUploadFile) return window.toast("Selecciona un archivo", true);
-
-      const f = pendingUploadFile;
-      const ext = (f.name.split(".").pop() || "").toLowerCase();
-
-      const toRows = async () => {
-        if (ext === "csv") {
-          const text = await f.text();
-          const lines = text.split(/\r?\n/).filter(Boolean);
-          const header = lines.shift().split(",").map(h => h.trim());
-          return lines.map(line => {
-            const cols = line.split(",").map(c => c.trim());
-            const obj = {};
-            header.forEach((h, idx) => obj[h] = cols[idx]);
-            return obj;
-          });
-        } else {
-          const buf = await f.arrayBuffer();
-          const workbook = XLSX.read(new Uint8Array(buf), { type: "array" });
-          const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-          return json;
-        }
-      };
-
-      const rows = await toRows();
-      if (!rows.length) return window.toast("Archivo vacío", true);
-
-      const batch = writeBatch(db);
-      let imported = 0;
-
-      const get = (row, ...keys) => {
-        for (const k of keys) {
-          if (row[k] !== undefined) return row[k];
-          if (row[k.toUpperCase()] !== undefined) return row[k.toUpperCase()];
-          if (row[k.toLowerCase()] !== undefined) return row[k.toLowerCase()];
-        }
-        return "";
-      };
-
-      rows.forEach(row => {
-        const id = "imp_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
-        const ref = doc(db, "artifacts", appId, "public", "data", "knowledge", id);
-
-        // Detect
-        const regla = get(row, "REGLA", "Regla");
-        const cap = get(row, "CAPITULO", "Capitulo", "Capítulo");
-        const texto = get(row, "TEXTO_LITERAL", "Texto_literal", "CONTENIDO", "Contenido");
-        const tema = get(row, "TEMA_OPERATIVO", "Tema_operativo", "TEMA", "Tema");
-        const ult4 = get(row, "ULT4", "NUMERO", "Numero", "Últimos 4", "ULTIMOS4", "ULTIMOS_4");
-        const negocio = get(row, "NEGOCIO", "Negocio");
-        const entorno = get(row, "ENTORNO", "Entorno");
-        const estatus = get(row, "ESTATUS", "Estatus");
-        const inicio = get(row, "INICIO", "Inicio", "VIGENCIA_INICIO", "VigenciaInicio");
-        const fin = get(row, "FIN", "Fin", "VIGENCIA_FIN", "VigenciaFin");
-        const extension = get(row, "EXTENSION", "Extensión", "EXT");
-        const nombre = get(row, "NOMBRE", "Nombre");
-        const area = get(row, "AREA", "Área");
-        const titulo = get(row, "TITULO", "Título", "TITLE", "Title");
-        const keywords = get(row, "PALABRAS_CLAVE", "Palabras_clave", "KEYWORDS", "Keywords");
-
-        let entry = { date: new Date().toISOString(), author: currentUser.name };
-
-        if (regla || cap) {
-          entry.contentType = "REGLA_SPEI";
-          entry.regla = regla;
-          entry.capitulo = cap;
-          entry.content = texto;
-          entry.tema = tema;
-          entry.keywords = keywords;
-          entry.title = `Regla ${entry.regla || ""}`.trim();
-        } else if (ult4 || negocio || estatus) {
-          entry.contentType = "CERTIFICADO";
-          entry.num = (ult4 || "").toUpperCase();
-          entry.negocio = negocio;
-          entry.entorno = entorno || "PRODUCCION";
-          entry.estatus = estatus;
-          entry.vigenciaIni = inicio;
-          entry.vigenciaFin = fin;
-          entry.title = `CERT ${entry.num || ""}`.trim();
-          entry.content = `${entry.negocio || ""} | ${entry.entorno || ""} | ${entry.estatus || ""}`.trim();
-        } else if (extension || nombre || area) {
-          entry.contentType = "EXTENSION";
-          entry.ext = extension;
-          entry.nombre = nombre;
-          entry.area = area;
-          entry.title = `EXT ${entry.ext || ""}`.trim();
-          entry.content = `${entry.nombre || ""} - ${entry.area || ""}`.trim();
-        } else {
-          entry.contentType = "MANUAL";
-          entry.title = titulo || "Importado";
-          entry.content = texto || get(row, "CONTENIDO", "Contenido");
-        }
-
-        batch.set(ref, entry);
-        imported++;
-      });
-
-      await batch.commit();
-      pendingUploadFile = null;
-      document.getElementById("file-name").textContent = ".xlsx / .csv";
-      window.toast(`Importación exitosa (${imported})`);
-      window.closeModal("modal-upload");
-      if (document.body.dataset.viewType) renderList(document.body.dataset.viewType);
-    };
-
-    window.downloadTemplate = () => {
-      const t =
-`REGLA,CAPITULO,TEXTO_LITERAL,TEMA_OPERATIVO,PALABRAS_CLAVE
-17a,Cap 3,El participante deberá...,Devoluciones,"devolucion, retorno, rechazo"
-
-ULT4,NEGOCIO,ENTORNO,ESTATUS,INICIO,FIN
-9A3F,SPEI,PRODUCCION,VIGENTE,2024-01-01,2026-12-31
-
-EXTENSION,NOMBRE,AREA
-5522,Juan,Soporte
-
-TITULO,CONTENIDO
-Manual Retornos,Procedimiento...
-`;
-      const b = new Blob([t], { type: "text/csv" });
-      const l = document.createElement("a");
-      l.href = URL.createObjectURL(b);
-      l.download = "layout_maestro_speikito.csv";
-      l.click();
-    };
-
-    // Perfil
-    window.handleProfileUpload = (input) => {
-      const f = input.files?.[0];
-      if (!f || !currentUser) return;
-      const r = new FileReader();
-      r.onload = async (e) => {
-        await setDoc(doc(db, "artifacts", appId, "public", "data", "team", currentUser.empNumber), { photoURL: e.target.result }, { merge: true });
-        updateAvatar(e.target.result);
-        window.toast("Foto actualizada");
-      };
-      r.readAsDataURL(f);
-    };
-
-    function updateAvatar(url) {
-      if (!url) return;
-      document.getElementById("user-initials").classList.add("hidden");
-      document.getElementById("user-img-display").src = url;
-      document.getElementById("user-img-display").classList.remove("hidden");
-      document.getElementById("profile-prev").src = url;
-      document.getElementById("profile-prev").classList.remove("hidden");
-      document.getElementById("profile-icon").classList.add("hidden");
-    }
-
-    // Ajustes IA
-    window.saveSettings = async () => {
-      const model = document.getElementById("ai-model").value.trim();
-      settings.model_hint = model;
-      await setDoc(doc(db, "artifacts", appId, "public", "data", "settings", "ai"), settings, { merge: true });
-      window.toast("Ajustes guardados");
-      window.closeModal("modal-settings");
-    };
-
-    window.testAPI = async () => {
+    // CHAT (base interna + IA)
+    async function askGemini(q, ctx) {
       try {
-        window.toast("Probando API...");
-        const r = await fetch("/api/gemini", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: "Responde con una sola frase: Speikito OK." })
-        });
-        const j = await r.json().catch(()=>({}));
-        if (!r.ok) return window.toast(`Fallo (${r.status}): ${j?.error || j?.message || "error"}`, true);
-        window.toast(`OK: ${j?.text?.slice(0,40) || "respuesta recibida"}`);
-      } catch (e) {
-        window.toast("Error al probar API", true);
-      }
-    };
+        const prompt = `
+Eres Speikito, asistente de Operación SPEI/CoDi/SPID/DIMO.
+Usa primero el CONTEXTO INTERNO si viene, y si falta, explica de forma práctica.
 
-    // Chat: búsqueda interna mejorada + IA opcional
-    function buildSearchIndex(entry) {
-      return norm([entry.title, entry.regla, entry.capitulo, entry.tema, entry.keywords, entry.content, entry.negocio, entry.estatus, entry.nombre, entry.area, entry.ext, entry.num].filter(Boolean).join(" "));
-    }
-
-    function scoreEntry(entry, tokens) {
-      const hay = entry.__idx || (entry.__idx = buildSearchIndex(entry));
-      let s = 0;
-      tokens.forEach(t => {
-        if (hay.includes(t)) s += 2;
-        // bonus: match on key fields
-        if (norm(entry.regla).includes(t)) s += 3;
-        if (norm(entry.num).includes(t)) s += 3;
-        if (norm(entry.ext).includes(t)) s += 2;
-      });
-      return s;
-    }
-
-    async function askGemini(question, ctxText) {
-      const hint = (settings.model_hint || "").trim();
-      const prompt =
-`Responde en español, claro y directo. No uses JSON ni bloques de código.
+CONTEXTO INTERNO (si existe):
+${ctx || "(sin contexto interno)"}
 
 PREGUNTA:
-${question}
+${q}
 
-CONTEXTO INTERNO (puede estar vacío):
-${ctxText || "(sin contexto interno)"}
+REGLAS DE RESPUESTA:
+- Responde en español, claro y operativo.
+- Si el contexto interno existe, cítalo con frases como: "Según tu base interna: ..."
+- Si no existe contexto, da una guía general y sugiere qué dato cargar en la base para futuras respuestas.
+- No devuelvas JSON ni bloques raros, solo texto.
+`.trim();
 
-INSTRUCCIONES:
-- Si el contexto interno trae reglas, cita la(s) regla(s) y capítulo(s) de forma breve.
-- Si no hay contexto, responde de forma general y sugiere qué dato interno faltaría para afinar la respuesta.
-- Si hay ambigüedad, haz 1-2 preguntas de aclaración máximo.`;
+        const res = await fetch("/api/gemini", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt }),
+        });
 
-      const res = await fetch("/api/gemini", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, model_hint: hint })
-      });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          return `Error API (${res.status}): ${err?.error || err?.message || "No se pudo consultar la IA"}`;
+        }
 
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) return `Error API (${res.status}): ${data?.error || data?.message || "No se pudo consultar IA"}`;
-      return data?.text || "Sin respuesta de IA.";
-    }
-
-    function renderInternalHits(hits) {
-      if (!hits.length) return `<div class="info-card"><b>Base interna:</b> sin coincidencias.</div>`;
-      const items = hits.slice(0, 6).map(h => {
-        const tag = h.contentType === "REGLA_SPEI" ? `Regla ${h.regla || ""} • ${h.capitulo || ""}` :
-                    h.contentType === "CERTIFICADO" ? `CERT ${h.num || ""} • ${h.estatus || ""}` :
-                    h.contentType === "EXTENSION" ? `EXT ${h.ext || ""} • ${h.area || ""}` :
-                    (h.title || "Manual");
-        const sub = h.contentType === "REGLA_SPEI" ? (h.tema || "") :
-                    h.contentType === "CERTIFICADO" ? `${h.negocio || ""} | ${h.entorno || ""}` :
-                    h.contentType === "EXTENSION" ? (h.nombre || "") :
-                    (h.content || "").slice(0, 90);
-        return `<div class="bg-white border border-slate-200 rounded-xl p-3 mb-2">
-          <div class="flex items-center justify-between gap-2">
-            <div class="font-black text-xs text-slate-800">${tag}</div>
-            <div class="text-[11px] text-slate-500 font-black">score ${h.__score || 0}</div>
-          </div>
-          <div class="text-xs text-slate-600 mt-1">${sub || ""}</div>
-        </div>`;
-      }).join("");
-      return `<div class="info-card"><b>Base interna:</b> ${hits.length} coincidencia(s).${showHits ? `<div class="mt-3">${items}</div>` : ""}</div>`;
+        const data = await res.json();
+        return data?.text || data?.candidates?.[0]?.content?.parts?.[0]?.text || "Sin respuesta de IA.";
+      } catch (e) {
+        return "Error de conexión.";
+      }
     }
 
     document.getElementById("chat-form").onsubmit = async (e) => {
       e.preventDefault();
       const v = document.getElementById("chat-input").value.trim();
       if (!v) return;
+
       document.getElementById("chat-input").value = "";
       addMsg(escapeHtml(v), true);
 
-      // Tokens y ranking
-      const tokens = tokenize(v);
-      let ranked = knowledgeBase
-        .map(k => ({ ...k, __score: scoreEntry(k, tokens) }))
-        .filter(k => k.__score > 0);
+      // búsqueda simple en base interna
+      const normV = v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-      // dedupe reglas por regla+capitulo y certificados por num, etc.
-      ranked.sort((a,b)=>b.__score-a.__score);
-      ranked = uniqBy(ranked, (k) => k.contentType === "REGLA_SPEI" ? `R:${k.regla}|${k.capitulo}` :
-                                   k.contentType === "CERTIFICADO" ? `C:${k.num}` :
-                                   k.contentType === "EXTENSION" ? `E:${k.ext}` :
-                                   `M:${k.id}`);
-
-      // Enviar panel de coincidencias
-      addMsg(renderInternalHits(ranked), false);
-
-      // Construir contexto para IA con top reglas y top operativos
-      const topRules = ranked.filter(x => x.contentType === "REGLA_SPEI").slice(0, 4);
-      const topOps = ranked.filter(x => x.contentType !== "REGLA_SPEI").slice(0, 4);
-
-      const ctxParts = [];
-      topRules.forEach(r => ctxParts.push(`REGLA ${r.regla} (${r.capitulo}) • Tema: ${r.tema || ""}\nTexto: ${r.content || ""}`));
-      topOps.forEach(o => {
-        if (o.contentType === "CERTIFICADO") ctxParts.push(`CERT ${o.num} • ${o.negocio} • ${o.entorno} • ${o.estatus} • Fin: ${o.vigenciaFin || ""}`);
-        else if (o.contentType === "EXTENSION") ctxParts.push(`EXT ${o.ext} • ${o.nombre} • ${o.area}`);
-        else ctxParts.push(`MANUAL ${o.title}\n${(o.content || "").slice(0, 400)}`);
+      const hits = knowledgeBase.filter((k) => {
+        const text = ((k.title || "") + " " + (k.content || "") + " " + (k.tema || "") + " " + (k.keywords || ""))
+          .normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        return text.includes(normV);
       });
-      const ctx = ctxParts.join("\n\n");
 
-      // IA
-      if (aiEnabled) {
-        addMsg("<div class='hint font-black text-slate-500'>Consultando IA...</div>", false);
-        const aiRes = await askGemini(v, ctx);
-        // reemplazar el último "Consultando IA..."
-        replaceLastBotBubble(`<div class="reg-card">
-          <div class="reg-title">Respuesta IA</div>
-          <div class="reg-content">${escapeHtml(aiRes)}</div>
-          <div class="reg-footer">Speikito IA PRO</div>
-        </div>`);
-      } else {
-        if (!ranked.length) addMsg("<div class='hint'>Activa <b>Usar IA</b> si quieres una explicación general aunque no haya coincidencias.</div>", false);
+      // Armar contexto para IA con los top hits (sin saturar)
+      const top = hits.slice(0, 6);
+      const ctx = top.map((x) => {
+        if (x.contentType === "REGLA_SPEI") return `REGLA ${x.regla} (${x.capitulo || ""}): ${x.content || ""}`;
+        if (x.contentType === "CERTIFICADO") return `CERT ${x.num} | ${x.negocio || ""} | ${x.entorno || ""} | ${x.estatus || ""} | FIN ${x.vigenciaFin || ""}`;
+        if (x.contentType === "EXTENSION") return `EXT ${x.ext}: ${x.nombre || ""} (${x.area || ""})`;
+        return `MANUAL ${x.title || ""}: ${(x.content || "").slice(0, 220)}`;
+      }).join("\n");
+
+      // Mostrar resultados internos si hay, y luego IA
+      if (hits.length > 0) {
+        let h = `<div class="mb-2 font-bold text-xs text-blue-600">BASE INTERNA (TOP ${top.length}/${hits.length})</div>`;
+        top.forEach((x) => {
+          if (x.contentType === "CERTIFICADO")
+            h += `<div class="bg-blue-50 p-2 rounded mb-1 text-xs border border-blue-100 font-mono"><b>${escapeHtml(x.title || "")}</b><br>Estatus: ${escapeHtml(x.estatus || "")} | Vence: ${escapeHtml(x.vigenciaFin || "")}</div>`;
+          else if (x.contentType === "EXTENSION")
+            h += `<div class="bg-emerald-50 p-2 rounded mb-1 text-xs"><b>${escapeHtml(x.ext || "")}</b> - ${escapeHtml(x.nombre || "")} (${escapeHtml(x.area || "")})</div>`;
+          else if (x.contentType === "REGLA_SPEI")
+            h += `<div class="bg-amber-50 p-2 rounded mb-1 text-xs border border-amber-100"><b>Regla ${escapeHtml(x.regla || "")}</b> • ${escapeHtml(x.capitulo || "")}<br>${escapeHtml((x.content || "").slice(0, 220))}</div>`;
+          else
+            h += `<div class="bg-white p-2 rounded border mb-1 text-xs"><b>${escapeHtml(x.title || "")}</b></div>`;
+        });
+        addMsg(h, false);
       }
+
+      addMsg(`<div class="text-xs font-black text-slate-400 uppercase tracking-widest">Consultando IA…</div>`, false);
+      const aiRes = await askGemini(v, ctx);
+      addMsg(`<div class="reg-card">${escapeHtml(aiRes).replace(/\n/g, "<br>")}</div>`, false);
     };
 
-    function addMsg(html, isUser) {
+    function addMsg(t, u) {
       const d = document.createElement("div");
-      d.className = `chat-bubble ${isUser ? "user-msg" : "bot-msg"} shadow-sm`;
-      d.innerHTML = html;
-
-      const wrap = document.createElement("div");
-      wrap.className = `flex w-full mb-2 ${isUser ? "justify-end" : "justify-start"}`;
-      wrap.appendChild(d);
+      d.className = `chat-bubble ${u ? "user-msg" : "bot-msg"} shadow-sm`;
+      d.innerHTML = t;
 
       const b = document.getElementById("chat-box");
-      b.appendChild(wrap);
+      const r = document.createElement("div");
+      r.className = `flex w-full mb-2 ${u ? "justify-end" : "justify-start"}`;
+      r.appendChild(d);
+      b.appendChild(r);
       b.scrollTop = b.scrollHeight;
     }
 
-    function replaceLastBotBubble(html) {
-      const b = document.getElementById("chat-box");
-      const wraps = Array.from(b.querySelectorAll("div.flex.w-full.mb-2"));
-      for (let i = wraps.length - 1; i >= 0; i--) {
-        const bubble = wraps[i].querySelector(".bot-msg");
-        if (bubble) { bubble.innerHTML = html; return; }
-      }
-      addMsg(html, false);
-    }
-
     function escapeHtml(str) {
-      return (str || "").toString()
+      return String(str || "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;")
-        .replaceAll("\n", "<br>");
+        .replaceAll("'", "&#039;");
     }
 
-    // Init auth + listeners
+    // PERFIL
+    window.handleProfileUpload = (input) => {
+      const f = input.files[0];
+      const r = new FileReader();
+      r.onload = (e) => {
+        if (currentUser) {
+          setDoc(doc(db, "artifacts", appId, "public", "data", "team", currentUser.empNumber), { photoURL: e.target.result }, { merge: true });
+          updateAvatar(e.target.result);
+        }
+      };
+      if (f) r.readAsDataURL(f);
+    };
+
+    function updateAvatar(url) {
+      if (url) {
+        document.getElementById("user-initials").classList.add("hidden");
+        document.getElementById("user-img-display").src = url;
+        document.getElementById("user-img-display").classList.remove("hidden");
+        document.getElementById("profile-prev").src = url;
+        document.getElementById("profile-prev").classList.remove("hidden");
+        document.getElementById("profile-icon").classList.add("hidden");
+      }
+    }
+
+    function login(u) {
+      currentUser = u;
+      localStorage.setItem("spei_v30_2_session", JSON.stringify(u));
+      document.body.setAttribute("data-role", u.role);
+
+      document.getElementById("login-screen").classList.add("hidden-ui");
+      document.getElementById("loading-screen").classList.add("hidden-ui");
+      document.getElementById("app-layout").classList.remove("hidden-ui");
+
+      document.getElementById("user-name-display").innerText = u.name;
+      document.getElementById("user-role-display").innerText = u.role === "admin" ? "ADMIN" : "OPERATIVO";
+
+      if (u.role !== "admin") document.querySelectorAll(".admin-only").forEach((e) => e.classList.add("hidden-ui"));
+      else document.querySelectorAll(".admin-only").forEach((e) => e.classList.remove("hidden-ui"));
+
+      if (u.photoURL) updateAvatar(u.photoURL);
+    }
+
     const initAuth = async () => {
       try {
         if (typeof __initial_auth_token !== "undefined" && __initial_auth_token) {
@@ -1089,10 +1089,7 @@ INSTRUCCIONES:
         } else {
           await signInAnonymously(auth);
         }
-      } catch (e) {
-        console.error(e);
-        window.toast("Error Auth Firebase", true);
-      }
+      } catch (e) { console.error(e); }
     };
 
     async function init() {
@@ -1101,33 +1098,27 @@ INSTRUCCIONES:
       onAuthStateChanged(auth, (u) => {
         if (!u) return;
 
-        // settings
-        onSnapshot(collection(db, "artifacts", appId, "public", "data", "settings"), (s) => {
-          // buscamos doc ai
-          s.docs.forEach(d => {
-            if (d.id === "ai") settings = { ...settings, ...d.data() };
-          });
-        });
-
-        // team
         onSnapshot(collection(db, "artifacts", appId, "public", "data", "team"), async (s) => {
-          team = s.docs.map(d => ({ id: d.id, ...d.data() }));
-          if (!team.length) {
+          team = s.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+          // seed admin
+          if (!team.find((x) => x.empNumber === "682930")) {
             await setDoc(doc(db, "artifacts", appId, "public", "data", "team", "682930"), { name: "Daniel Anzaldo", role: "admin", empNumber: "682930" }, { merge: true });
           }
 
-          const saved = localStorage.getItem("spei_v4_session");
-          if (saved) login(JSON.parse(saved));
-          else document.getElementById("login-screen").classList.remove("hidden-ui");
-
+          const savedSession = localStorage.getItem("spei_v30_2_session");
           document.getElementById("loading-screen").classList.add("hidden-ui");
+
+          if (savedSession) {
+            login(JSON.parse(savedSession));
+          } else {
+            document.getElementById("login-screen").classList.remove("hidden-ui");
+            setTimeout(() => window.focusLogin(), 120);
+          }
         });
 
-        // knowledge
         onSnapshot(collection(db, "artifacts", appId, "public", "data", "knowledge"), (s) => {
-          knowledgeBase = s.docs.map(d => ({ id: d.id, ...d.data() }));
-          // limpiar score/index cache
-          knowledgeBase.forEach(k => { delete k.__idx; delete k.__score; });
+          knowledgeBase = s.docs.map((d) => ({ id: d.id, ...d.data() }));
           if (document.body.dataset.viewType) renderList(document.body.dataset.viewType);
         });
       });
