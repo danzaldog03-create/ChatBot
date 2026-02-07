@@ -1,1182 +1,528 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <!-- Metaetiquetas para forzar actualización inmediata -->
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-
-  <title>SPEI Ops - Speikito v30.2</title>
-
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/616/616430.png" />
+  <title>SPEI Ops - Speikito v31 (Gemini 2.5)</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-  <script>
-    window.MathJax = { tex: { inlineMath: [["$", "$"]] }, options: { enableMenu: false } };
-  </script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
-  <!-- Firebase (module) -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    // Configuración con fallback robusto
-    let firebaseConfig;
-    try {
-      firebaseConfig = JSON.parse(window.__firebase_config);
-    } catch (e) {
-      firebaseConfig = {
-        apiKey: "AIzaSyDPi5pcDL6OL2zCJK_0n3A_RdDGt3U3LVQ",
-        authDomain: "chatbot-8d0a3.firebaseapp.com",
-        projectId: "chatbot-8d0a3",
-        storageBucket: "chatbot-8d0a3.firebasestorage.app",
-        messagingSenderId: "390359131739",
-        appId: "1:390359131739:web:23373d0ba69b4719bb417e",
-      };
-    }
-
-    const appId = typeof __app_id !== "undefined" ? __app_id : firebaseConfig.projectId;
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // Exportar a global
-    window.fb = {
-      auth,
-      db,
-      appId,
-      doc,
-      setDoc,
-      collection,
-      onSnapshot,
-      updateDoc,
-      deleteDoc,
-      signInAnonymously,
-      signInWithCustomToken,
-      onAuthStateChanged,
-      writeBatch,
-    };
-  </script>
-
   <style>
-    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
-    @import url("https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,700;1,300&display=swap");
-
-    * { box-sizing: border-box; }
-    body {
-      font-family: "Inter", sans-serif;
-      background-color: #f1f5f9;
-      height: 100vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Layout */
-    .layout-container { display: flex; height: 100%; width: 100%; }
-    .sidebar {
-      width: 280px;
-      background: #0f172a;
-      color: #94a3b8;
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid #1e293b;
-      transition: transform 0.3s;
-      flex-shrink: 0;
-      z-index: 50;
-    }
-    .sidebar-header {
-      padding: 1.5rem;
-      border-bottom: 1px solid #1e293b;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      color: white;
-      font-weight: 800;
-      font-size: 1.1rem;
-    }
-
-    .nav-scroll { flex: 1; overflow-y: auto; padding: 1rem 0; }
-    .nav-section {
-      font-size: 0.65rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      color: #475569;
-      padding: 1rem 1.5rem 0.5rem;
-      letter-spacing: 0.05em;
-    }
-    .nav-item {
-      padding: 0.75rem 1.5rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-size: 0.85rem;
-      font-weight: 500;
-      transition: all 0.2s;
-      border-left: 3px solid transparent;
-    }
-    .nav-item:hover { background: #1e293b; color: white; }
-    .nav-item.active { background: #1e293b; color: white; border-left-color: #3b82f6; }
-
-    .main-area { flex: 1; display: flex; flex-direction: column; background: white; position: relative; overflow: hidden; }
-    .top-header {
-      height: 4rem;
-      border-bottom: 1px solid #e2e8f0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 2rem;
-      background: white;
-      shrink: 0;
-      z-index: 20;
-    }
-
-    .view-section { flex: 1; overflow-y: auto; padding: 2rem; display: none; height: 100%; flex-direction: column; }
-    .view-section.active { display: flex; }
-    #view-chat { padding: 0; }
-
-    .chat-box { flex: 1; overflow-y: auto; padding: 2rem; background: #f8fafc; }
-    .chat-input-area { padding: 1.5rem 2rem; background: white; border-top: 1px solid #e2e8f0; }
-
-    .chat-bubble { max-width: 85%; padding: 1rem 1.25rem; border-radius: 1rem; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .user-msg { align-self: flex-end; background: #2563eb; color: white; border-bottom-right-radius: 0; margin-left: auto; }
-    .bot-msg { align-self: flex-start; background: white; border: 1px solid #e2e8f0; color: #1e293b; border-bottom-left-radius: 0; width: 100%; }
-    .bot-header { font-weight: 800; color: #0f172a; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
-
-    .reg-card { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 0.5rem; margin-top: 0.5rem; }
-    .reg-title { font-size: 0.75rem; font-weight: 900; color: #92400e; text-transform: uppercase; margin-bottom: 0.5rem; }
-    .reg-content { font-family: "Georgia", serif; font-style: italic; color: #451a03; line-height: 1.6; font-size: 0.95rem; }
-    .reg-footer { margin-top: 0.5rem; font-size: 0.7rem; color: #b45309; font-weight: 700; text-align: right; }
-
-    #table-content { flex: 1; overflow-y: auto; padding-bottom: 6rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 300px; }
-    .data-card { background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); min-height: 80px; }
-    .data-card:hover { border-color: #3b82f6; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transform: translateY(-1px); }
-
-    .badge { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 0.25rem 0.5rem; border-radius: 99px; display: inline-block; margin-bottom: 0.25rem; }
-    .badge-CERTIFICADO { background: #eff6ff; color: #1d4ed8; }
-    .badge-EXTENSION { background: #f0fdf4; color: #15803d; }
-    .badge-MANUAL { background: #f8fafc; color: #475569; }
-    .badge-REGLA_SPEI { background: #fffbeb; color: #b45309; }
-    .badge-ARCHIVO { background: #e0f2fe; color: #0369a1; }
-    .badge-USER { background: #eef2ff; color: #3730a3; }
-
-    .form-input { width: 100%; padding: 0.7rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.85rem; outline: none; transition: 0.2s; background: white; color: #1e293b !important; font-weight: 600; }
-    .form-input:focus { border-color: #2563eb; box-shadow: 0 0 0 2px #bfdbfe; }
-    .form-label { font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 0.25rem; display: block; text-transform: uppercase; }
-
-    .overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.95); backdrop-filter: blur(4px); z-index: 60; display: flex; align-items: center; justify-content: center; }
-    .modal { background: white; width: 90%; max-width: 800px; max-height: 90vh; border-radius: 1rem; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
-
-    .hidden-ui { display: none !important; opacity: 0; pointer-events: none; }
-    .admin-only.hidden-ui { display: none !important; }
-
-    #toast { position: fixed; top: 2rem; left: 50%; transform: translateX(-50%); z-index: 10001; padding: 0.75rem 1.5rem; border-radius: 99px; font-weight: 700; font-size: 0.85rem; color: white; background: #0f172a; opacity: 0; pointer-events: none; transition: 0.3s; }
-    #toast.show { opacity: 1; top: 3rem; }
-
-    /* Checkbox para borrado masivo */
-    .select-row { width: 1.2rem; height: 1.2rem; margin-right: 1rem; cursor: pointer; accent-color: #2563eb; }
-
-    /* Avatar */
-    .avatar-circle { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background-color: #334155; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 0.7rem; cursor: pointer; border: 2px solid #475569; }
-    .avatar-circle:hover { border-color: white; }
-
-    @media (max-width: 768px) {
-      .sidebar { position: fixed; height: 100%; transform: translateX(-100%); }
-      .sidebar.open { transform: translateX(0); }
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    *{box-sizing:border-box}
+    body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial; height:100vh; margin:0; overflow:hidden; background:#f1f5f9}
+    .layout{display:flex; height:100%}
+    .sidebar{width:280px; background:#0f172a; color:#94a3b8; display:flex; flex-direction:column; border-right:1px solid #1e293b}
+    .sidebar .hdr{padding:18px 18px; border-bottom:1px solid #1e293b; display:flex; align-items:center; gap:10px; color:#fff; font-weight:800}
+    .nav{flex:1; overflow:auto; padding:10px 0}
+    .sec{font-size:10px; font-weight:900; text-transform:uppercase; color:#475569; padding:14px 18px 8px; letter-spacing:.08em}
+    .item{padding:12px 18px; cursor:pointer; display:flex; gap:10px; align-items:center; font-size:13px; font-weight:600; border-left:3px solid transparent}
+    .item:hover{background:#1e293b; color:#fff}
+    .item.active{background:#1e293b; color:#fff; border-left-color:#3b82f6}
+    .main{flex:1; display:flex; flex-direction:column; background:#fff; overflow:hidden}
+    .top{height:64px; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between; padding:0 18px}
+    .view{flex:1; display:none; overflow:auto}
+    .view.active{display:flex}
+    .chat{flex:1; display:flex; flex-direction:column; background:#f8fafc}
+    .chatbox{flex:1; overflow:auto; padding:18px}
+    .inputbar{border-top:1px solid #e2e8f0; background:#fff; padding:14px 18px}
+    .bubble{max-width:85%; padding:12px 14px; border-radius:16px; font-size:13px; line-height:1.6; box-shadow:0 2px 4px rgba(0,0,0,.05)}
+    .u{background:#2563eb; color:#fff; border-bottom-right-radius:0; margin-left:auto}
+    .b{background:#fff; border:1px solid #e2e8f0; color:#0f172a; border-bottom-left-radius:0; width:100%}
+    .toast{position:fixed; top:18px; left:50%; transform:translateX(-50%); z-index:9999; padding:10px 14px; border-radius:999px; font-weight:800; font-size:12px; opacity:0; pointer-events:none; transition:.25s}
+    .toast.show{opacity:1; top:26px}
+    .overlay{position:fixed; inset:0; background:rgba(15,23,42,.92); backdrop-filter:blur(3px); display:flex; align-items:center; justify-content:center; z-index:9998}
+    .hidden{display:none!important}
+    .card{background:#fff; width:min(720px,92vw); border-radius:16px; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}
   </style>
 </head>
-
 <body>
-  <div id="toast">Notificación</div>
 
-  <!-- CARGA -->
-  <div id="loading-screen" class="overlay">
-    <div class="text-center">
-      <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-      <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Iniciando Sistema...</p>
+<div id="toast" class="toast bg-emerald-600 text-white">Listo</div>
+
+<!-- Loading -->
+<div id="loading" class="overlay">
+  <div class="text-center">
+    <div class="w-14 h-14 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+    <p class="text-xs font-extrabold uppercase tracking-widest text-slate-300">Iniciando…</p>
+  </div>
+</div>
+
+<!-- Upload modal -->
+<div id="uploadModal" class="overlay hidden">
+  <div class="card">
+    <div class="p-4 border-b bg-slate-50 flex items-center justify-between">
+      <div>
+        <div class="text-sm font-extrabold text-slate-900">Carga masiva</div>
+        <div class="text-[11px] text-slate-500 font-bold">Certificados / Directorio / Manuales / Reglas</div>
+      </div>
+      <button class="text-slate-500 hover:text-red-600" onclick="closeUpload()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="p-5">
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="text-[11px] font-extrabold uppercase text-slate-500">Tipo</label>
+          <select id="bulkType" class="mt-1 w-full border rounded-lg px-3 py-2 font-bold text-slate-800">
+            <option value="REGLA_SPEI">Normativa SPEI</option>
+            <option value="CERTIFICADO">Certificados</option>
+            <option value="EXTENSION">Directorio</option>
+            <option value="MANUAL">Manuales</option>
+          </select>
+          <p class="mt-2 text-[11px] text-slate-500 leading-relaxed">
+            Sube <b>.xlsx</b> o <b>.csv</b>. Mantiene los campos actuales; sólo necesitas columnas con nombres razonables
+            (ej: <i>Regla/Capítulo/Texto_literal/Tema_operativo</i> o <i>NUMERO/NEGOCIO/ESTATUS/FIN</i>, etc.).
+          </p>
+          <button class="mt-3 text-xs font-extrabold text-blue-700 hover:text-blue-900" onclick="downloadLayout()">
+            <i class="fas fa-download mr-2"></i>Descargar layout de ejemplo
+          </button>
+        </div>
+
+        <div class="border-2 border-dashed rounded-xl p-6 text-center bg-slate-50 hover:bg-slate-100 cursor-pointer"
+             onclick="document.getElementById('bulkFile').click()">
+          <i class="fas fa-upload text-3xl text-slate-500 mb-3"></i>
+          <div class="text-sm font-extrabold text-slate-800">Seleccionar archivo</div>
+          <div class="text-[11px] font-bold text-slate-500 mt-1">.xlsx / .csv</div>
+          <input id="bulkFile" type="file" accept=".xlsx,.csv" class="hidden" onchange="handleBulkUpload(this)">
+        </div>
+      </div>
+    </div>
+    <div class="p-4 border-t bg-slate-50 flex justify-end">
+      <button class="text-xs font-extrabold text-slate-500 hover:text-slate-800" onclick="closeUpload()">Cerrar</button>
     </div>
   </div>
+</div>
 
-  <!-- LOGIN -->
-  <div id="login-screen" class="overlay hidden-ui">
-    <div class="bg-white p-10 rounded-2xl shadow-2xl w-full max-w-sm text-center">
-      <div class="w-16 h-16 bg-slate-900 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-3xl">
-        <i class="fas fa-fingerprint"></i>
-      </div>
-      <h1 class="text-2xl font-black text-slate-900 mb-1">SPEI Ops</h1>
-      <p class="text-slate-500 text-xs mb-8 font-bold uppercase tracking-widest">Acceso Corporativo</p>
-      <div class="space-y-4">
-        <input type="text" id="login-id" placeholder="ID de Empleado" class="form-input text-center text-lg font-bold tracking-widest border-slate-300 focus:border-blue-500 text-slate-900" />
-        <button onclick="handleLogin()" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-lg font-bold shadow-lg transition-all active:scale-95 cursor-pointer">
-          INGRESAR
-        </button>
-        <p id="login-msg" class="text-red-500 text-xs font-bold mt-2 opacity-0 transition-opacity">Credenciales Incorrectas</p>
-      </div>
-      <p class="mt-8 text-[10px] text-slate-400 font-bold uppercase tracking-wider">v30.2 • Creado por Daniel Anzaldo</p>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="hdr"><i class="fas fa-cat text-blue-500"></i> SPEI Ops</div>
+    <div class="nav">
+      <div class="sec">Operación</div>
+      <div class="item active" id="navChat" onclick="nav('chat')"><i class="fas fa-comments w-5"></i> Speikito</div>
+
+      <div class="sec">Gestión</div>
+      <div class="item" id="navAll" onclick="nav('all')"><i class="fas fa-globe w-5"></i> Ver todo</div>
+      <div class="item" id="navRules" onclick="nav('rules')"><i class="fas fa-balance-scale w-5"></i> Normativa</div>
+      <div class="item" id="navCert" onclick="nav('cert')"><i class="fas fa-certificate w-5"></i> Certificados</div>
+      <div class="item" id="navExt" onclick="nav('ext')"><i class="fas fa-address-book w-5"></i> Directorio</div>
+      <div class="item" id="navDocs" onclick="nav('docs')"><i class="fas fa-book w-5"></i> Manuales</div>
     </div>
-  </div>
 
-  <!-- APP PRINCIPAL -->
-  <div id="app-layout" class="layout-container hidden-ui">
-    <!-- SIDEBAR -->
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <i class="fas fa-cat text-blue-500 text-xl"></i> SPEI Ops
-        <button class="ml-auto md:hidden text-slate-400" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+    <div class="p-4 border-t border-slate-800">
+      <button class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 rounded-lg text-xs font-extrabold"
+              onclick="openUpload()">
+        <i class="fas fa-upload mr-2"></i> Carga masiva
+      </button>
+      <p class="mt-3 text-[10px] text-slate-500 font-extrabold uppercase tracking-wider">v31 • Gemini 2.5</p>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="top">
+      <div class="font-extrabold text-slate-900" id="title">Chat</div>
+      <div class="flex gap-2 items-center">
+        <span id="aiStatus" class="text-[11px] font-extrabold text-slate-500">IA: verificando…</span>
       </div>
+    </div>
 
-      <div class="nav-scroll">
-        <div class="nav-section">Operación</div>
-        <div onclick="navigate('chat')" class="nav-item active" id="nav-chat"><i class="fas fa-comments w-5"></i> Speikito</div>
-
-        <div class="admin-only hidden-ui">
-          <div class="nav-section">Gestión</div>
-          <div onclick="navigate('admin-all')" class="nav-item text-blue-400" id="nav-all"><i class="fas fa-globe w-5"></i> VER TODO</div>
-          <div onclick="navigate('admin-rules')" class="nav-item text-amber-500" id="nav-rules"><i class="fas fa-balance-scale w-5"></i> Normativa SPEI</div>
-          <div onclick="navigate('admin-cert')" class="nav-item" id="nav-cert"><i class="fas fa-certificate w-5"></i> Certificados</div>
-          <div onclick="navigate('admin-ext')" class="nav-item" id="nav-ext"><i class="fas fa-address-book w-5"></i> Directorio</div>
-          <div onclick="navigate('admin-docs')" class="nav-item" id="nav-docs"><i class="fas fa-file-alt w-5"></i> Manuales</div>
-          <div onclick="navigate('admin-files')" class="nav-item" id="nav-files"><i class="fas fa-folder w-5"></i> Archivos</div>
-
-          <div class="nav-section">Sistema</div>
-          <div onclick="navigate('admin-users')" class="nav-item text-indigo-400" id="nav-users"><i class="fas fa-users-cog w-5"></i> Usuarios</div>
-        </div>
-      </div>
-
-      <div class="p-4 border-t border-slate-800">
-        <div class="flex items-center gap-3 mb-4">
-          <div onclick="openProfileModal()" class="avatar-circle" id="user-avatar-container">
-            <span id="user-initials">DA</span>
-            <img id="user-img-display" class="hidden w-full h-full rounded-full object-cover" src="" />
-          </div>
-          <div class="overflow-hidden">
-            <p class="text-xs font-bold text-white truncate" id="user-name-display">Usuario</p>
-            <p class="text-[10px] text-slate-400 uppercase font-bold truncate" id="user-role-display">Rol</p>
+    <section class="view active" id="viewChat">
+      <div class="chat">
+        <div class="chatbox" id="chatbox">
+          <div class="bubble b">
+            <div class="font-extrabold mb-1"><i class="fas fa-cat text-blue-600 mr-2"></i>Speikito</div>
+            <div class="text-slate-700">
+              Pregúntame algo. Si tengo contexto cargado (reglas/manuales), lo usaré. Si no, te contesto en general y te lo marco.
+            </div>
           </div>
         </div>
-        <button onclick="logout()" class="w-full bg-slate-800 hover:bg-red-900/50 text-slate-300 hover:text-red-200 py-2 rounded text-xs font-bold transition-all">
-          <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
-        </button>
-      </div>
-    </aside>
-
-    <div class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" id="sidebar-backdrop" onclick="toggleSidebar()"></div>
-
-    <!-- CONTENIDO -->
-    <main class="main-area">
-      <div class="top-header">
-        <div class="flex items-center gap-3">
-          <button class="md:hidden text-slate-500 text-xl" onclick="toggleSidebar()"><i class="fas fa-bars text-xl"></i></button>
-          <h2 class="font-black text-slate-800 text-lg" id="page-title">Chat Operativo</h2>
-        </div>
-        <div class="flex gap-2" id="header-actions"></div>
-      </div>
-
-      <div id="view-chat" class="view-section active">
-        <div id="chat-box" class="chat-box space-y-4">
-          <div class="bot-msg chat-bubble shadow-sm w-full">
-            <div class="bot-header"><i class="fas fa-cat text-blue-600"></i> Speikito</div>
-            <p class="text-sm text-slate-600">
-              Hola. Soy <b>Speikito</b> 🐱. Pregúntame sobre tus manuales, directorio, certificados y normativa (si la tienes cargada).
-            </p>
-          </div>
-        </div>
-        <div class="chat-input-area">
-          <form id="chat-form" class="relative max-w-5xl mx-auto flex gap-2">
-            <input type="text" id="chat-input" placeholder="Ej: ¿Qué aplica para devoluciones? / ¿Quién es guardia? / ¿Vence el cert 9A3F?" class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-500 transition-all" autocomplete="off" />
-            <button type="submit" class="w-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg hover:bg-blue-700 active:scale-90 transition-all">
-              <i class="fas fa-paper-plane text-lg"></i>
+        <div class="inputbar">
+          <form id="chatForm" class="flex gap-2">
+            <input id="q" class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-extrabold text-slate-700 outline-none focus:border-blue-500"
+                   placeholder="Escribe tu pregunta…" autocomplete="off" />
+            <button class="w-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg hover:bg-blue-700 active:scale-95">
+              <i class="fas fa-paper-plane"></i>
             </button>
           </form>
         </div>
       </div>
+    </section>
 
-      <div id="view-table" class="view-section hidden-ui h-full flex flex-col">
-        <div class="mb-4 sticky top-0 bg-[#f8fafc] z-10 py-2 flex gap-2 items-center">
-          <input type="checkbox" id="select-all" class="ml-2 w-4 h-4 accent-blue-600" onchange="toggleSelectAll(this)" />
-          <input type="text" id="table-search" placeholder="Filtrar..." class="form-input max-w-sm shadow-sm flex-1" onkeyup="filterList()" />
-          <button onclick="renderList(document.body.dataset.viewType)" class="w-10 h-10 bg-white border border-slate-300 rounded-lg flex items-center justify-center text-slate-500 hover:text-blue-600"><i class="fas fa-sync-alt"></i></button>
-        </div>
-        <div id="table-content" class="space-y-2 pb-20 overflow-y-auto w-full"><div class="text-center py-10 text-slate-400 italic">Cargando datos...</div></div>
+    <section class="view" id="viewList" style="flex-direction:column">
+      <div class="p-4 border-b flex gap-2 items-center bg-slate-50">
+        <input id="search" class="flex-1 border rounded-lg px-3 py-2 font-bold text-slate-800" placeholder="Filtrar…" oninput="renderList()" />
+        <button class="w-10 h-10 bg-white border rounded-lg text-slate-500 hover:text-blue-700" onclick="renderList()"><i class="fas fa-sync-alt"></i></button>
       </div>
-    </main>
-  </div>
-
-  <!-- MODAL REGISTRO -->
-  <div id="modal-capture" class="overlay hidden-ui">
-    <div class="modal">
-      <div class="p-5 border-b flex justify-between items-center bg-slate-50">
-        <h3 class="font-bold text-slate-800">Nuevo Registro</h3>
-        <button onclick="closeModal('modal-capture')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+      <div id="list" class="p-4 overflow-auto" style="flex:1">
+        <div class="text-slate-400 italic">Sin datos.</div>
       </div>
-      <div class="p-6 overflow-y-auto bg-white flex-1">
-        <div class="mb-6">
-          <label class="form-label">Tipo de Registro</label>
-          <div class="grid grid-cols-2 gap-3 mb-2">
-            <button onclick="setFormType('CERTIFICADO')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-blue-50 focus:ring-2 ring-blue-500"><i class="fas fa-certificate block text-xl mb-1 text-blue-500"></i> Certificado</button>
-            <button onclick="setFormType('EXTENSION')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-emerald-50 focus:ring-2 ring-emerald-500"><i class="fas fa-address-book block text-xl mb-1 text-emerald-500"></i> Extensión</button>
-            <button onclick="setFormType('REGLA')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-amber-50 focus:ring-2 ring-amber-500"><i class="fas fa-balance-scale block text-xl mb-1 text-amber-500"></i> Regla</button>
-            <button onclick="setFormType('MANUAL')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-slate-100 focus:ring-2 ring-slate-500"><i class="fas fa-book block text-xl mb-1 text-slate-500"></i> Manual</button>
-          </div>
-          <input type="hidden" id="current-type" value="MANUAL" />
-          <input type="hidden" id="editing-id" value="" />
-        </div>
+    </section>
+  </main>
+</div>
 
-        <div id="forms-area">
-          <div id="form-cert" class="hidden space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-              <div><label class="form-label">Últimos 4</label><input id="c-num" class="form-input uppercase" maxlength="4" /></div>
-              <div><label class="form-label">Negocio</label><select id="c-neg" class="form-input"><option>SPEI</option><option>CODI</option><option>DIMO</option><option>SPID</option><option>BDT</option><option>R2</option></select></div>
-              <div><label class="form-label">Entorno</label><select id="c-env" class="form-input"><option>PRODUCCION</option><option>BETA</option></select></div>
-              <div><label class="form-label">Estatus</label><input type="text" id="c-stat" class="form-input" /></div>
-              <div><label class="form-label">Vigencia Inicio</label><input id="c-ini" type="date" class="form-input" /></div>
-              <div><label class="form-label">Vigencia Fin</label><input id="c-fin" type="date" class="form-input" /></div>
-            </div>
-          </div>
+<script>
+  // ====== Datos (en esta versión simple: en memoria) ======
+  // Si tú ya lo tienes conectado a Firestore en tu proyecto anterior, puedes volver a integrar;
+  // lo importante aquí es que la IA NO dependa de que exista una "regla exacta".
+  let knowledgeBase = []; // {contentType,title,content,regla,capitulo,tema,keywords,...}
 
-          <div id="form-ext" class="hidden space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-              <div><label class="form-label">Extensión</label><input id="e-num" type="text" class="form-input" /></div>
-              <div><label class="form-label">Nombre</label><input id="e-nom" type="text" class="form-input" /></div>
-              <div class="col-span-2"><label class="form-label">Área</label><input id="e-area" class="form-input" /></div>
-            </div>
-          </div>
+  function toast(msg, err=false){
+    const t=document.getElementById('toast');
+    t.textContent=msg;
+    t.className = "toast show " + (err ? "bg-red-600 text-white" : "bg-emerald-600 text-white");
+    setTimeout(()=>t.classList.remove('show'), 2600);
+  }
 
-          <div id="form-rule" class="hidden space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-              <div><label class="form-label">Regla</label><input id="r-rule" class="form-input" placeholder="Ej. 17a" /></div>
-              <div><label class="form-label">Capítulo</label><input id="r-chap" class="form-input" placeholder="Ej. Cap 2" /></div>
-            </div>
-            <div><label class="form-label">Tema Operativo</label><input id="r-topic" class="form-input" /></div>
-            <div><label class="form-label">Texto Literal</label><textarea id="r-text" class="form-input h-32"></textarea></div>
-          </div>
+  // ====== NAV ======
+  let currentView = 'chat';
+  let currentType = 'ALL';
+  function setActive(id){
+    document.querySelectorAll('.item').forEach(x=>x.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+  function nav(v){
+    currentView = v;
+    const chat = document.getElementById('viewChat');
+    const list = document.getElementById('viewList');
+    if(v==='chat'){
+      setActive('navChat');
+      document.getElementById('title').textContent = 'Chat';
+      chat.classList.add('active'); list.classList.remove('active');
+      return;
+    }
+    chat.classList.remove('active'); list.classList.add('active');
+    if(v==='all'){ setActive('navAll'); currentType='ALL'; document.getElementById('title').textContent='Base completa'; }
+    if(v==='rules'){ setActive('navRules'); currentType='REGLA_SPEI'; document.getElementById('title').textContent='Normativa'; }
+    if(v==='cert'){ setActive('navCert'); currentType='CERTIFICADO'; document.getElementById('title').textContent='Certificados'; }
+    if(v==='ext'){ setActive('navExt'); currentType='EXTENSION'; document.getElementById('title').textContent='Directorio'; }
+    if(v==='docs'){ setActive('navDocs'); currentType='MANUAL'; document.getElementById('title').textContent='Manuales'; }
+    renderList();
+  }
 
-          <div id="form-doc" class="hidden space-y-4">
-            <div><label class="form-label">Título</label><input id="d-title" class="form-input" /></div>
-            <div><label class="form-label">Contenido</label><textarea id="d-content" class="form-input h-32"></textarea></div>
-          </div>
-        </div>
+  // ====== LISTA ======
+  function renderList(){
+    const term = (document.getElementById('search')?.value || "").trim().toLowerCase();
+    const data = currentType==='ALL' ? knowledgeBase : knowledgeBase.filter(x=>x.contentType===currentType);
+    const filtered = term ? data.filter(x=>{
+      const t = ((x.title||"") + " " + (x.content||"") + " " + (x.tema||"") + " " + (x.keywords||"")).toLowerCase();
+      return t.includes(term);
+    }) : data;
+
+    const el = document.getElementById('list');
+    if(!filtered.length){
+      el.innerHTML = "<div class='text-slate-400 italic'>Sin registros.</div>";
+      return;
+    }
+    el.innerHTML = filtered.map(x=>`
+      <div class="bg-white border rounded-xl p-4 mb-3 shadow-sm">
+        <div class="text-[11px] font-extrabold text-slate-500 uppercase">${x.contentType}</div>
+        <div class="font-extrabold text-slate-900 mt-1">${escapeHtml(x.title||"(Sin título)")}</div>
+        <div class="text-sm text-slate-700 mt-1 whitespace-pre-wrap">${escapeHtml((x.content||"").slice(0,400))}${(x.content||"").length>400?"…":""}</div>
       </div>
+    `).join("");
+  }
 
-      <div class="p-5 border-t bg-slate-50 flex justify-end gap-3">
-        <button onclick="closeModal('modal-capture')" class="text-slate-500 font-bold text-xs px-4">Cancelar</button>
-        <button onclick="saveRegistry()" class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-lg hover:bg-blue-600 transition-all">GUARDAR</button>
-      </div>
-    </div>
-  </div>
+  // ====== Upload ======
+  function openUpload(){ document.getElementById('uploadModal').classList.remove('hidden'); }
+  function closeUpload(){ document.getElementById('uploadModal').classList.add('hidden'); document.getElementById('bulkFile').value=""; }
 
-  <!-- MODAL CARGA NORMATIVA (legacy) -->
-  <div id="modal-upload" class="overlay hidden-ui">
-    <div class="modal max-w-lg">
-      <div class="p-5 border-b bg-slate-50"><h3 class="font-bold text-amber-700">Cargar Normativa SPEI</h3></div>
-      <div class="p-8 text-center">
-        <p class="text-xs text-slate-500 mb-4 text-left leading-relaxed">
-          Sube tu archivo de Reglas (.csv/.xlsx). El sistema detectará automáticamente las columnas: <b>Capítulo, Regla, Texto_literal, Tema_operativo</b>.
-        </p>
-        <div class="p-8 text-center border-2 border-dashed border-amber-300 bg-amber-50 rounded-xl cursor-pointer hover:bg-amber-100 transition-colors" onclick="document.getElementById('file-in').click()">
-          <i class="fas fa-balance-scale text-4xl text-amber-500 mb-3"></i>
-          <p class="text-sm font-bold text-amber-800">Seleccionar Archivo de Reglas</p>
-        </div>
-        <input type="file" id="file-in" class="hidden" accept=".xlsx,.csv" onchange="handleBulkUpload(this)" />
-      </div>
-      <div class="p-5 border-t flex justify-end">
-        <button onclick="document.getElementById('modal-upload').classList.add('hidden-ui')" class="text-slate-400 font-bold text-xs">Cerrar</button>
-      </div>
-    </div>
-  </div>
+  function downloadLayout(){
+    const csv = [
+      "TIPO,TITULO,CONTENIDO,NUMERO,NEGOCIO,ENTORNO,ESTATUS,INICIO,FIN,EXTENSION,NOMBRE,AREA,REGLA,CAPITULO,TEXTO_LITERAL,TEMA_OPERATIVO,PALABRAS_CLAVE",
+      "REGLA_SPEI,,,,,,,,,,,,17a,Cap 3,El participante deberá...,Devoluciones,"devolucion, retorno, rechazo"",
+      "CERTIFICADO,,,9A3F,SPEI,PRODUCCION,VIGENTE,2024-01-01,2026-12-31,,,,,,,",
+      "EXTENSION,,,,,,,,,5522,Juan Perez,Soporte,,,,,,",
+      "MANUAL,Procedimiento devoluciones,"Paso 1...\nPaso 2...",,,,,,,,,,,,,"
+    ].join("\n");
+    const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "layout_speikito.csv";
+    a.click();
+  }
 
-  <!-- MODAL IMPORTACIÓN MASIVA (CERT/DIR/MAN) -->
-  <div id="modal-bulk-import" class="overlay hidden-ui">
-    <div class="modal max-w-lg">
-      <div class="p-5 border-b bg-slate-50 flex items-center justify-between">
-        <h3 class="font-black text-emerald-700">Importación Masiva</h3>
-        <button onclick="closeModal('modal-bulk-import')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
-      </div>
+  function handleBulkUpload(input){
+    const f = input.files?.[0];
+    if(!f) return;
 
-      <div class="p-6 bg-white">
-        <p class="text-xs text-slate-600 leading-relaxed mb-4">
-          Sube un <b>.xlsx</b> con hojas: <b>CERTIFICADOS</b>, <b>DIRECTORIO</b>, <b>MANUALES</b> (y opcional <b>REGLAS</b>).
-          Se conservarán los campos actuales y se generará <b>title/content</b> si viene vacío.
-        </p>
+    const forceType = document.getElementById('bulkType').value;
 
-        <div class="p-6 border-2 border-dashed border-emerald-300 bg-emerald-50 rounded-xl cursor-pointer hover:bg-emerald-100 transition-colors text-center"
-             onclick="document.getElementById('bulk-file-in').click()">
-          <i class="fas fa-cloud-upload-alt text-4xl text-emerald-600 mb-3"></i>
-          <p class="text-sm font-black text-emerald-800">Seleccionar archivo Excel (.xlsx)</p>
-          <p class="text-[11px] text-emerald-700 mt-1 font-black">Se importará en lote</p>
-        </div>
-
-        <input type="file" id="bulk-file-in" class="hidden" accept=".xlsx" />
-
-        <div class="mt-4 text-xs text-slate-500">
-          <div class="font-black text-slate-700 mb-2">Formato recomendado</div>
-          <ul class="list-disc ml-5 space-y-1">
-            <li>Fechas: <b>YYYY-MM-DD</b></li>
-            <li>Hojas: <b>CERTIFICADOS</b> / <b>DIRECTORIO</b> / <b>MANUALES</b></li>
-            <li>Si <b>title</b> o <b>content</b> están vacíos, se generan automáticamente</li>
-          </ul>
-        </div>
-
-        <div id="bulk-status" class="mt-4 text-xs font-black text-slate-600 hidden"></div>
-      </div>
-
-      <div class="p-5 border-t bg-slate-50 flex justify-end gap-2">
-        <button onclick="window.downloadBulkTemplate()" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg text-xs font-black hover:bg-slate-100">
-          Descargar layout
-        </button>
-        <button id="btn-bulk-run" onclick="window.runBulkImport()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-black hover:bg-emerald-700">
-          Importar ahora
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL PERFIL -->
-  <div id="modal-profile" class="overlay hidden-ui">
-    <div class="modal max-w-sm">
-      <div class="p-5 border-b bg-slate-50"><h3 class="font-bold">Foto de Perfil</h3></div>
-      <div class="p-8 text-center">
-        <div class="w-24 h-24 rounded-full bg-slate-200 mx-auto mb-4 overflow-hidden border-4 border-white shadow-lg cursor-pointer" onclick="document.getElementById('profile-up').click()">
-          <img id="profile-prev" src="" class="w-full h-full object-cover hidden" />
-          <i id="profile-icon" class="fas fa-camera text-3xl text-slate-400 mt-8"></i>
-        </div>
-        <input type="file" id="profile-up" class="hidden" accept="image/*" onchange="handleProfileUpload(this)" />
-        <p class="text-xs text-slate-500">Clic para cambiar</p>
-      </div>
-      <div class="p-5 border-t text-center"><button onclick="closeModal('modal-profile')" class="text-slate-400 text-xs">Cerrar</button></div>
-    </div>
-  </div>
-
-  <!-- MODAL USUARIO -->
-  <div id="modal-user" class="overlay hidden-ui">
-    <div class="modal max-w-sm">
-      <div class="p-5 border-b bg-slate-50"><h3 class="font-bold">Nuevo Usuario</h3></div>
-      <div class="p-6 space-y-4">
-        <input id="u-name" class="form-input" placeholder="Nombre" />
-        <input id="u-id" class="form-input" placeholder="ID Empleado" />
-        <select id="u-role" class="form-input">
-          <option value="user">Usuario Operativo</option>
-          <option value="admin">Administrador</option>
-        </select>
-        <button onclick="saveUser()" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-xs mt-4">Crear</button>
-      </div>
-      <div class="p-4 text-center"><button onclick="closeModal('modal-user')" class="text-slate-400 text-xs">Cancelar</button></div>
-    </div>
-  </div>
-
-  <script type="module">
-    const { auth, db, appId, doc, setDoc, collection, onSnapshot, deleteDoc, signInAnonymously, onAuthStateChanged, signInWithCustomToken, writeBatch } = window.fb;
-
-    let currentUser = null;
-    let knowledgeBase = [];
-    let team = [];
-
-    // --- GLOBAL ---
-    window.toast = (m, e) => {
-      const t = document.getElementById("toast");
-      t.innerText = m;
-      t.className = `fixed top-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-xs font-black shadow-2xl z-[10002] transition-all opacity-100 ${e ? "bg-red-500 text-white" : "bg-emerald-500 text-white"}`;
-      setTimeout(() => t.classList.remove("opacity-100"), 3000);
-    };
-    window.toggleSidebar = () => document.getElementById("sidebar").classList.toggle("open");
-    window.closeModal = (id) => document.getElementById(id).classList.add("hidden-ui");
-    window.openModal = (id) => {
-      document.getElementById(id).classList.remove("hidden-ui");
-      if (id === "modal-capture") {
-        window.setFormType("MANUAL");
-        document.getElementById("editing-id").value = "";
-      }
-    };
-    window.openUploadModal = () => window.openModal("modal-upload");
-    window.openProfileModal = () => window.openModal("modal-profile");
-
-    window.handleLogin = () => {
-      const val = document.getElementById("login-id").value.trim();
-      if (val === "682930") { login({ name: "Daniel Anzaldo", role: "admin", empNumber: "682930" }); return; }
-      const u = team.find((x) => x.empNumber === val);
-      if (u) login(u);
-      else document.getElementById("login-msg").style.opacity = "1";
-    };
-
-    window.logout = () => {
-      localStorage.removeItem("spei_v30_2_session");
-      location.reload();
-    };
-
-    // NAV
-    window.navigate = (view) => {
-      if (window.innerWidth < 768) document.getElementById("sidebar").classList.remove("open");
-      document.querySelectorAll(".nav-item").forEach((n) => n.classList.remove("active"));
-
-      const chat = document.getElementById("view-chat");
-      const table = document.getElementById("view-table");
-      const title = document.getElementById("page-title");
-      const acts = document.getElementById("header-actions");
-
-      if (view === "chat") {
-        document.getElementById("nav-chat").classList.add("active");
-        chat.classList.remove("hidden-ui");
-        table.classList.add("hidden-ui");
-        title.innerText = "Chat Operativo";
-        acts.innerHTML = "";
-      } else {
-        let type = "ALL", label = "Base Completa", navId = "nav-all";
-
-        if (view === "admin-rules") { type = "REGLA_SPEI"; label = "Normativa SPEI"; navId = "nav-rules"; }
-        if (view === "admin-cert") { type = "CERTIFICADO"; label = "Certificados"; navId = "nav-cert"; }
-        if (view === "admin-ext") { type = "EXTENSION"; label = "Directorio"; navId = "nav-ext"; }
-        if (view === "admin-docs") { type = "MANUAL"; label = "Manuales"; navId = "nav-docs"; }
-        if (view === "admin-files") { type = "ARCHIVO"; label = "Archivos"; navId = "nav-files"; }
-
-        document.getElementById(navId)?.classList.add("active");
-
-        chat.classList.add("hidden-ui");
-        table.classList.remove("hidden-ui");
-        title.innerText = label;
-        document.body.dataset.viewType = type;
-
-        // Header actions
-        const isAdmin = currentUser?.role === "admin";
-
-        if (view === "admin-rules") {
-          acts.innerHTML = `
-            ${isAdmin ? `<button onclick="window.openBulkImport()" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs font-black shadow hover:bg-emerald-700"><i class="fas fa-file-import"></i> Importar</button>` : ""}
-            <button onclick="document.getElementById('modal-upload').classList.remove('hidden-ui')" class="bg-amber-600 text-white px-3 py-1 rounded text-xs font-bold shadow hover:bg-amber-700"><i class="fas fa-upload"></i> Cargar Reglas</button>
-          `;
-        } else if (view === "admin-users") {
-          title.innerText = "Usuarios";
-          document.body.dataset.viewType = "USERS";
-          acts.innerHTML = `${isAdmin ? `<button onclick="document.getElementById('modal-user').classList.remove('hidden-ui')" class="bg-indigo-600 text-white px-3 py-1 rounded text-xs font-bold shadow hover:bg-indigo-700">Nuevo Usuario</button>` : ""}`;
-          renderList("USERS");
-          return;
-        } else {
-          acts.innerHTML = `
-            ${isAdmin ? `<button onclick="window.openBulkImport()" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs font-black shadow hover:bg-emerald-700"><i class="fas fa-file-import"></i> Importar</button>` : ""}
-            ${isAdmin ? `<button onclick="window.openModal('modal-capture')" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold">Nuevo</button>` : ""}
-            ${isAdmin ? `<button onclick="window.deleteSelected()" class="bg-red-50 text-red-600 px-3 py-1 rounded-lg text-xs font-bold shadow-sm ml-2 hover:bg-red-100 transition-all"><i class="fas fa-trash-alt"></i> Borrar</button>` : ""}
-          `;
-        }
-
-        renderList(type);
-      }
-    };
-
-    window.setFormType = (t) => {
-      document.getElementById("current-type").value = t;
-      ["form-cert", "form-ext", "form-rule", "form-doc"].forEach((f) => document.getElementById(f).classList.add("hidden"));
-
-      if (t === "CERTIFICADO") document.getElementById("form-cert").classList.remove("hidden");
-      else if (t === "EXTENSION") document.getElementById("form-ext").classList.remove("hidden");
-      else if (t === "REGLA") document.getElementById("form-rule").classList.remove("hidden");
-      else document.getElementById("form-doc").classList.remove("hidden");
-    };
-
-    window.saveRegistry = async () => {
-      const type = document.getElementById("current-type").value;
-      const id = document.getElementById("editing-id").value || "doc_" + Date.now();
-      let data = { contentType: type, date: new Date().toISOString(), author: currentUser?.name || "system" };
-
-      if (type === "CERTIFICADO") {
-        data.num = document.getElementById("c-num").value;
-        data.negocio = document.getElementById("c-neg").value;
-        data.entorno = document.getElementById("c-env").value;
-        data.estatus = document.getElementById("c-stat").value;
-        data.vigenciaIni = document.getElementById("c-ini").value;
-        data.vigenciaFin = document.getElementById("c-fin").value;
-        data.title = `CERT ${data.num}`;
-        data.content = `${data.negocio} | ${data.entorno} | ${data.estatus}`;
-      } else if (type === "EXTENSION") {
-        data.ext = document.getElementById("e-num").value;
-        data.nombre = document.getElementById("e-nom").value;
-        data.area = document.getElementById("e-area").value;
-        data.title = `EXT ${data.ext}`;
-        data.content = `${data.nombre} - ${data.area}`;
-      } else if (type === "REGLA") {
-        data.regla = document.getElementById("r-rule").value;
-        data.content = document.getElementById("r-text").value;
-        data.capitulo = document.getElementById("r-chap").value;
-        data.tema = document.getElementById("r-topic").value;
-        data.title = `Regla ${data.regla}`;
-        data.contentType = "REGLA_SPEI";
-      } else {
-        data.title = document.getElementById("d-title").value;
-        data.content = document.getElementById("d-content").value;
-        data.contentType = "MANUAL";
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      let rows = [];
+      const isXlsx = f.name.toLowerCase().endsWith(".xlsx");
+      if(isXlsx){
+        const wb = XLSX.read(new Uint8Array(e.target.result), {type:"array"});
+        rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {defval:""});
+      }else{
+        const text = e.target.result;
+        rows = csvToJson(text);
       }
 
-      await setDoc(doc(db, "artifacts", appId, "public", "data", "knowledge", id), data, { merge: true });
-      window.toast("Guardado");
-      window.closeModal("modal-capture");
-      if (document.body.dataset.viewType) renderList(document.body.dataset.viewType);
+      const mapped = rows.map(r => mapRowToEntry(r, forceType));
+      // En tu versión Firestore: aquí harías batch.set(...) conservando campos.
+      knowledgeBase = knowledgeBase.concat(mapped);
+
+      toast(`Importados: ${mapped.length}`);
+      closeUpload();
+      if(currentView!=='chat') renderList();
     };
 
-    window.saveUser = async () => {
-      const n = document.getElementById("u-name").value;
-      const i = document.getElementById("u-id").value;
-      if (!n || !i) return window.toast("Faltan datos", true);
-      await setDoc(doc(db, "artifacts", appId, "public", "data", "team", i), { name: n, empNumber: i, role: document.getElementById("u-role").value });
-      window.toast("Usuario Creado");
-      window.closeModal("modal-user");
-      renderList("USERS");
-    };
+    if(f.name.toLowerCase().endsWith(".xlsx")) reader.readAsArrayBuffer(f);
+    else reader.readAsText(f, "utf-8");
+  }
 
-    window.deleteRec = async (id) => {
-      if (confirm("¿Eliminar?")) {
-        await deleteDoc(doc(db, "artifacts", appId, "public", "data", "knowledge", id));
-        renderList(document.body.dataset.viewType);
-      }
-    };
-
-    window.deleteUser = async (id) => {
-      if (confirm("¿Eliminar?")) {
-        await deleteDoc(doc(db, "artifacts", appId, "public", "data", "team", id));
-        renderList("USERS");
-      }
-    };
-
-    // BORRADO MASIVO
-    window.toggleSelectAll = (el) => {
-      document.querySelectorAll(".select-row").forEach((cb) => (cb.checked = el.checked));
-    };
-
-    window.deleteSelected = async () => {
-      const selected = Array.from(document.querySelectorAll(".select-row:checked")).map((cb) => cb.value);
-      if (selected.length === 0) return window.toast("Nada seleccionado", true);
-
-      if (confirm(`¿Borrar ${selected.length} registros seleccionados?`)) {
-        document.getElementById("page-title").innerText = "Borrando...";
-        const batch = writeBatch(db);
-        const colName = document.body.dataset.viewType === "USERS" ? "team" : "knowledge";
-
-        selected.forEach((id) => {
-          const ref = doc(db, "artifacts", appId, "public", "data", colName, id);
-          batch.delete(ref);
-        });
-
-        await batch.commit();
-        window.toast(`${selected.length} registros eliminados`);
-        if (document.body.dataset.viewType === "USERS") renderList("USERS");
-        else renderList(document.body.dataset.viewType);
-      }
-    };
-
-    // AUTO-DETECT LAYOUT (REGLAS - legacy)
-    window.handleBulkUpload = async (input) => {
-      const f = input.files[0];
-      if (!f) return;
-
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "" });
-        const batch = writeBatch(db);
-
-        json.forEach((row) => {
-          const id = "imp_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
-          const ref = doc(db, "artifacts", appId, "public", "data", "knowledge", id);
-          let entry = { date: new Date().toISOString(), author: currentUser?.name || "system" };
-
-          if (row.Regla || row.REGLA) {
-            entry.contentType = "REGLA_SPEI";
-            entry.regla = row.Regla || row.REGLA;
-            entry.capitulo = row["Capítulo"] || row.CAPITULO || row.Capitulo;
-            entry.content = row.Texto_literal || row.TEXTO_LITERAL || row.CONTENIDO;
-            entry.tema = row.Tema_operativo || row.TEMA || row.TITULO;
-            entry.keywords = row.Palabras_clave || "";
-            entry.ia_text = row.Texto_normalizado_IA || "";
-            entry.title = `Regla ${entry.regla}`;
-          } else {
-            entry.contentType = "MANUAL";
-            entry.title = row.TITULO || "Importado";
-            entry.content = row.CONTENIDO || "";
-          }
-          batch.set(ref, entry, { merge: true });
-        });
-
-        await batch.commit();
-        window.toast("Carga Exitosa");
-        window.closeModal("modal-upload");
-        if (document.body.dataset.viewType) renderList(document.body.dataset.viewType);
-      };
-      reader.readAsArrayBuffer(f);
-    };
-
-    // Render list
-    function renderList(type) {
-      const list = document.getElementById("table-content");
-      if (!list) return;
-
-      let data = type === "USERS" ? team : type === "ALL" ? knowledgeBase : knowledgeBase.filter((k) => k.contentType === type);
-      const q = (document.getElementById("table-search")?.value || "").trim().toLowerCase();
-
-      if (q) {
-        data = data.filter((i) => JSON.stringify(i).toLowerCase().includes(q));
-      }
-
-      if (!data.length) {
-        list.innerHTML = "<div class='text-center py-10 text-slate-400'>Sin registros</div>";
-        return;
-      }
-
-      list.innerHTML = data
-        .map((i) => {
-          const isUser = type === "USERS";
-          const id = isUser ? i.empNumber : i.id;
-          const title = isUser ? i.name : i.title;
-          const desc = isUser ? i.role : (i.content?.substring(0, 80) || "");
-          const badgeType = isUser ? "USER" : (i.contentType || "MANUAL");
-
-          return `
-          <div class="data-card">
-            <div class="flex items-center w-full overflow-hidden">
-              <input type="checkbox" class="mr-3 accent-blue-600 w-4 h-4 select-row" value="${id}">
-              <div class="min-w-0">
-                <span class="badge badge-${badgeType}">${badgeType === "USER" ? "USUARIO" : badgeType}</span>
-                <h4 class="font-bold text-sm mt-1 truncate">${title || "(sin título)"}</h4>
-                <p class="text-xs text-slate-500 line-clamp-1">${desc}</p>
-              </div>
-            </div>
-            <div class="flex gap-2">
-              <button onclick="${isUser ? `window.deleteUser('${id}')` : `window.deleteRec('${id}')`}" class="text-red-500"><i class="fas fa-trash"></i></button>
-            </div>
-          </div>`;
-        })
-        .join("");
-    }
-
-    window.filterList = () => {
-      const type = document.body.dataset.viewType;
-      renderList(type);
-    };
-
-    // CHAT: primero busca coincidencias en tu base (normativa/operación).
-    // Si no hay coincidencias, responde sugerencia (sin bloquear).
-    document.getElementById("chat-form").onsubmit = async (e) => {
-      e.preventDefault();
-      const v = document.getElementById("chat-input").value.trim();
-      if (!v) return;
-      document.getElementById("chat-input").value = "";
-      addMsg(escapeHtml(v), true);
-
-      const normV = v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-
-      const hits = knowledgeBase.filter((k) => {
-        const text = (String(k.title || "") + " " + String(k.content || "") + " " + String(k.tema || "") + " " + String(k.keywords || "")).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-        return text.includes(normV);
-      });
-
-      const rules = hits.filter((k) => k.contentType === "REGLA_SPEI");
-
-      if (rules.length > 0) {
-        // Muestra resultados normativos (sin IA)
-        let h = `<div class="mb-2 font-bold text-xs text-amber-700">RESULTADOS NORMATIVOS</div>`;
-        rules.slice(0, 5).forEach((r) => {
-          h += `
-            <div class="reg-card">
-              <div class="reg-title">Regla ${escapeHtml(r.regla || "")} • ${escapeHtml(r.capitulo || "")}</div>
-              <div class="reg-content">«${escapeHtml(r.content || "")}»</div>
-              <div class="reg-footer">Tema: ${escapeHtml(r.tema || "")}</div>
-            </div>
-          `;
-        });
-        addMsg(h, false);
-        return;
-      }
-
-      if (hits.length > 0) {
-        let h = `<div class="mb-2 font-bold text-xs text-blue-600">RESULTADOS OPERATIVOS</div>`;
-        hits.slice(0, 8).forEach((x) => {
-          if (x.contentType === "CERTIFICADO") {
-            h += `<div class="bg-blue-50 p-2 rounded mb-1 text-xs border border-blue-100 font-mono">
-              <b>${escapeHtml(x.title || "")}</b><br>
-              Estatus: ${escapeHtml(x.estatus || "")} | Entorno: ${escapeHtml(x.entorno || "")} | Vence: ${escapeHtml(x.vigenciaFin || "")}
-            </div>`;
-          } else if (x.contentType === "EXTENSION") {
-            h += `<div class="bg-emerald-50 p-2 rounded mb-1 text-xs">
-              <b>${escapeHtml(x.ext || "")}</b> - ${escapeHtml(x.nombre || "")} (${escapeHtml(x.area || "")})
-            </div>`;
-          } else {
-            h += `<div class="bg-white p-2 rounded border mb-1 text-xs">
-              <b>${escapeHtml(x.title || "")}</b><br>
-              <span class="text-slate-500">${escapeHtml((x.content || "").slice(0, 120))}</span>
-            </div>`;
-          }
-        });
-        addMsg(h, false);
-        return;
-      }
-
-      addMsg(
-        `<div class="text-sm text-slate-600">
-          No encontré coincidencias exactas en tu base. Prueba con palabras clave más cortas (ej: <b>devolución</b>, <b>retorno</b>, <b>cert</b>, <b>ext 5522</b>),
-          o ve a <b>Gestión → Importar</b> para cargar masivamente tus catálogos.
-        </div>`,
-        false
-      );
-    };
-
-    function addMsg(t, u) {
-      const d = document.createElement("div");
-      d.className = `chat-bubble ${u ? "user-msg" : "bot-msg"} shadow-sm`;
-      d.innerHTML = t;
-      const b = document.getElementById("chat-box");
-      const r = document.createElement("div");
-      r.className = `flex w-full mb-2 ${u ? "justify-end" : "justify-start"}`;
-      r.appendChild(d);
-      b.appendChild(r);
-      b.scrollTop = b.scrollHeight;
-    }
-
-    function escapeHtml(str) {
-      return String(str ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    // PERFIL & LOGIN
-    window.handleProfileUpload = (input) => {
-      const f = input.files[0];
-      const r = new FileReader();
-      r.onload = (e) => {
-        if (currentUser) {
-          setDoc(doc(db, "artifacts", appId, "public", "data", "team", currentUser.empNumber), { photoURL: e.target.result }, { merge: true });
-          updateAvatar(e.target.result);
-        }
-      };
-      if (f) r.readAsDataURL(f);
-    };
-
-    function updateAvatar(url) {
-      if (url) {
-        document.getElementById("user-initials").classList.add("hidden");
-        document.getElementById("user-img-display").src = url;
-        document.getElementById("user-img-display").classList.remove("hidden");
-        document.getElementById("profile-prev").src = url;
-        document.getElementById("profile-prev").classList.remove("hidden");
-        document.getElementById("profile-icon").classList.add("hidden");
-      }
-    }
-
-    function login(u) {
-      currentUser = u;
-      localStorage.setItem("spei_v30_2_session", JSON.stringify(u));
-      document.body.setAttribute("data-role", u.role);
-      document.getElementById("login-screen").classList.add("hidden-ui");
-      document.getElementById("loading-screen").classList.add("hidden-ui");
-      document.getElementById("app-layout").classList.remove("hidden-ui");
-      document.getElementById("user-name-display").innerText = u.name;
-      document.getElementById("user-role-display").innerText = u.role === "admin" ? "ADMIN" : "OPERATIVO";
-
-      if (u.role !== "admin") document.querySelectorAll(".admin-only").forEach((e) => e.classList.add("hidden-ui"));
-      else document.querySelectorAll(".admin-only").forEach((e) => e.classList.remove("hidden-ui"));
-
-      if (u.photoURL) updateAvatar(u.photoURL);
-    }
-
-    const initAuth = async () => {
-      try {
-        if (typeof __initial_auth_token !== "undefined" && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    };
-
-    async function init() {
-      await initAuth();
-
-      onAuthStateChanged(auth, (u) => {
-        if (u) {
-          onSnapshot(collection(db, "artifacts", appId, "public", "data", "team"), async (s) => {
-            team = s.docs.map((d) => ({ id: d.id, ...d.data() }));
-
-            // Seed admin if empty
-            if (!team.length) {
-              await setDoc(doc(db, "artifacts", appId, "public", "data", "team", "682930"), { name: "Daniel Anzaldo", role: "admin", empNumber: "682930" });
-            }
-
-            const savedSession = localStorage.getItem("spei_v30_2_session");
-            if (savedSession) login(JSON.parse(savedSession));
-            else document.getElementById("login-screen").classList.remove("hidden-ui");
-
-            document.getElementById("loading-screen").classList.add("hidden-ui");
-          });
-
-          onSnapshot(collection(db, "artifacts", appId, "public", "data", "knowledge"), (s) => {
-            knowledgeBase = s.docs.map((d) => ({ id: d.id, ...d.data() }));
-            if (document.body.dataset.viewType) renderList(document.body.dataset.viewType);
-          });
-        }
-      });
-    }
-
-    // =========================
-    // IMPORTACIÓN MASIVA (XLSX)
-    // =========================
-    window.openBulkImport = () => {
-      if (!currentUser || currentUser.role !== "admin") return window.toast("Solo admin", true);
-      document.getElementById("bulk-file-in").value = "";
-      const st = document.getElementById("bulk-status");
-      st.classList.add("hidden");
-      st.innerText = "";
-      document.getElementById("modal-bulk-import").classList.remove("hidden-ui");
-    };
-
-    window.downloadBulkTemplate = () => {
-      const wb = XLSX.utils.book_new();
-
-      const cert = XLSX.utils.json_to_sheet([
-        { num: "9A3F", negocio: "SPEI", entorno: "PRODUCCION", estatus: "VIGENTE", vigenciaIni: "2024-01-01", vigenciaFin: "2026-12-31", title: "", content: "" },
-      ]);
-      XLSX.utils.book_append_sheet(wb, cert, "CERTIFICADOS");
-
-      const dir = XLSX.utils.json_to_sheet([{ ext: "5522", nombre: "Juan Pérez", area: "Soporte a Producción", title: "", content: "" }]);
-      XLSX.utils.book_append_sheet(wb, dir, "DIRECTORIO");
-
-      const man = XLSX.utils.json_to_sheet([{ title: "Manual de Retornos Extemporáneos", content: "Paso 1... Paso 2..." }]);
-      XLSX.utils.book_append_sheet(wb, man, "MANUALES");
-
-      const reglas = XLSX.utils.json_to_sheet([{ regla: "17a", capitulo: "Cap 3", tema: "Devoluciones", content: "El participante deberá...", keywords: "devolucion retorno rechazo" }]);
-      XLSX.utils.book_append_sheet(wb, reglas, "REGLAS");
-
-      XLSX.writeFile(wb, "layout_spei_ops.xlsx");
-    };
-
-    function showBulkStatus(msg, isErr = false) {
-      const st = document.getElementById("bulk-status");
-      st.classList.remove("hidden");
-      st.className = `mt-4 text-xs font-black ${isErr ? "text-red-600" : "text-emerald-700"}`;
-      st.innerText = msg;
-    }
-
-    function cleanStr(v) { return String(v ?? "").trim(); }
-
-    function normalizeDate(v) {
-      if (!v) return "";
-      if (typeof v === "string") return v.trim();
-      if (v instanceof Date) return v.toISOString().slice(0, 10);
-      if (typeof v === "number") {
-        const utc_days = Math.floor(v - 25569);
-        const utc_value = utc_days * 86400;
-        const date_info = new Date(utc_value * 1000);
-        return date_info.toISOString().slice(0, 10);
-      }
-      return cleanStr(v);
-    }
-
-    function buildCertEntry(row) {
-      const num = cleanStr(row.num || row.NUM || row.Num || row["Últimos 4"] || row.ultimos4);
-      const negocio = cleanStr(row.negocio || row.NEGOCIO);
-      const entorno = cleanStr(row.entorno || row.ENTORNO);
-      const estatus = cleanStr(row.estatus || row.ESTATUS);
-      const vigenciaIni = normalizeDate(row.vigenciaIni || row.vigencia_inicio || row.INICIO || row.inicio);
-      const vigenciaFin = normalizeDate(row.vigenciaFin || row.vigencia_fin || row.FIN || row.fin);
-      const title = cleanStr(row.title) || `CERT ${num}`;
-      const content = cleanStr(row.content) || `${negocio} | ${entorno} | ${estatus}`;
-      return { contentType: "CERTIFICADO", num, negocio, entorno, estatus, vigenciaIni, vigenciaFin, title, content };
-    }
-
-    function buildDirEntry(row) {
-      const ext = cleanStr(row.ext || row.EXT || row.EXTENSION || row.extension);
-      const nombre = cleanStr(row.nombre || row.NOMBRE);
-      const area = cleanStr(row.area || row.AREA);
-      const title = cleanStr(row.title) || `EXT ${ext}`;
-      const content = cleanStr(row.content) || `${nombre} - ${area}`;
-      return { contentType: "EXTENSION", ext, nombre, area, title, content };
-    }
-
-    function buildManualEntry(row) {
-      const title = cleanStr(row.title || row.TITULO);
-      const content = cleanStr(row.content || row.CONTENIDO);
-      return { contentType: "MANUAL", title, content };
-    }
-
-    function buildRuleEntry(row) {
-      const regla = cleanStr(row.regla || row.Regla || row.REGLA);
-      const capitulo = cleanStr(row.capitulo || row["Capítulo"] || row.CAPITULO || row.Capitulo);
-      const tema = cleanStr(row.tema || row.Tema_operativo || row.TEMA);
-      const content = cleanStr(row.content || row.Texto_literal || row.TEXTO_LITERAL || row.CONTENIDO);
-      const keywords = cleanStr(row.keywords || row.Palabras_clave || row.PALABRAS_CLAVE || "");
-      const ia_text = cleanStr(row.ia_text || row.Texto_normalizado_IA || "");
-      return { contentType: "REGLA_SPEI", regla, capitulo, tema, content, keywords, ia_text, title: `Regla ${regla}` };
-    }
-
-    function validateEntry(e) {
-      if (e.contentType === "CERTIFICADO") {
-        if (!e.num || !e.negocio) return "CERTIFICADO requiere num y negocio";
-      }
-      if (e.contentType === "EXTENSION") {
-        if (!e.ext || !e.nombre) return "DIRECTORIO requiere ext y nombre";
-      }
-      if (e.contentType === "MANUAL") {
-        if (!e.title || !e.content) return "MANUAL requiere title y content";
-      }
-      if (e.contentType === "REGLA_SPEI") {
-        if (!e.regla || !e.content) return "REGLA requiere regla y content";
+  function mapRowToEntry(row, forceType){
+    const pick = (...keys) => {
+      for(const k of keys){
+        if(row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== "") return String(row[k]).trim();
       }
       return "";
-    }
-
-    async function commitBatch(docs) {
-      const CHUNK = 450;
-      for (let i = 0; i < docs.length; i += CHUNK) {
-        const slice = docs.slice(i, i + CHUNK);
-        const batch = writeBatch(db);
-        slice.forEach((d) => {
-          batch.set(doc(db, "artifacts", appId, "public", "data", "knowledge", d.id), d.payload, { merge: true });
-        });
-        await batch.commit();
-      }
-    }
-
-    window.runBulkImport = async () => {
-      try {
-        if (!currentUser || currentUser.role !== "admin") return window.toast("Solo admin", true);
-
-        const input = document.getElementById("bulk-file-in");
-        const file = input.files?.[0];
-        if (!file) return showBulkStatus("Selecciona un archivo .xlsx", true);
-
-        showBulkStatus("Leyendo archivo...", false);
-        document.getElementById("btn-bulk-run").disabled = true;
-
-        const arrayBuffer = await file.arrayBuffer();
-        const wb = XLSX.read(arrayBuffer, { type: "array" });
-
-        const foundSheets = wb.SheetNames.map((s) => s.toUpperCase());
-        if (!foundSheets.includes("CERTIFICADOS") && !foundSheets.includes("DIRECTORIO") && !foundSheets.includes("MANUALES") && !foundSheets.includes("REGLAS")) {
-          document.getElementById("btn-bulk-run").disabled = false;
-          return showBulkStatus("No encontré hojas CERTIFICADOS / DIRECTORIO / MANUALES / REGLAS.", true);
-        }
-
-        const nowIso = new Date().toISOString();
-        let toWrite = [];
-        let errors = [];
-
-        const getSheet = (name) => {
-          const idx = wb.SheetNames.findIndex((s) => s.toUpperCase() === name);
-          return idx >= 0 ? wb.Sheets[wb.SheetNames[idx]] : null;
-        };
-
-        const sheetCert = getSheet("CERTIFICADOS");
-        if (sheetCert) {
-          const rows = XLSX.utils.sheet_to_json(sheetCert, { defval: "" });
-          rows.forEach((row, idx) => {
-            const e = buildCertEntry(row);
-            e.date = nowIso;
-            e.author = currentUser.name;
-            const err = validateEntry(e);
-            if (err) errors.push(`CERTIFICADOS fila ${idx + 2}: ${err}`);
-            else {
-              const id = `cert_${e.num}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-              toWrite.push({ id, payload: e });
-            }
-          });
-        }
-
-        const sheetDir = getSheet("DIRECTORIO");
-        if (sheetDir) {
-          const rows = XLSX.utils.sheet_to_json(sheetDir, { defval: "" });
-          rows.forEach((row, idx) => {
-            const e = buildDirEntry(row);
-            e.date = nowIso;
-            e.author = currentUser.name;
-            const err = validateEntry(e);
-            if (err) errors.push(`DIRECTORIO fila ${idx + 2}: ${err}`);
-            else {
-              const id = `ext_${e.ext}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-              toWrite.push({ id, payload: e });
-            }
-          });
-        }
-
-        const sheetMan = getSheet("MANUALES");
-        if (sheetMan) {
-          const rows = XLSX.utils.sheet_to_json(sheetMan, { defval: "" });
-          rows.forEach((row, idx) => {
-            const e = buildManualEntry(row);
-            e.date = nowIso;
-            e.author = currentUser.name;
-            const err = validateEntry(e);
-            if (err) errors.push(`MANUALES fila ${idx + 2}: ${err}`);
-            else {
-              const safeTitle = (e.title || "manual").replace(/\s+/g, "_").slice(0, 30);
-              const id = `man_${safeTitle}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-              toWrite.push({ id, payload: e });
-            }
-          });
-        }
-
-        const sheetReg = getSheet("REGLAS");
-        if (sheetReg) {
-          const rows = XLSX.utils.sheet_to_json(sheetReg, { defval: "" });
-          rows.forEach((row, idx) => {
-            const e = buildRuleEntry(row);
-            e.date = nowIso;
-            e.author = currentUser.name;
-            const err = validateEntry(e);
-            if (err) errors.push(`REGLAS fila ${idx + 2}: ${err}`);
-            else {
-              const safeRegla = (e.regla || "regla").replace(/\s+/g, "_").slice(0, 30);
-              const id = `reg_${safeRegla}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-              toWrite.push({ id, payload: e });
-            }
-          });
-        }
-
-        if (errors.length) {
-          document.getElementById("btn-bulk-run").disabled = false;
-          return showBulkStatus(
-            "Errores detectados:\\n- " +
-              errors.slice(0, 10).join("\\n- ") +
-              (errors.length > 10 ? `\\n... (${errors.length - 10} más)` : ""),
-            true
-          );
-        }
-
-        if (!toWrite.length) {
-          document.getElementById("btn-bulk-run").disabled = false;
-          return showBulkStatus("No hay registros válidos para importar.", true);
-        }
-
-        showBulkStatus(`Importando ${toWrite.length} registros...`, false);
-        await commitBatch(toWrite);
-
-        window.toast(`Importación lista: ${toWrite.length} registros`);
-        showBulkStatus(`✅ Importación completa: ${toWrite.length} registros`, false);
-        document.getElementById("btn-bulk-run").disabled = false;
-
-        // refresca listas si estás en vista tabla
-        const viewType = document.body.dataset.viewType;
-        if (viewType) window.filterList();
-      } catch (e) {
-        console.error(e);
-        document.getElementById("btn-bulk-run").disabled = false;
-        showBulkStatus("Error al importar: " + String(e?.message || e), true);
-      }
     };
 
-    window.addEventListener("load", init);
-  </script>
+    // si trae TIPO en el archivo, lo respeta; si no, usa el selector
+    const tipo = pick("TIPO","Tipo","tipo") || forceType;
+
+    if(tipo === "REGLA_SPEI"){
+      const regla = pick("Regla","REGLA","REGLA_SPEI","REGLA_APLICABLE","REGLA_ID","REGLA_NUM","REGLA_NO","REGLA_N");
+      const capitulo = pick("Capítulo","CAPITULO","Capitulo","CAPÍTULO");
+      const literal = pick("Texto_literal","TEXTO_LITERAL","TEXTO","CONTENIDO","Texto","LITERAL");
+      const tema = pick("Tema_operativo","TEMA_OPERATIVO","TEMA","TITULO","TÍTULO","Tema");
+      const keywords = pick("Palabras_clave","PALABRAS_CLAVE","KEYWORDS","Keywords");
+      return { contentType:"REGLA_SPEI", regla, capitulo, tema, keywords, title: `Regla ${regla||"(s/n)"}`, content: literal };
+    }
+
+    if(tipo === "CERTIFICADO"){
+      const num = pick("NUMERO","CERTIFICADO","Últimos 4","ULTIMOS4","ULTIMOS_4","c-num");
+      const negocio = pick("NEGOCIO","Negocio","c-neg");
+      const entorno = pick("ENTORNO","Entorno","c-env");
+      const estatus = pick("ESTATUS","Estatus","c-stat");
+      const ini = pick("INICIO","Vigencia Inicio","INICIO_VIGENCIA","c-ini");
+      const fin = pick("FIN","Vigencia Fin","FIN_VIGENCIA","c-fin");
+      return { contentType:"CERTIFICADO", num, negocio, entorno, estatus, vigenciaIni: ini, vigenciaFin: fin, title: `CERT ${num||"(s/n)"}`, content: `${negocio||""} | ${estatus||""}`.trim() };
+    }
+
+    if(tipo === "EXTENSION"){
+      const ext = pick("EXTENSION","EXT","e-num");
+      const nombre = pick("NOMBRE","Nombre","e-nom");
+      const area = pick("AREA","Área","e-area");
+      return { contentType:"EXTENSION", ext, nombre, area, title:`EXT ${ext||"(s/n)"}`, content:`${nombre||""} - ${area||""}`.trim() };
+    }
+
+    // MANUAL (default)
+    const title = pick("TITULO","Título","Title","d-title") || "Importado";
+    const content = pick("CONTENIDO","Contenido","Content","d-content");
+    return { contentType:"MANUAL", title, content };
+  }
+
+  function csvToJson(text){
+    const lines = text.split(/\r?\n/).filter(Boolean);
+    if(!lines.length) return [];
+    const headers = splitCsvLine(lines[0]).map(h=>h.trim());
+    return lines.slice(1).map(line=>{
+      const cols = splitCsvLine(line);
+      const obj = {};
+      headers.forEach((h,i)=>obj[h]=cols[i] ?? "");
+      return obj;
+    });
+  }
+
+  function splitCsvLine(line){
+    // CSV simple con comillas dobles
+    const out = [];
+    let cur = "", inQ = false;
+    for(let i=0;i<line.length;i++){
+      const ch = line[i];
+      if(ch === '"' && line[i+1] === '"'){ cur += '"'; i++; continue; }
+      if(ch === '"'){ inQ = !inQ; continue; }
+      if(ch === ',' && !inQ){ out.push(cur); cur=""; continue; }
+      cur += ch;
+    }
+    out.push(cur);
+    return out;
+  }
+
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  // ====== IA (Gemini 2.5) ======
+  async function askGemini(userQuestion){
+    // Contexto (si existe): prioriza reglas + manuales + lo que haya
+    const ctxRules = knowledgeBase.filter(x=>x.contentType==="REGLA_SPEI").slice(0, 12);
+    const ctxDocs  = knowledgeBase.filter(x=>x.contentType==="MANUAL").slice(0, 6);
+
+    const ctx = [
+      ctxRules.length ? ("NORMATIVA CARGADA:\n" + ctxRules.map(r=>`- Regla ${r.regla||""} | ${r.capitulo||""} | ${r.tema||""}\n  ${r.content||""}`).join("\n")) : "",
+      ctxDocs.length ? ("MANUALES CARGADOS (extracto):\n" + ctxDocs.map(d=>`- ${d.title}\n  ${String(d.content||"").slice(0,250)}`).join("\n")) : ""
+    ].filter(Boolean).join("\n\n");
+
+    const systemHint = ctx
+      ? `Usa el CONTEXTO de forma preferente. Si el contexto no contiene la respuesta, dilo y responde con mejores prácticas generales. No inventes citas normativas.`
+      : `No hay contexto cargado. Responde de forma general y aclara que es una respuesta general (no normativa).`;
+
+    const prompt = `${systemHint}\n\n${ctx ? "CONTEXTO:\n"+ctx+"\n\n" : ""}PREGUNTA:\n${userQuestion}\n\nDevuelve SOLO texto claro (sin JSON, sin markdown de bloques).`;
+
+    const res = await fetch("/api/gemini", {
+      method:"POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ prompt })
+    });
+
+    const data = await res.json().catch(()=> ({}));
+    if(!res.ok){
+      const msg = data?.error || data?.message || "No se pudo consultar la IA";
+      throw new Error(`Error API (${res.status}): ${msg}`);
+    }
+    return data?.text || "Sin respuesta de IA.";
+  }
+
+  // ====== Chat UI ======
+  function addBubble(html, isUser){
+    const wrap = document.createElement("div");
+    wrap.className = "w-full flex mb-3 " + (isUser ? "justify-end" : "justify-start");
+    const b = document.createElement("div");
+    b.className = "bubble " + (isUser ? "u" : "b");
+    b.innerHTML = html;
+    wrap.appendChild(b);
+    const box = document.getElementById("chatbox");
+    box.appendChild(wrap);
+    box.scrollTop = box.scrollHeight;
+    return b;
+  }
+
+  document.getElementById("chatForm").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    const q = document.getElementById("q").value.trim();
+    if(!q) return;
+    document.getElementById("q").value = "";
+    addBubble(escapeHtml(q), true);
+
+    const typing = addBubble("<span class='text-slate-500 font-extrabold text-xs'>Speikito está pensando…</span>", false);
+
+    try{
+      const ans = await askGemini(q);
+      typing.innerHTML = escapeHtml(ans).replaceAll("\n","<br>");
+    }catch(err){
+      typing.innerHTML = `<span class="text-red-600 font-extrabold">${escapeHtml(err.message)}</span>`;
+    }
+  });
+
+  // ====== Healthcheck IA ======
+  async function ping(){
+    try{
+      const r = await fetch("/api/gemini", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({prompt:"Responde con OK"})});
+      const j = await r.json().catch(()=> ({}));
+      document.getElementById("aiStatus").textContent = r.ok ? "IA: activa" : "IA: error";
+      if(!r.ok) document.getElementById("aiStatus").textContent += " (revisa GEMINI_API_KEY / modelo)";
+    }catch(e){
+      document.getElementById("aiStatus").textContent = "IA: no disponible";
+    }
+  }
+
+  window.addEventListener("load", async ()=>{
+    document.getElementById("loading").classList.add("hidden");
+    await ping();
+  });
+</script>
 </body>
 </html>
+
+
+--- FILE: api/gemini.js ---
+// /api/gemini.js  (Vercel Serverless Function - CommonJS)
+// Requisitos en Vercel:
+// - Agrega GEMINI_API_KEY en Project Settings -> Environment Variables
+// - (Opcional) GEMINI_MODEL = gemini-2.5-flash (default) o gemini-2.5-pro
+//
+// Esta función devuelve: { text: "..." }
+
+module.exports = async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  try {
+    const { prompt, model } = req.body || {};
+    if (!prompt || typeof prompt !== "string") {
+      return res.status(400).json({ error: "Falta prompt" });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: "No está configurada GEMINI_API_KEY en Vercel" });
+    }
+
+    // Gemini 2.5 (default)
+    const usedModel = (model || process.env.GEMINI_MODEL || "gemini-2.5-flash").trim();
+
+    const url =
+      "https://generativelanguage.googleapis.com/v1beta/models/" +
+      encodeURIComponent(usedModel) +
+      ":generateContent";
+
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey,
+      },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        // Puedes ajustar temperatura si quieres respuestas más determinísticas:
+        // generationConfig: { temperature: 0.3 }
+      }),
+    });
+
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      const msg = data?.error?.message || "Error llamando a Gemini";
+      return res.status(resp.status).json({ error: msg, raw: data });
+    }
+
+    const text =
+      data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") ||
+      "";
+
+    return res.status(200).json({ text, raw: data });
+  } catch (e) {
+    return res.status(500).json({ error: "Error interno", detail: String(e?.message || e) });
+  }
+};
+
+
+--- FILE: package.json ---
+{
+  "name": "speikito",
+  "private": true
+}
+
+
+--- FILE: README.txt ---
+Estructura recomendada (Vercel):
+/
+  index.html
+  /api
+    gemini.js
+
+1) En Vercel > Project Settings > Environment Variables:
+   - GEMINI_API_KEY = (tu key)
+   - (opcional) GEMINI_MODEL = gemini-2.5-flash  (o gemini-2.5-pro)
+
+2) Redeploy (Vercel se actualiza solo al hacer push).
+
+Si te da 405 Method not allowed:
+- Estás pegándole a /api/gemini con GET desde el navegador. Debe ser POST.
+- En esta UI ya está como POST.
+
+Si te da 404 de modelo:
+- Cambia GEMINI_MODEL a gemini-2.5-flash o gemini-2.5-pro.
