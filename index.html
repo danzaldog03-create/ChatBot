@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <!-- Metaetiquetas para forzar actualización inmediata -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
-  <title>SPEI Ops - Speikito v30.3</title>
+  <title>SPEI Ops - Speikito v30.2</title>
 
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -15,13 +16,22 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
+  <script>
+    window.MathJax = { tex: { inlineMath: [["$", "$"]] }, options: { enableMenu: false } };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- Firebase (module) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, collection, onSnapshot, updateDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+    // Configuración con fallback robusto
     let firebaseConfig;
     try {
       firebaseConfig = JSON.parse(window.__firebase_config);
@@ -41,72 +51,150 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    // Exportar a global
     window.fb = {
-      auth, db, appId,
-      doc, setDoc, collection, onSnapshot, deleteDoc, writeBatch,
-      signInAnonymously, signInWithCustomToken, onAuthStateChanged
+      auth,
+      db,
+      appId,
+      doc,
+      setDoc,
+      collection,
+      onSnapshot,
+      updateDoc,
+      deleteDoc,
+      signInAnonymously,
+      signInWithCustomToken,
+      onAuthStateChanged,
+      writeBatch,
     };
   </script>
 
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+    @import url("https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,700;1,300&display=swap");
+
     * { box-sizing: border-box; }
-    body { font-family: "Inter", sans-serif; background:#f1f5f9; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
-    .layout-container { display:flex; height:100%; width:100%; }
-    .sidebar { width:280px; background:#0f172a; color:#94a3b8; display:flex; flex-direction:column; border-right:1px solid #1e293b; transition:transform .3s; flex-shrink:0; z-index:50; }
-    .sidebar-header { padding:1.5rem; border-bottom:1px solid #1e293b; display:flex; align-items:center; gap:.75rem; color:#fff; font-weight:800; font-size:1.1rem; }
-    .nav-scroll { flex:1; overflow-y:auto; padding:1rem 0; }
-    .nav-section { font-size:.65rem; font-weight:800; text-transform:uppercase; color:#475569; padding:1rem 1.5rem .5rem; letter-spacing:.05em; }
-    .nav-item { padding:.75rem 1.5rem; cursor:pointer; display:flex; align-items:center; gap:.75rem; font-size:.85rem; font-weight:600; transition:.2s; border-left:3px solid transparent; }
-    .nav-item:hover { background:#1e293b; color:#fff; }
-    .nav-item.active { background:#1e293b; color:#fff; border-left-color:#3b82f6; }
-    .main-area { flex:1; display:flex; flex-direction:column; background:#fff; position:relative; overflow:hidden; }
-    .top-header { height:4rem; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between; padding:0 2rem; background:#fff; z-index:20; }
-    .view-section { flex:1; overflow-y:auto; padding:2rem; display:none; height:100%; flex-direction:column; }
-    .view-section.active { display:flex; }
-    #view-chat { padding:0; }
-    .chat-box { flex:1; overflow-y:auto; padding:2rem; background:#f8fafc; }
-    .chat-input-area { padding:1.5rem 2rem; background:#fff; border-top:1px solid #e2e8f0; }
-    .chat-bubble { max-width:85%; padding:1rem 1.25rem; border-radius:1rem; font-size:.9rem; line-height:1.6; margin-bottom:1rem; box-shadow:0 2px 4px rgba(0,0,0,.05); }
-    .user-msg { align-self:flex-end; background:#2563eb; color:#fff; border-bottom-right-radius:0; margin-left:auto; }
-    .bot-msg { align-self:flex-start; background:#fff; border:1px solid #e2e8f0; color:#0f172a; border-bottom-left-radius:0; width:100%; }
-    .bot-header { font-weight:900; color:#0f172a; margin-bottom:.5rem; display:flex; align-items:center; gap:.5rem; border-bottom:2px solid #e2e8f0; padding-bottom:.5rem; }
+    body {
+      font-family: "Inter", sans-serif;
+      background-color: #f1f5f9;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
 
-    .reg-card { background:#fffbeb; border-left:4px solid #f59e0b; padding:1rem; border-radius:.5rem; margin-top:.5rem; }
-    .reg-title { font-size:.75rem; font-weight:900; color:#92400e; text-transform:uppercase; margin-bottom:.5rem; }
-    .reg-content { color:#451a03; line-height:1.6; font-size:.95rem; white-space:pre-wrap; }
-    .reg-footer { margin-top:.5rem; font-size:.7rem; color:#b45309; font-weight:800; text-align:right; }
+    /* Layout */
+    .layout-container { display: flex; height: 100%; width: 100%; }
+    .sidebar {
+      width: 280px;
+      background: #0f172a;
+      color: #94a3b8;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #1e293b;
+      transition: transform 0.3s;
+      flex-shrink: 0;
+      z-index: 50;
+    }
+    .sidebar-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: white;
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
 
-    #table-content { flex:1; overflow-y:auto; padding-bottom:6rem; display:flex; flex-direction:column; gap:.75rem; min-height:300px; }
-    .data-card { background:#fff; border:1px solid #e2e8f0; border-radius:.75rem; padding:1rem; display:flex; justify-content:space-between; align-items:center; transition:.2s; box-shadow:0 1px 2px rgba(0,0,0,.05); min-height:80px; }
-    .data-card:hover { border-color:#3b82f6; transform:translateY(-1px); }
-    .badge { font-size:.65rem; font-weight:900; text-transform:uppercase; padding:.25rem .5rem; border-radius:99px; display:inline-block; margin-bottom:.25rem; }
-    .badge-REGLA_SPEI { background:#fffbeb; color:#b45309; }
-    .badge-CERTIFICADO { background:#eff6ff; color:#1d4ed8; }
-    .badge-EXTENSION { background:#f0fdf4; color:#15803d; }
-    .badge-MANUAL { background:#f8fafc; color:#475569; }
-    .badge-ARCHIVO { background:#e0f2fe; color:#0369a1; }
+    .nav-scroll { flex: 1; overflow-y: auto; padding: 1rem 0; }
+    .nav-section {
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #475569;
+      padding: 1rem 1.5rem 0.5rem;
+      letter-spacing: 0.05em;
+    }
+    .nav-item {
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover { background: #1e293b; color: white; }
+    .nav-item.active { background: #1e293b; color: white; border-left-color: #3b82f6; }
 
-    .form-input { width:100%; padding:.7rem; border:1px solid #cbd5e1; border-radius:.5rem; font-size:.85rem; outline:none; transition:.2s; background:#fff; color:#0f172a; font-weight:700; }
-    .form-input:focus { border-color:#2563eb; box-shadow:0 0 0 2px #bfdbfe; }
-    .form-label { font-size:.7rem; font-weight:800; color:#64748b; margin-bottom:.25rem; display:block; text-transform:uppercase; }
+    .main-area { flex: 1; display: flex; flex-direction: column; background: white; position: relative; overflow: hidden; }
+    .top-header {
+      height: 4rem;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      background: white;
+      shrink: 0;
+      z-index: 20;
+    }
 
-    .overlay { position:fixed; inset:0; background:rgba(15,23,42,.95); backdrop-filter:blur(4px); z-index:60; display:flex; align-items:center; justify-content:center; }
-    .modal { background:#fff; width:90%; max-width:800px; max-height:90vh; border-radius:1rem; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,.25); }
-    .hidden-ui { display:none !important; opacity:0; pointer-events:none; }
-    .admin-only.hidden-ui { display:none !important; }
+    .view-section { flex: 1; overflow-y: auto; padding: 2rem; display: none; height: 100%; flex-direction: column; }
+    .view-section.active { display: flex; }
+    #view-chat { padding: 0; }
 
-    #toast { position:fixed; top:2rem; left:50%; transform:translateX(-50%); z-index:10001; padding:.75rem 1.5rem; border-radius:99px; font-weight:900; font-size:.85rem; color:#fff; background:#0f172a; opacity:0; pointer-events:none; transition:.3s; }
-    #toast.show { opacity:1; top:3rem; }
+    .chat-box { flex: 1; overflow-y: auto; padding: 2rem; background: #f8fafc; }
+    .chat-input-area { padding: 1.5rem 2rem; background: white; border-top: 1px solid #e2e8f0; }
 
-    .select-row { width:1.2rem; height:1.2rem; margin-right:1rem; cursor:pointer; accent-color:#2563eb; }
+    .chat-bubble { max-width: 85%; padding: 1rem 1.25rem; border-radius: 1rem; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .user-msg { align-self: flex-end; background: #2563eb; color: white; border-bottom-right-radius: 0; margin-left: auto; }
+    .bot-msg { align-self: flex-start; background: white; border: 1px solid #e2e8f0; color: #1e293b; border-bottom-left-radius: 0; width: 100%; }
+    .bot-header { font-weight: 800; color: #0f172a; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
 
-    .avatar-circle { width:32px; height:32px; border-radius:50%; object-fit:cover; background:#334155; display:flex; align-items:center; justify-content:center; font-weight:900; color:#fff; font-size:.7rem; cursor:pointer; border:2px solid #475569; }
-    .avatar-circle:hover { border-color:#fff; }
+    .reg-card { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 0.5rem; margin-top: 0.5rem; }
+    .reg-title { font-size: 0.75rem; font-weight: 900; color: #92400e; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .reg-content { font-family: "Georgia", serif; font-style: italic; color: #451a03; line-height: 1.6; font-size: 0.95rem; }
+    .reg-footer { margin-top: 0.5rem; font-size: 0.7rem; color: #b45309; font-weight: 700; text-align: right; }
 
-    @media (max-width:768px){
-      .sidebar { position:fixed; height:100%; transform:translateX(-100%); }
-      .sidebar.open { transform:translateX(0); }
+    #table-content { flex: 1; overflow-y: auto; padding-bottom: 6rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 300px; }
+    .data-card { background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); min-height: 80px; }
+    .data-card:hover { border-color: #3b82f6; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transform: translateY(-1px); }
+
+    .badge { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 0.25rem 0.5rem; border-radius: 99px; display: inline-block; margin-bottom: 0.25rem; }
+    .badge-CERTIFICADO { background: #eff6ff; color: #1d4ed8; }
+    .badge-EXTENSION { background: #f0fdf4; color: #15803d; }
+    .badge-MANUAL { background: #f8fafc; color: #475569; }
+    .badge-REGLA_SPEI { background: #fffbeb; color: #b45309; }
+    .badge-ARCHIVO { background: #e0f2fe; color: #0369a1; }
+    .badge-USER { background: #eef2ff; color: #3730a3; }
+
+    .form-input { width: 100%; padding: 0.7rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.85rem; outline: none; transition: 0.2s; background: white; color: #1e293b !important; font-weight: 600; }
+    .form-input:focus { border-color: #2563eb; box-shadow: 0 0 0 2px #bfdbfe; }
+    .form-label { font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 0.25rem; display: block; text-transform: uppercase; }
+
+    .overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.95); backdrop-filter: blur(4px); z-index: 60; display: flex; align-items: center; justify-content: center; }
+    .modal { background: white; width: 90%; max-width: 800px; max-height: 90vh; border-radius: 1rem; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+
+    .hidden-ui { display: none !important; opacity: 0; pointer-events: none; }
+    .admin-only.hidden-ui { display: none !important; }
+
+    #toast { position: fixed; top: 2rem; left: 50%; transform: translateX(-50%); z-index: 10001; padding: 0.75rem 1.5rem; border-radius: 99px; font-weight: 700; font-size: 0.85rem; color: white; background: #0f172a; opacity: 0; pointer-events: none; transition: 0.3s; }
+    #toast.show { opacity: 1; top: 3rem; }
+
+    /* Checkbox para borrado masivo */
+    .select-row { width: 1.2rem; height: 1.2rem; margin-right: 1rem; cursor: pointer; accent-color: #2563eb; }
+
+    /* Avatar */
+    .avatar-circle { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background-color: #334155; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 0.7rem; cursor: pointer; border: 2px solid #475569; }
+    .avatar-circle:hover { border-color: white; }
+
+    @media (max-width: 768px) {
+      .sidebar { position: fixed; height: 100%; transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
     }
   </style>
 </head>
@@ -125,21 +213,24 @@
   <!-- LOGIN -->
   <div id="login-screen" class="overlay hidden-ui">
     <div class="bg-white p-10 rounded-2xl shadow-2xl w-full max-w-sm text-center">
-      <div class="w-16 h-16 bg-slate-900 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-3xl"><i class="fas fa-fingerprint"></i></div>
+      <div class="w-16 h-16 bg-slate-900 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-3xl">
+        <i class="fas fa-fingerprint"></i>
+      </div>
       <h1 class="text-2xl font-black text-slate-900 mb-1">SPEI Ops</h1>
       <p class="text-slate-500 text-xs mb-8 font-bold uppercase tracking-widest">Acceso Corporativo</p>
       <div class="space-y-4">
-        <input type="text" id="login-id" placeholder="ID de Empleado" class="form-input text-center text-lg font-black tracking-widest border-slate-300" />
-        <button onclick="handleLogin()" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-lg font-black shadow-lg transition-all active:scale-95 cursor-pointer">INGRESAR</button>
-        <p id="login-msg" class="text-red-500 text-xs font-black mt-2 opacity-0 transition-opacity">Credenciales Incorrectas</p>
+        <input type="text" id="login-id" placeholder="ID de Empleado" class="form-input text-center text-lg font-bold tracking-widest border-slate-300 focus:border-blue-500 text-slate-900" />
+        <button onclick="handleLogin()" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-lg font-bold shadow-lg transition-all active:scale-95 cursor-pointer">
+          INGRESAR
+        </button>
+        <p id="login-msg" class="text-red-500 text-xs font-bold mt-2 opacity-0 transition-opacity">Credenciales Incorrectas</p>
       </div>
-      <p class="mt-8 text-[10px] text-slate-400 font-black uppercase tracking-wider">v30.3 • Creado por Daniel Anzaldo</p>
+      <p class="mt-8 text-[10px] text-slate-400 font-bold uppercase tracking-wider">v30.2 • Creado por Daniel Anzaldo</p>
     </div>
   </div>
 
   <!-- APP PRINCIPAL -->
   <div id="app-layout" class="layout-container hidden-ui">
-
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
@@ -172,11 +263,11 @@
             <img id="user-img-display" class="hidden w-full h-full rounded-full object-cover" src="" />
           </div>
           <div class="overflow-hidden">
-            <p class="text-xs font-black text-white truncate" id="user-name-display">Usuario</p>
-            <p class="text-[10px] text-slate-400 uppercase font-black truncate" id="user-role-display">Rol</p>
+            <p class="text-xs font-bold text-white truncate" id="user-name-display">Usuario</p>
+            <p class="text-[10px] text-slate-400 uppercase font-bold truncate" id="user-role-display">Rol</p>
           </div>
         </div>
-        <button onclick="logout()" class="w-full bg-slate-800 hover:bg-red-900/50 text-slate-300 hover:text-red-200 py-2 rounded text-xs font-black transition-all">
+        <button onclick="logout()" class="w-full bg-slate-800 hover:bg-red-900/50 text-slate-300 hover:text-red-200 py-2 rounded text-xs font-bold transition-all">
           <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
         </button>
       </div>
@@ -194,22 +285,18 @@
         <div class="flex gap-2" id="header-actions"></div>
       </div>
 
-      <!-- CHAT -->
       <div id="view-chat" class="view-section active">
         <div id="chat-box" class="chat-box space-y-4">
           <div class="bot-msg chat-bubble shadow-sm w-full">
             <div class="bot-header"><i class="fas fa-cat text-blue-600"></i> Speikito</div>
             <p class="text-sm text-slate-600">
-              Hola. Soy <b>Speikito</b> 🐱.
-              <br/>Si tu pregunta coincide con normativa cargada, te respondo con evidencia.
-              <br/>Si no coincide, te ayudo a aclarar qué falta / qué buscar (sin inventar reglas).
+              Hola. Soy <b>Speikito</b> 🐱. Pregúntame sobre tus manuales, directorio, certificados y normativa (si la tienes cargada).
             </p>
           </div>
         </div>
-
         <div class="chat-input-area">
           <form id="chat-form" class="relative max-w-5xl mx-auto flex gap-2">
-            <input type="text" id="chat-input" placeholder="Ej: ¿Qué regla aplica para devoluciones?" class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm font-black text-slate-700 outline-none focus:border-blue-500 transition-all" autocomplete="off" />
+            <input type="text" id="chat-input" placeholder="Ej: ¿Qué aplica para devoluciones? / ¿Quién es guardia? / ¿Vence el cert 9A3F?" class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-500 transition-all" autocomplete="off" />
             <button type="submit" class="w-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg hover:bg-blue-700 active:scale-90 transition-all">
               <i class="fas fa-paper-plane text-lg"></i>
             </button>
@@ -217,26 +304,150 @@
         </div>
       </div>
 
-      <!-- TABLA -->
       <div id="view-table" class="view-section hidden-ui h-full flex flex-col">
         <div class="mb-4 sticky top-0 bg-[#f8fafc] z-10 py-2 flex gap-2 items-center">
           <input type="checkbox" id="select-all" class="ml-2 w-4 h-4 accent-blue-600" onchange="toggleSelectAll(this)" />
           <input type="text" id="table-search" placeholder="Filtrar..." class="form-input max-w-sm shadow-sm flex-1" onkeyup="filterList()" />
-          <button onclick="renderList(document.body.dataset.viewType)" class="w-10 h-10 bg-white border border-slate-300 rounded-lg flex items-center justify-center text-slate-500 hover:text-blue-600">
-            <i class="fas fa-sync-alt"></i>
-          </button>
+          <button onclick="renderList(document.body.dataset.viewType)" class="w-10 h-10 bg-white border border-slate-300 rounded-lg flex items-center justify-center text-slate-500 hover:text-blue-600"><i class="fas fa-sync-alt"></i></button>
         </div>
-        <div id="table-content" class="space-y-2 pb-20 overflow-y-auto w-full">
-          <div class="text-center py-10 text-slate-400 italic">Cargando datos...</div>
-        </div>
+        <div id="table-content" class="space-y-2 pb-20 overflow-y-auto w-full"><div class="text-center py-10 text-slate-400 italic">Cargando datos...</div></div>
       </div>
     </main>
+  </div>
+
+  <!-- MODAL REGISTRO -->
+  <div id="modal-capture" class="overlay hidden-ui">
+    <div class="modal">
+      <div class="p-5 border-b flex justify-between items-center bg-slate-50">
+        <h3 class="font-bold text-slate-800">Nuevo Registro</h3>
+        <button onclick="closeModal('modal-capture')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="p-6 overflow-y-auto bg-white flex-1">
+        <div class="mb-6">
+          <label class="form-label">Tipo de Registro</label>
+          <div class="grid grid-cols-2 gap-3 mb-2">
+            <button onclick="setFormType('CERTIFICADO')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-blue-50 focus:ring-2 ring-blue-500"><i class="fas fa-certificate block text-xl mb-1 text-blue-500"></i> Certificado</button>
+            <button onclick="setFormType('EXTENSION')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-emerald-50 focus:ring-2 ring-emerald-500"><i class="fas fa-address-book block text-xl mb-1 text-emerald-500"></i> Extensión</button>
+            <button onclick="setFormType('REGLA')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-amber-50 focus:ring-2 ring-amber-500"><i class="fas fa-balance-scale block text-xl mb-1 text-amber-500"></i> Regla</button>
+            <button onclick="setFormType('MANUAL')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-slate-100 focus:ring-2 ring-slate-500"><i class="fas fa-book block text-xl mb-1 text-slate-500"></i> Manual</button>
+          </div>
+          <input type="hidden" id="current-type" value="MANUAL" />
+          <input type="hidden" id="editing-id" value="" />
+        </div>
+
+        <div id="forms-area">
+          <div id="form-cert" class="hidden space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div><label class="form-label">Últimos 4</label><input id="c-num" class="form-input uppercase" maxlength="4" /></div>
+              <div><label class="form-label">Negocio</label><select id="c-neg" class="form-input"><option>SPEI</option><option>CODI</option><option>DIMO</option><option>SPID</option><option>BDT</option><option>R2</option></select></div>
+              <div><label class="form-label">Entorno</label><select id="c-env" class="form-input"><option>PRODUCCION</option><option>BETA</option></select></div>
+              <div><label class="form-label">Estatus</label><input type="text" id="c-stat" class="form-input" /></div>
+              <div><label class="form-label">Vigencia Inicio</label><input id="c-ini" type="date" class="form-input" /></div>
+              <div><label class="form-label">Vigencia Fin</label><input id="c-fin" type="date" class="form-input" /></div>
+            </div>
+          </div>
+
+          <div id="form-ext" class="hidden space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div><label class="form-label">Extensión</label><input id="e-num" type="text" class="form-input" /></div>
+              <div><label class="form-label">Nombre</label><input id="e-nom" type="text" class="form-input" /></div>
+              <div class="col-span-2"><label class="form-label">Área</label><input id="e-area" class="form-input" /></div>
+            </div>
+          </div>
+
+          <div id="form-rule" class="hidden space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div><label class="form-label">Regla</label><input id="r-rule" class="form-input" placeholder="Ej. 17a" /></div>
+              <div><label class="form-label">Capítulo</label><input id="r-chap" class="form-input" placeholder="Ej. Cap 2" /></div>
+            </div>
+            <div><label class="form-label">Tema Operativo</label><input id="r-topic" class="form-input" /></div>
+            <div><label class="form-label">Texto Literal</label><textarea id="r-text" class="form-input h-32"></textarea></div>
+          </div>
+
+          <div id="form-doc" class="hidden space-y-4">
+            <div><label class="form-label">Título</label><input id="d-title" class="form-input" /></div>
+            <div><label class="form-label">Contenido</label><textarea id="d-content" class="form-input h-32"></textarea></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-5 border-t bg-slate-50 flex justify-end gap-3">
+        <button onclick="closeModal('modal-capture')" class="text-slate-500 font-bold text-xs px-4">Cancelar</button>
+        <button onclick="saveRegistry()" class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-lg hover:bg-blue-600 transition-all">GUARDAR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CARGA NORMATIVA (legacy) -->
+  <div id="modal-upload" class="overlay hidden-ui">
+    <div class="modal max-w-lg">
+      <div class="p-5 border-b bg-slate-50"><h3 class="font-bold text-amber-700">Cargar Normativa SPEI</h3></div>
+      <div class="p-8 text-center">
+        <p class="text-xs text-slate-500 mb-4 text-left leading-relaxed">
+          Sube tu archivo de Reglas (.csv/.xlsx). El sistema detectará automáticamente las columnas: <b>Capítulo, Regla, Texto_literal, Tema_operativo</b>.
+        </p>
+        <div class="p-8 text-center border-2 border-dashed border-amber-300 bg-amber-50 rounded-xl cursor-pointer hover:bg-amber-100 transition-colors" onclick="document.getElementById('file-in').click()">
+          <i class="fas fa-balance-scale text-4xl text-amber-500 mb-3"></i>
+          <p class="text-sm font-bold text-amber-800">Seleccionar Archivo de Reglas</p>
+        </div>
+        <input type="file" id="file-in" class="hidden" accept=".xlsx,.csv" onchange="handleBulkUpload(this)" />
+      </div>
+      <div class="p-5 border-t flex justify-end">
+        <button onclick="document.getElementById('modal-upload').classList.add('hidden-ui')" class="text-slate-400 font-bold text-xs">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL IMPORTACIÓN MASIVA (CERT/DIR/MAN) -->
+  <div id="modal-bulk-import" class="overlay hidden-ui">
+    <div class="modal max-w-lg">
+      <div class="p-5 border-b bg-slate-50 flex items-center justify-between">
+        <h3 class="font-black text-emerald-700">Importación Masiva</h3>
+        <button onclick="closeModal('modal-bulk-import')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+      </div>
+
+      <div class="p-6 bg-white">
+        <p class="text-xs text-slate-600 leading-relaxed mb-4">
+          Sube un <b>.xlsx</b> con hojas: <b>CERTIFICADOS</b>, <b>DIRECTORIO</b>, <b>MANUALES</b> (y opcional <b>REGLAS</b>).
+          Se conservarán los campos actuales y se generará <b>title/content</b> si viene vacío.
+        </p>
+
+        <div class="p-6 border-2 border-dashed border-emerald-300 bg-emerald-50 rounded-xl cursor-pointer hover:bg-emerald-100 transition-colors text-center"
+             onclick="document.getElementById('bulk-file-in').click()">
+          <i class="fas fa-cloud-upload-alt text-4xl text-emerald-600 mb-3"></i>
+          <p class="text-sm font-black text-emerald-800">Seleccionar archivo Excel (.xlsx)</p>
+          <p class="text-[11px] text-emerald-700 mt-1 font-black">Se importará en lote</p>
+        </div>
+
+        <input type="file" id="bulk-file-in" class="hidden" accept=".xlsx" />
+
+        <div class="mt-4 text-xs text-slate-500">
+          <div class="font-black text-slate-700 mb-2">Formato recomendado</div>
+          <ul class="list-disc ml-5 space-y-1">
+            <li>Fechas: <b>YYYY-MM-DD</b></li>
+            <li>Hojas: <b>CERTIFICADOS</b> / <b>DIRECTORIO</b> / <b>MANUALES</b></li>
+            <li>Si <b>title</b> o <b>content</b> están vacíos, se generan automáticamente</li>
+          </ul>
+        </div>
+
+        <div id="bulk-status" class="mt-4 text-xs font-black text-slate-600 hidden"></div>
+      </div>
+
+      <div class="p-5 border-t bg-slate-50 flex justify-end gap-2">
+        <button onclick="window.downloadBulkTemplate()" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg text-xs font-black hover:bg-slate-100">
+          Descargar layout
+        </button>
+        <button id="btn-bulk-run" onclick="window.runBulkImport()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-black hover:bg-emerald-700">
+          Importar ahora
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- MODAL PERFIL -->
   <div id="modal-profile" class="overlay hidden-ui">
     <div class="modal max-w-sm">
-      <div class="p-5 border-b bg-slate-50"><h3 class="font-black">Foto de Perfil</h3></div>
+      <div class="p-5 border-b bg-slate-50"><h3 class="font-bold">Foto de Perfil</h3></div>
       <div class="p-8 text-center">
         <div class="w-24 h-24 rounded-full bg-slate-200 mx-auto mb-4 overflow-hidden border-4 border-white shadow-lg cursor-pointer" onclick="document.getElementById('profile-up').click()">
           <img id="profile-prev" src="" class="w-full h-full object-cover hidden" />
@@ -245,7 +456,24 @@
         <input type="file" id="profile-up" class="hidden" accept="image/*" onchange="handleProfileUpload(this)" />
         <p class="text-xs text-slate-500">Clic para cambiar</p>
       </div>
-      <div class="p-5 border-t text-center"><button onclick="closeModal('modal-profile')" class="text-slate-400 text-xs font-black">Cerrar</button></div>
+      <div class="p-5 border-t text-center"><button onclick="closeModal('modal-profile')" class="text-slate-400 text-xs">Cerrar</button></div>
+    </div>
+  </div>
+
+  <!-- MODAL USUARIO -->
+  <div id="modal-user" class="overlay hidden-ui">
+    <div class="modal max-w-sm">
+      <div class="p-5 border-b bg-slate-50"><h3 class="font-bold">Nuevo Usuario</h3></div>
+      <div class="p-6 space-y-4">
+        <input id="u-name" class="form-input" placeholder="Nombre" />
+        <input id="u-id" class="form-input" placeholder="ID Empleado" />
+        <select id="u-role" class="form-input">
+          <option value="user">Usuario Operativo</option>
+          <option value="admin">Administrador</option>
+        </select>
+        <button onclick="saveUser()" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-xs mt-4">Crear</button>
+      </div>
+      <div class="p-4 text-center"><button onclick="closeModal('modal-user')" class="text-slate-400 text-xs">Cancelar</button></div>
     </div>
   </div>
 
@@ -256,49 +484,42 @@
     let knowledgeBase = [];
     let team = [];
 
-    // -------- Utils
-    function escapeHtml(str) {
-      return String(str || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    function normalizeText(s) {
-      return String(s || "")
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .trim();
-    }
-
-    // -------- Global
+    // --- GLOBAL ---
     window.toast = (m, e) => {
       const t = document.getElementById("toast");
       t.innerText = m;
       t.className = `fixed top-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-xs font-black shadow-2xl z-[10002] transition-all opacity-100 ${e ? "bg-red-500 text-white" : "bg-emerald-500 text-white"}`;
       setTimeout(() => t.classList.remove("opacity-100"), 3000);
     };
-
     window.toggleSidebar = () => document.getElementById("sidebar").classList.toggle("open");
     window.closeModal = (id) => document.getElementById(id).classList.add("hidden-ui");
-    window.openProfileModal = () => document.getElementById("modal-profile").classList.remove("hidden-ui");
+    window.openModal = (id) => {
+      document.getElementById(id).classList.remove("hidden-ui");
+      if (id === "modal-capture") {
+        window.setFormType("MANUAL");
+        document.getElementById("editing-id").value = "";
+      }
+    };
+    window.openUploadModal = () => window.openModal("modal-upload");
+    window.openProfileModal = () => window.openModal("modal-profile");
 
     window.handleLogin = () => {
       const val = document.getElementById("login-id").value.trim();
       if (val === "682930") { login({ name: "Daniel Anzaldo", role: "admin", empNumber: "682930" }); return; }
-      const u = team.find(x => x.empNumber === val);
+      const u = team.find((x) => x.empNumber === val);
       if (u) login(u);
       else document.getElementById("login-msg").style.opacity = "1";
     };
 
-    window.logout = () => { localStorage.removeItem("spei_v30_3_session"); location.reload(); };
+    window.logout = () => {
+      localStorage.removeItem("spei_v30_2_session");
+      location.reload();
+    };
 
     // NAV
     window.navigate = (view) => {
       if (window.innerWidth < 768) document.getElementById("sidebar").classList.remove("open");
-      document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+      document.querySelectorAll(".nav-item").forEach((n) => n.classList.remove("active"));
 
       const chat = document.getElementById("view-chat");
       const table = document.getElementById("view-table");
@@ -307,236 +528,364 @@
 
       if (view === "chat") {
         document.getElementById("nav-chat").classList.add("active");
-        chat.classList.remove("hidden-ui"); table.classList.add("hidden-ui");
-        title.innerText = "Chat Operativo"; acts.innerHTML = "";
+        chat.classList.remove("hidden-ui");
+        table.classList.add("hidden-ui");
+        title.innerText = "Chat Operativo";
+        acts.innerHTML = "";
       } else {
         let type = "ALL", label = "Base Completa", navId = "nav-all";
+
         if (view === "admin-rules") { type = "REGLA_SPEI"; label = "Normativa SPEI"; navId = "nav-rules"; }
         if (view === "admin-cert") { type = "CERTIFICADO"; label = "Certificados"; navId = "nav-cert"; }
-        if (view === "admin-ext")  { type = "EXTENSION"; label = "Directorio"; navId = "nav-ext"; }
+        if (view === "admin-ext") { type = "EXTENSION"; label = "Directorio"; navId = "nav-ext"; }
         if (view === "admin-docs") { type = "MANUAL"; label = "Manuales"; navId = "nav-docs"; }
-        if (view === "admin-files"){ type = "ARCHIVO"; label = "Archivos"; navId = "nav-files"; }
+        if (view === "admin-files") { type = "ARCHIVO"; label = "Archivos"; navId = "nav-files"; }
 
         document.getElementById(navId)?.classList.add("active");
-        chat.classList.add("hidden-ui"); table.classList.remove("hidden-ui");
-        title.innerText = label; document.body.dataset.viewType = type;
 
-        acts.innerHTML = `<button onclick="window.deleteSelected()" class="bg-red-50 text-red-600 px-3 py-1 rounded-lg text-xs font-black shadow-sm hover:bg-red-100 transition-all"><i class="fas fa-trash-alt"></i> Borrar</button>`;
+        chat.classList.add("hidden-ui");
+        table.classList.remove("hidden-ui");
+        title.innerText = label;
+        document.body.dataset.viewType = type;
+
+        // Header actions
+        const isAdmin = currentUser?.role === "admin";
+
+        if (view === "admin-rules") {
+          acts.innerHTML = `
+            ${isAdmin ? `<button onclick="window.openBulkImport()" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs font-black shadow hover:bg-emerald-700"><i class="fas fa-file-import"></i> Importar</button>` : ""}
+            <button onclick="document.getElementById('modal-upload').classList.remove('hidden-ui')" class="bg-amber-600 text-white px-3 py-1 rounded text-xs font-bold shadow hover:bg-amber-700"><i class="fas fa-upload"></i> Cargar Reglas</button>
+          `;
+        } else if (view === "admin-users") {
+          title.innerText = "Usuarios";
+          document.body.dataset.viewType = "USERS";
+          acts.innerHTML = `${isAdmin ? `<button onclick="document.getElementById('modal-user').classList.remove('hidden-ui')" class="bg-indigo-600 text-white px-3 py-1 rounded text-xs font-bold shadow hover:bg-indigo-700">Nuevo Usuario</button>` : ""}`;
+          renderList("USERS");
+          return;
+        } else {
+          acts.innerHTML = `
+            ${isAdmin ? `<button onclick="window.openBulkImport()" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs font-black shadow hover:bg-emerald-700"><i class="fas fa-file-import"></i> Importar</button>` : ""}
+            ${isAdmin ? `<button onclick="window.openModal('modal-capture')" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold">Nuevo</button>` : ""}
+            ${isAdmin ? `<button onclick="window.deleteSelected()" class="bg-red-50 text-red-600 px-3 py-1 rounded-lg text-xs font-bold shadow-sm ml-2 hover:bg-red-100 transition-all"><i class="fas fa-trash-alt"></i> Borrar</button>` : ""}
+          `;
+        }
+
         renderList(type);
       }
     };
 
-    // -------- Render list (mínimo)
+    window.setFormType = (t) => {
+      document.getElementById("current-type").value = t;
+      ["form-cert", "form-ext", "form-rule", "form-doc"].forEach((f) => document.getElementById(f).classList.add("hidden"));
+
+      if (t === "CERTIFICADO") document.getElementById("form-cert").classList.remove("hidden");
+      else if (t === "EXTENSION") document.getElementById("form-ext").classList.remove("hidden");
+      else if (t === "REGLA") document.getElementById("form-rule").classList.remove("hidden");
+      else document.getElementById("form-doc").classList.remove("hidden");
+    };
+
+    window.saveRegistry = async () => {
+      const type = document.getElementById("current-type").value;
+      const id = document.getElementById("editing-id").value || "doc_" + Date.now();
+      let data = { contentType: type, date: new Date().toISOString(), author: currentUser?.name || "system" };
+
+      if (type === "CERTIFICADO") {
+        data.num = document.getElementById("c-num").value;
+        data.negocio = document.getElementById("c-neg").value;
+        data.entorno = document.getElementById("c-env").value;
+        data.estatus = document.getElementById("c-stat").value;
+        data.vigenciaIni = document.getElementById("c-ini").value;
+        data.vigenciaFin = document.getElementById("c-fin").value;
+        data.title = `CERT ${data.num}`;
+        data.content = `${data.negocio} | ${data.entorno} | ${data.estatus}`;
+      } else if (type === "EXTENSION") {
+        data.ext = document.getElementById("e-num").value;
+        data.nombre = document.getElementById("e-nom").value;
+        data.area = document.getElementById("e-area").value;
+        data.title = `EXT ${data.ext}`;
+        data.content = `${data.nombre} - ${data.area}`;
+      } else if (type === "REGLA") {
+        data.regla = document.getElementById("r-rule").value;
+        data.content = document.getElementById("r-text").value;
+        data.capitulo = document.getElementById("r-chap").value;
+        data.tema = document.getElementById("r-topic").value;
+        data.title = `Regla ${data.regla}`;
+        data.contentType = "REGLA_SPEI";
+      } else {
+        data.title = document.getElementById("d-title").value;
+        data.content = document.getElementById("d-content").value;
+        data.contentType = "MANUAL";
+      }
+
+      await setDoc(doc(db, "artifacts", appId, "public", "data", "knowledge", id), data, { merge: true });
+      window.toast("Guardado");
+      window.closeModal("modal-capture");
+      if (document.body.dataset.viewType) renderList(document.body.dataset.viewType);
+    };
+
+    window.saveUser = async () => {
+      const n = document.getElementById("u-name").value;
+      const i = document.getElementById("u-id").value;
+      if (!n || !i) return window.toast("Faltan datos", true);
+      await setDoc(doc(db, "artifacts", appId, "public", "data", "team", i), { name: n, empNumber: i, role: document.getElementById("u-role").value });
+      window.toast("Usuario Creado");
+      window.closeModal("modal-user");
+      renderList("USERS");
+    };
+
+    window.deleteRec = async (id) => {
+      if (confirm("¿Eliminar?")) {
+        await deleteDoc(doc(db, "artifacts", appId, "public", "data", "knowledge", id));
+        renderList(document.body.dataset.viewType);
+      }
+    };
+
+    window.deleteUser = async (id) => {
+      if (confirm("¿Eliminar?")) {
+        await deleteDoc(doc(db, "artifacts", appId, "public", "data", "team", id));
+        renderList("USERS");
+      }
+    };
+
+    // BORRADO MASIVO
+    window.toggleSelectAll = (el) => {
+      document.querySelectorAll(".select-row").forEach((cb) => (cb.checked = el.checked));
+    };
+
+    window.deleteSelected = async () => {
+      const selected = Array.from(document.querySelectorAll(".select-row:checked")).map((cb) => cb.value);
+      if (selected.length === 0) return window.toast("Nada seleccionado", true);
+
+      if (confirm(`¿Borrar ${selected.length} registros seleccionados?`)) {
+        document.getElementById("page-title").innerText = "Borrando...";
+        const batch = writeBatch(db);
+        const colName = document.body.dataset.viewType === "USERS" ? "team" : "knowledge";
+
+        selected.forEach((id) => {
+          const ref = doc(db, "artifacts", appId, "public", "data", colName, id);
+          batch.delete(ref);
+        });
+
+        await batch.commit();
+        window.toast(`${selected.length} registros eliminados`);
+        if (document.body.dataset.viewType === "USERS") renderList("USERS");
+        else renderList(document.body.dataset.viewType);
+      }
+    };
+
+    // AUTO-DETECT LAYOUT (REGLAS - legacy)
+    window.handleBulkUpload = async (input) => {
+      const f = input.files[0];
+      if (!f) return;
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "" });
+        const batch = writeBatch(db);
+
+        json.forEach((row) => {
+          const id = "imp_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
+          const ref = doc(db, "artifacts", appId, "public", "data", "knowledge", id);
+          let entry = { date: new Date().toISOString(), author: currentUser?.name || "system" };
+
+          if (row.Regla || row.REGLA) {
+            entry.contentType = "REGLA_SPEI";
+            entry.regla = row.Regla || row.REGLA;
+            entry.capitulo = row["Capítulo"] || row.CAPITULO || row.Capitulo;
+            entry.content = row.Texto_literal || row.TEXTO_LITERAL || row.CONTENIDO;
+            entry.tema = row.Tema_operativo || row.TEMA || row.TITULO;
+            entry.keywords = row.Palabras_clave || "";
+            entry.ia_text = row.Texto_normalizado_IA || "";
+            entry.title = `Regla ${entry.regla}`;
+          } else {
+            entry.contentType = "MANUAL";
+            entry.title = row.TITULO || "Importado";
+            entry.content = row.CONTENIDO || "";
+          }
+          batch.set(ref, entry, { merge: true });
+        });
+
+        await batch.commit();
+        window.toast("Carga Exitosa");
+        window.closeModal("modal-upload");
+        if (document.body.dataset.viewType) renderList(document.body.dataset.viewType);
+      };
+      reader.readAsArrayBuffer(f);
+    };
+
+    // Render list
     function renderList(type) {
       const list = document.getElementById("table-content");
       if (!list) return;
 
-      let data = (type === "ALL") ? knowledgeBase : knowledgeBase.filter(k => k.contentType === type);
-      if (!data.length) { list.innerHTML = "<div class='text-center py-10 text-slate-400 font-black'>Sin registros</div>"; return; }
+      let data = type === "USERS" ? team : type === "ALL" ? knowledgeBase : knowledgeBase.filter((k) => k.contentType === type);
+      const q = (document.getElementById("table-search")?.value || "").trim().toLowerCase();
 
-      list.innerHTML = data.map(i => {
-        const id = i.id;
-        const title = i.title || "(Sin título)";
-        const desc = (i.content || "").substring(0, 90);
-        return `
+      if (q) {
+        data = data.filter((i) => JSON.stringify(i).toLowerCase().includes(q));
+      }
+
+      if (!data.length) {
+        list.innerHTML = "<div class='text-center py-10 text-slate-400'>Sin registros</div>";
+        return;
+      }
+
+      list.innerHTML = data
+        .map((i) => {
+          const isUser = type === "USERS";
+          const id = isUser ? i.empNumber : i.id;
+          const title = isUser ? i.name : i.title;
+          const desc = isUser ? i.role : (i.content?.substring(0, 80) || "");
+          const badgeType = isUser ? "USER" : (i.contentType || "MANUAL");
+
+          return `
           <div class="data-card">
             <div class="flex items-center w-full overflow-hidden">
-              <input type="checkbox" class="mr-3 accent-blue-600 w-4 h-4 select-row" value="${escapeHtml(id)}">
-              <div>
-                <span class="badge badge-${escapeHtml(i.contentType || "MANUAL")}">${escapeHtml(i.contentType || "MANUAL")}</span>
-                <h4 class="font-black text-sm mt-1">${escapeHtml(title)}</h4>
-                <p class="text-xs text-slate-500">${escapeHtml(desc)}</p>
+              <input type="checkbox" class="mr-3 accent-blue-600 w-4 h-4 select-row" value="${id}">
+              <div class="min-w-0">
+                <span class="badge badge-${badgeType}">${badgeType === "USER" ? "USUARIO" : badgeType}</span>
+                <h4 class="font-bold text-sm mt-1 truncate">${title || "(sin título)"}</h4>
+                <p class="text-xs text-slate-500 line-clamp-1">${desc}</p>
               </div>
             </div>
             <div class="flex gap-2">
-              <button onclick="window.deleteRec('${escapeHtml(id)}')" class="text-red-500"><i class="fas fa-trash"></i></button>
+              <button onclick="${isUser ? `window.deleteUser('${id}')` : `window.deleteRec('${id}')`}" class="text-red-500"><i class="fas fa-trash"></i></button>
             </div>
-          </div>
-        `;
-      }).join("");
+          </div>`;
+        })
+        .join("");
     }
 
-    window.filterList = () => renderList(document.body.dataset.viewType || "ALL");
-
-    window.deleteRec = async (id) => {
-      if (!confirm("¿Eliminar?")) return;
-      await deleteDoc(doc(db, "artifacts", appId, "public", "data", "knowledge", id));
-      renderList(document.body.dataset.viewType || "ALL");
+    window.filterList = () => {
+      const type = document.body.dataset.viewType;
+      renderList(type);
     };
 
-    window.toggleSelectAll = (el) => document.querySelectorAll(".select-row").forEach(cb => cb.checked = el.checked);
-
-    window.deleteSelected = async () => {
-      const selected = Array.from(document.querySelectorAll(".select-row:checked")).map(cb => cb.value);
-      if (!selected.length) return window.toast("Nada seleccionado", true);
-
-      if (!confirm(`¿Borrar ${selected.length} registros seleccionados?`)) return;
-
-      const batch = writeBatch(db);
-      selected.forEach(id => batch.delete(doc(db, "artifacts", appId, "public", "data", "knowledge", id)));
-      await batch.commit();
-
-      window.toast(`${selected.length} registros eliminados`);
-      renderList(document.body.dataset.viewType || "ALL");
-    };
-
-    // -------- IA (NO JSON). Si hay reglas, se “amarran” al contexto; si no hay reglas, solo ayuda a aclarar.
-    async function askGeminiGuarded(question, context, hasRules) {
-      const guard = hasRules
-        ? `INSTRUCCIONES:
-- Usa SOLO la información del CONTEXTO.
-- Si el contexto no contiene la respuesta, di: "No hay evidencia en la base cargada".
-- No inventes datos.`
-        : `INSTRUCCIONES:
-- No afirmes hechos como si vinieran de normativa (no hay coincidencias).
-- Ayuda a aclarar: qué dato falta, qué palabras clave buscar, qué falta cargar.
-- Prohibido inventar reglas/capítulos/textos.`;
-
-      const prompt = `
-Eres Speikito, asistente de consulta.
-
-${guard}
-
-PREGUNTA:
-${question}
-
-${context ? `CONTEXTO:\n${context}` : "CONTEXTO: (vacío)"}
-
-FORMATO DE RESPUESTA (TEXTO NORMAL, NO JSON):
-- Respuesta:
-- Citas (si aplica): (cada cita con: Regla / Capítulo / Texto literal entre « »)
-- Preguntas para aclarar (si aplica):
-- Sugerencias de búsqueda (si aplica):
-`;
-
-      try {
-        const res = await fetch("/api/gemini", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt }),
-        });
-
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          return `Error API (${res.status}): ${err?.error || err?.detail?.message || err?.message || "No se pudo consultar la IA"}`;
-        }
-
-        const data = await res.json();
-        return data?.candidates?.[0]?.content?.parts?.map(p => p.text).join("") || "Sin respuesta de IA.";
-      } catch {
-        return "Error de conexión.";
-      }
-    }
-
-    function renderGuarded(aiText, hitsCount, rulesCount) {
-      const meta = `<div class="reg-footer">Matches: ${hitsCount} • Reglas: ${rulesCount}</div>`;
-      return `
-        <div class="reg-card">
-          <div class="reg-title">Respuesta</div>
-          <div class="reg-content">${escapeHtml(aiText)}</div>
-          ${meta}
-        </div>
-      `;
-    }
-
-    function buildOpsHtml(hits) {
-      if (!hits.length) return "";
-      let h = `<div class="mb-2 font-black text-xs text-blue-600">RESULTADOS OPERATIVOS</div>`;
-      hits.slice(0, 10).forEach(x => {
-        if (x.contentType === "CERTIFICADO") {
-          h += `<div class="bg-blue-50 p-2 rounded mb-1 text-xs border border-blue-100 font-mono"><b>${escapeHtml(x.title)}</b><br>Estatus: ${escapeHtml(x.estatus || "-")} | Vence: ${escapeHtml(x.vigenciaFin || "-")}</div>`;
-        } else if (x.contentType === "EXTENSION") {
-          h += `<div class="bg-emerald-50 p-2 rounded mb-1 text-xs"><b>${escapeHtml(x.ext || "")}</b> - ${escapeHtml(x.nombre || "")} (${escapeHtml(x.area || "")})</div>`;
-        } else {
-          h += `<div class="bg-white p-2 rounded border mb-1 text-xs"><b>${escapeHtml(x.title || "")}</b><br>${escapeHtml((x.content || "").slice(0, 140))}</div>`;
-        }
-      });
-      return h;
-    }
-
-    // CHAT
+    // CHAT: primero busca coincidencias en tu base (normativa/operación).
+    // Si no hay coincidencias, responde sugerencia (sin bloquear).
     document.getElementById("chat-form").onsubmit = async (e) => {
       e.preventDefault();
       const v = document.getElementById("chat-input").value.trim();
       if (!v) return;
-
       document.getElementById("chat-input").value = "";
-      addMsg(v, true);
+      addMsg(escapeHtml(v), true);
 
-      // Búsqueda por “contiene”. (mejora futura: scoring por keywords)
-      const normV = normalizeText(v);
-      const hits = knowledgeBase.filter(k => {
-        const text = normalizeText((k.title || "") + " " + (k.content || "") + " " + (k.tema || "") + " " + (k.keywords || ""));
-        return normV && text.includes(normV);
+      const normV = v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+      const hits = knowledgeBase.filter((k) => {
+        const text = (String(k.title || "") + " " + String(k.content || "") + " " + String(k.tema || "") + " " + String(k.keywords || "")).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        return text.includes(normV);
       });
 
-      const rules = hits.filter(k => k.contentType === "REGLA_SPEI");
-      const hasRules = rules.length > 0;
+      const rules = hits.filter((k) => k.contentType === "REGLA_SPEI");
 
-      // Contexto: si hay reglas, solo reglas; si no, mandamos “top hits” de todo para que ayude a orientar.
-      const context = hasRules
-        ? rules.map(r => `Regla: ${r.regla}\nCapítulo: ${r.capitulo}\nTexto: ${r.content}\n---`).join("\n")
-        : hits.slice(0, 6).map(x => `Tipo: ${x.contentType}\nTítulo: ${x.title}\nContenido: ${(x.content || "").slice(0, 400)}\n---`).join("\n");
+      if (rules.length > 0) {
+        // Muestra resultados normativos (sin IA)
+        let h = `<div class="mb-2 font-bold text-xs text-amber-700">RESULTADOS NORMATIVOS</div>`;
+        rules.slice(0, 5).forEach((r) => {
+          h += `
+            <div class="reg-card">
+              <div class="reg-title">Regla ${escapeHtml(r.regla || "")} • ${escapeHtml(r.capitulo || "")}</div>
+              <div class="reg-content">«${escapeHtml(r.content || "")}»</div>
+              <div class="reg-footer">Tema: ${escapeHtml(r.tema || "")}</div>
+            </div>
+          `;
+        });
+        addMsg(h, false);
+        return;
+      }
 
-      const aiText = await askGeminiGuarded(v, context, hasRules);
+      if (hits.length > 0) {
+        let h = `<div class="mb-2 font-bold text-xs text-blue-600">RESULTADOS OPERATIVOS</div>`;
+        hits.slice(0, 8).forEach((x) => {
+          if (x.contentType === "CERTIFICADO") {
+            h += `<div class="bg-blue-50 p-2 rounded mb-1 text-xs border border-blue-100 font-mono">
+              <b>${escapeHtml(x.title || "")}</b><br>
+              Estatus: ${escapeHtml(x.estatus || "")} | Entorno: ${escapeHtml(x.entorno || "")} | Vence: ${escapeHtml(x.vigenciaFin || "")}
+            </div>`;
+          } else if (x.contentType === "EXTENSION") {
+            h += `<div class="bg-emerald-50 p-2 rounded mb-1 text-xs">
+              <b>${escapeHtml(x.ext || "")}</b> - ${escapeHtml(x.nombre || "")} (${escapeHtml(x.area || "")})
+            </div>`;
+          } else {
+            h += `<div class="bg-white p-2 rounded border mb-1 text-xs">
+              <b>${escapeHtml(x.title || "")}</b><br>
+              <span class="text-slate-500">${escapeHtml((x.content || "").slice(0, 120))}</span>
+            </div>`;
+          }
+        });
+        addMsg(h, false);
+        return;
+      }
 
-      const opsHtml = buildOpsHtml(hits.filter(x => x.contentType !== "REGLA_SPEI"));
-      const finalHtml = renderGuarded(aiText, hits.length, rules.length) + (opsHtml ? `<div class="mt-3">${opsHtml}</div>` : "");
-
-      addMsg(finalHtml, false);
+      addMsg(
+        `<div class="text-sm text-slate-600">
+          No encontré coincidencias exactas en tu base. Prueba con palabras clave más cortas (ej: <b>devolución</b>, <b>retorno</b>, <b>cert</b>, <b>ext 5522</b>),
+          o ve a <b>Gestión → Importar</b> para cargar masivamente tus catálogos.
+        </div>`,
+        false
+      );
     };
 
     function addMsg(t, u) {
       const d = document.createElement("div");
       d.className = `chat-bubble ${u ? "user-msg" : "bot-msg"} shadow-sm`;
       d.innerHTML = t;
-
       const b = document.getElementById("chat-box");
       const r = document.createElement("div");
       r.className = `flex w-full mb-2 ${u ? "justify-end" : "justify-start"}`;
       r.appendChild(d);
-
       b.appendChild(r);
       b.scrollTop = b.scrollHeight;
     }
 
-    // PERFIL (opcional)
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    // PERFIL & LOGIN
     window.handleProfileUpload = (input) => {
       const f = input.files[0];
-      if (!f) return;
       const r = new FileReader();
-      r.onload = async (e) => {
-        if (!currentUser) return;
-        await setDoc(doc(db, "artifacts", appId, "public", "data", "team", currentUser.empNumber), { photoURL: e.target.result }, { merge: true });
-        updateAvatar(e.target.result);
+      r.onload = (e) => {
+        if (currentUser) {
+          setDoc(doc(db, "artifacts", appId, "public", "data", "team", currentUser.empNumber), { photoURL: e.target.result }, { merge: true });
+          updateAvatar(e.target.result);
+        }
       };
-      r.readAsDataURL(f);
+      if (f) r.readAsDataURL(f);
     };
 
     function updateAvatar(url) {
-      if (!url) return;
-      document.getElementById("user-initials").classList.add("hidden");
-      document.getElementById("user-img-display").src = url;
-      document.getElementById("user-img-display").classList.remove("hidden");
-      document.getElementById("profile-prev").src = url;
-      document.getElementById("profile-prev").classList.remove("hidden");
-      document.getElementById("profile-icon").classList.add("hidden");
+      if (url) {
+        document.getElementById("user-initials").classList.add("hidden");
+        document.getElementById("user-img-display").src = url;
+        document.getElementById("user-img-display").classList.remove("hidden");
+        document.getElementById("profile-prev").src = url;
+        document.getElementById("profile-prev").classList.remove("hidden");
+        document.getElementById("profile-icon").classList.add("hidden");
+      }
     }
 
     function login(u) {
       currentUser = u;
-      localStorage.setItem("spei_v30_3_session", JSON.stringify(u));
+      localStorage.setItem("spei_v30_2_session", JSON.stringify(u));
       document.body.setAttribute("data-role", u.role);
-
       document.getElementById("login-screen").classList.add("hidden-ui");
       document.getElementById("loading-screen").classList.add("hidden-ui");
       document.getElementById("app-layout").classList.remove("hidden-ui");
-
       document.getElementById("user-name-display").innerText = u.name;
-      document.getElementById("user-role-display").innerText = (u.role === "admin") ? "ADMIN" : "OPERATIVO";
+      document.getElementById("user-role-display").innerText = u.role === "admin" ? "ADMIN" : "OPERATIVO";
 
-      if (u.role !== "admin") document.querySelectorAll(".admin-only").forEach(e => e.classList.add("hidden-ui"));
-      else document.querySelectorAll(".admin-only").forEach(e => e.classList.remove("hidden-ui"));
+      if (u.role !== "admin") document.querySelectorAll(".admin-only").forEach((e) => e.classList.add("hidden-ui"));
+      else document.querySelectorAll(".admin-only").forEach((e) => e.classList.remove("hidden-ui"));
 
       if (u.photoURL) updateAvatar(u.photoURL);
     }
@@ -548,54 +897,286 @@ FORMATO DE RESPUESTA (TEXTO NORMAL, NO JSON):
         } else {
           await signInAnonymously(auth);
         }
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error(e);
+      }
     };
 
     async function init() {
       await initAuth();
 
-      onAuthStateChanged(auth, async (u) => {
-        if (!u) return;
+      onAuthStateChanged(auth, (u) => {
+        if (u) {
+          onSnapshot(collection(db, "artifacts", appId, "public", "data", "team"), async (s) => {
+            team = s.docs.map((d) => ({ id: d.id, ...d.data() }));
 
-        // Team
-        onSnapshot(collection(db, "artifacts", appId, "public", "data", "team"), async (s) => {
-          team = s.docs.map(d => ({ id: d.id, ...d.data() }));
-          if (!team.length) {
-            await setDoc(doc(db, "artifacts", appId, "public", "data", "team", "682930"), { name: "Daniel Anzaldo", role: "admin", empNumber: "682930" });
-          }
+            // Seed admin if empty
+            if (!team.length) {
+              await setDoc(doc(db, "artifacts", appId, "public", "data", "team", "682930"), { name: "Daniel Anzaldo", role: "admin", empNumber: "682930" });
+            }
 
-          const saved = localStorage.getItem("spei_v30_3_session");
-          if (saved) login(JSON.parse(saved));
-          else document.getElementById("login-screen").classList.remove("hidden-ui");
+            const savedSession = localStorage.getItem("spei_v30_2_session");
+            if (savedSession) login(JSON.parse(savedSession));
+            else document.getElementById("login-screen").classList.remove("hidden-ui");
 
-          document.getElementById("loading-screen").classList.add("hidden-ui");
-        });
+            document.getElementById("loading-screen").classList.add("hidden-ui");
+          });
 
-        // Knowledge
-        onSnapshot(collection(db, "artifacts", appId, "public", "data", "knowledge"), (s) => {
-          knowledgeBase = s.docs.map(d => ({ id: d.id, ...d.data() }));
-          const viewType = document.body.dataset.viewType;
-          if (viewType) renderList(viewType);
-        });
+          onSnapshot(collection(db, "artifacts", appId, "public", "data", "knowledge"), (s) => {
+            knowledgeBase = s.docs.map((d) => ({ id: d.id, ...d.data() }));
+            if (document.body.dataset.viewType) renderList(document.body.dataset.viewType);
+          });
+        }
       });
     }
+
+    // =========================
+    // IMPORTACIÓN MASIVA (XLSX)
+    // =========================
+    window.openBulkImport = () => {
+      if (!currentUser || currentUser.role !== "admin") return window.toast("Solo admin", true);
+      document.getElementById("bulk-file-in").value = "";
+      const st = document.getElementById("bulk-status");
+      st.classList.add("hidden");
+      st.innerText = "";
+      document.getElementById("modal-bulk-import").classList.remove("hidden-ui");
+    };
+
+    window.downloadBulkTemplate = () => {
+      const wb = XLSX.utils.book_new();
+
+      const cert = XLSX.utils.json_to_sheet([
+        { num: "9A3F", negocio: "SPEI", entorno: "PRODUCCION", estatus: "VIGENTE", vigenciaIni: "2024-01-01", vigenciaFin: "2026-12-31", title: "", content: "" },
+      ]);
+      XLSX.utils.book_append_sheet(wb, cert, "CERTIFICADOS");
+
+      const dir = XLSX.utils.json_to_sheet([{ ext: "5522", nombre: "Juan Pérez", area: "Soporte a Producción", title: "", content: "" }]);
+      XLSX.utils.book_append_sheet(wb, dir, "DIRECTORIO");
+
+      const man = XLSX.utils.json_to_sheet([{ title: "Manual de Retornos Extemporáneos", content: "Paso 1... Paso 2..." }]);
+      XLSX.utils.book_append_sheet(wb, man, "MANUALES");
+
+      const reglas = XLSX.utils.json_to_sheet([{ regla: "17a", capitulo: "Cap 3", tema: "Devoluciones", content: "El participante deberá...", keywords: "devolucion retorno rechazo" }]);
+      XLSX.utils.book_append_sheet(wb, reglas, "REGLAS");
+
+      XLSX.writeFile(wb, "layout_spei_ops.xlsx");
+    };
+
+    function showBulkStatus(msg, isErr = false) {
+      const st = document.getElementById("bulk-status");
+      st.classList.remove("hidden");
+      st.className = `mt-4 text-xs font-black ${isErr ? "text-red-600" : "text-emerald-700"}`;
+      st.innerText = msg;
+    }
+
+    function cleanStr(v) { return String(v ?? "").trim(); }
+
+    function normalizeDate(v) {
+      if (!v) return "";
+      if (typeof v === "string") return v.trim();
+      if (v instanceof Date) return v.toISOString().slice(0, 10);
+      if (typeof v === "number") {
+        const utc_days = Math.floor(v - 25569);
+        const utc_value = utc_days * 86400;
+        const date_info = new Date(utc_value * 1000);
+        return date_info.toISOString().slice(0, 10);
+      }
+      return cleanStr(v);
+    }
+
+    function buildCertEntry(row) {
+      const num = cleanStr(row.num || row.NUM || row.Num || row["Últimos 4"] || row.ultimos4);
+      const negocio = cleanStr(row.negocio || row.NEGOCIO);
+      const entorno = cleanStr(row.entorno || row.ENTORNO);
+      const estatus = cleanStr(row.estatus || row.ESTATUS);
+      const vigenciaIni = normalizeDate(row.vigenciaIni || row.vigencia_inicio || row.INICIO || row.inicio);
+      const vigenciaFin = normalizeDate(row.vigenciaFin || row.vigencia_fin || row.FIN || row.fin);
+      const title = cleanStr(row.title) || `CERT ${num}`;
+      const content = cleanStr(row.content) || `${negocio} | ${entorno} | ${estatus}`;
+      return { contentType: "CERTIFICADO", num, negocio, entorno, estatus, vigenciaIni, vigenciaFin, title, content };
+    }
+
+    function buildDirEntry(row) {
+      const ext = cleanStr(row.ext || row.EXT || row.EXTENSION || row.extension);
+      const nombre = cleanStr(row.nombre || row.NOMBRE);
+      const area = cleanStr(row.area || row.AREA);
+      const title = cleanStr(row.title) || `EXT ${ext}`;
+      const content = cleanStr(row.content) || `${nombre} - ${area}`;
+      return { contentType: "EXTENSION", ext, nombre, area, title, content };
+    }
+
+    function buildManualEntry(row) {
+      const title = cleanStr(row.title || row.TITULO);
+      const content = cleanStr(row.content || row.CONTENIDO);
+      return { contentType: "MANUAL", title, content };
+    }
+
+    function buildRuleEntry(row) {
+      const regla = cleanStr(row.regla || row.Regla || row.REGLA);
+      const capitulo = cleanStr(row.capitulo || row["Capítulo"] || row.CAPITULO || row.Capitulo);
+      const tema = cleanStr(row.tema || row.Tema_operativo || row.TEMA);
+      const content = cleanStr(row.content || row.Texto_literal || row.TEXTO_LITERAL || row.CONTENIDO);
+      const keywords = cleanStr(row.keywords || row.Palabras_clave || row.PALABRAS_CLAVE || "");
+      const ia_text = cleanStr(row.ia_text || row.Texto_normalizado_IA || "");
+      return { contentType: "REGLA_SPEI", regla, capitulo, tema, content, keywords, ia_text, title: `Regla ${regla}` };
+    }
+
+    function validateEntry(e) {
+      if (e.contentType === "CERTIFICADO") {
+        if (!e.num || !e.negocio) return "CERTIFICADO requiere num y negocio";
+      }
+      if (e.contentType === "EXTENSION") {
+        if (!e.ext || !e.nombre) return "DIRECTORIO requiere ext y nombre";
+      }
+      if (e.contentType === "MANUAL") {
+        if (!e.title || !e.content) return "MANUAL requiere title y content";
+      }
+      if (e.contentType === "REGLA_SPEI") {
+        if (!e.regla || !e.content) return "REGLA requiere regla y content";
+      }
+      return "";
+    }
+
+    async function commitBatch(docs) {
+      const CHUNK = 450;
+      for (let i = 0; i < docs.length; i += CHUNK) {
+        const slice = docs.slice(i, i + CHUNK);
+        const batch = writeBatch(db);
+        slice.forEach((d) => {
+          batch.set(doc(db, "artifacts", appId, "public", "data", "knowledge", d.id), d.payload, { merge: true });
+        });
+        await batch.commit();
+      }
+    }
+
+    window.runBulkImport = async () => {
+      try {
+        if (!currentUser || currentUser.role !== "admin") return window.toast("Solo admin", true);
+
+        const input = document.getElementById("bulk-file-in");
+        const file = input.files?.[0];
+        if (!file) return showBulkStatus("Selecciona un archivo .xlsx", true);
+
+        showBulkStatus("Leyendo archivo...", false);
+        document.getElementById("btn-bulk-run").disabled = true;
+
+        const arrayBuffer = await file.arrayBuffer();
+        const wb = XLSX.read(arrayBuffer, { type: "array" });
+
+        const foundSheets = wb.SheetNames.map((s) => s.toUpperCase());
+        if (!foundSheets.includes("CERTIFICADOS") && !foundSheets.includes("DIRECTORIO") && !foundSheets.includes("MANUALES") && !foundSheets.includes("REGLAS")) {
+          document.getElementById("btn-bulk-run").disabled = false;
+          return showBulkStatus("No encontré hojas CERTIFICADOS / DIRECTORIO / MANUALES / REGLAS.", true);
+        }
+
+        const nowIso = new Date().toISOString();
+        let toWrite = [];
+        let errors = [];
+
+        const getSheet = (name) => {
+          const idx = wb.SheetNames.findIndex((s) => s.toUpperCase() === name);
+          return idx >= 0 ? wb.Sheets[wb.SheetNames[idx]] : null;
+        };
+
+        const sheetCert = getSheet("CERTIFICADOS");
+        if (sheetCert) {
+          const rows = XLSX.utils.sheet_to_json(sheetCert, { defval: "" });
+          rows.forEach((row, idx) => {
+            const e = buildCertEntry(row);
+            e.date = nowIso;
+            e.author = currentUser.name;
+            const err = validateEntry(e);
+            if (err) errors.push(`CERTIFICADOS fila ${idx + 2}: ${err}`);
+            else {
+              const id = `cert_${e.num}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+              toWrite.push({ id, payload: e });
+            }
+          });
+        }
+
+        const sheetDir = getSheet("DIRECTORIO");
+        if (sheetDir) {
+          const rows = XLSX.utils.sheet_to_json(sheetDir, { defval: "" });
+          rows.forEach((row, idx) => {
+            const e = buildDirEntry(row);
+            e.date = nowIso;
+            e.author = currentUser.name;
+            const err = validateEntry(e);
+            if (err) errors.push(`DIRECTORIO fila ${idx + 2}: ${err}`);
+            else {
+              const id = `ext_${e.ext}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+              toWrite.push({ id, payload: e });
+            }
+          });
+        }
+
+        const sheetMan = getSheet("MANUALES");
+        if (sheetMan) {
+          const rows = XLSX.utils.sheet_to_json(sheetMan, { defval: "" });
+          rows.forEach((row, idx) => {
+            const e = buildManualEntry(row);
+            e.date = nowIso;
+            e.author = currentUser.name;
+            const err = validateEntry(e);
+            if (err) errors.push(`MANUALES fila ${idx + 2}: ${err}`);
+            else {
+              const safeTitle = (e.title || "manual").replace(/\s+/g, "_").slice(0, 30);
+              const id = `man_${safeTitle}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+              toWrite.push({ id, payload: e });
+            }
+          });
+        }
+
+        const sheetReg = getSheet("REGLAS");
+        if (sheetReg) {
+          const rows = XLSX.utils.sheet_to_json(sheetReg, { defval: "" });
+          rows.forEach((row, idx) => {
+            const e = buildRuleEntry(row);
+            e.date = nowIso;
+            e.author = currentUser.name;
+            const err = validateEntry(e);
+            if (err) errors.push(`REGLAS fila ${idx + 2}: ${err}`);
+            else {
+              const safeRegla = (e.regla || "regla").replace(/\s+/g, "_").slice(0, 30);
+              const id = `reg_${safeRegla}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+              toWrite.push({ id, payload: e });
+            }
+          });
+        }
+
+        if (errors.length) {
+          document.getElementById("btn-bulk-run").disabled = false;
+          return showBulkStatus(
+            "Errores detectados:\\n- " +
+              errors.slice(0, 10).join("\\n- ") +
+              (errors.length > 10 ? `\\n... (${errors.length - 10} más)` : ""),
+            true
+          );
+        }
+
+        if (!toWrite.length) {
+          document.getElementById("btn-bulk-run").disabled = false;
+          return showBulkStatus("No hay registros válidos para importar.", true);
+        }
+
+        showBulkStatus(`Importando ${toWrite.length} registros...`, false);
+        await commitBatch(toWrite);
+
+        window.toast(`Importación lista: ${toWrite.length} registros`);
+        showBulkStatus(`✅ Importación completa: ${toWrite.length} registros`, false);
+        document.getElementById("btn-bulk-run").disabled = false;
+
+        // refresca listas si estás en vista tabla
+        const viewType = document.body.dataset.viewType;
+        if (viewType) window.filterList();
+      } catch (e) {
+        console.error(e);
+        document.getElementById("btn-bulk-run").disabled = false;
+        showBulkStatus("Error al importar: " + String(e?.message || e), true);
+      }
+    };
 
     window.addEventListener("load", init);
   </script>
 </body>
 </html>
-
-
-========================
-NOTAS RÁPIDAS (IMPORTANTE)
-========================
-1) Crea la carpeta /api y dentro pega gemini.js (exacto).
-2) Tu index.html va en la raíz del proyecto.
-3) En Vercel: Settings -> Environment Variables:
-   GEMINI_API_KEY = TU_API_KEY
-4) Si antes tenías un endpoint diferente, en el frontend SIEMPRE debe llamar:
-   fetch("/api/gemini", { method:"POST", ... })
-5) Esta versión:
-   - Nunca imprime JSON en el chat
-   - Si NO hay coincidencia en normativa, igual consulta a IA pero SOLO para "aclarar / orientar" sin inventar reglas
-   - Si hay reglas, obliga a usar SOLO ese contexto
