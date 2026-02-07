@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
-  <title>SPEI Ops - Speikito v31</title>
+  <title>SPEI Ops - Speikito v30.3</title>
 
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -15,21 +15,13 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-  <script>
-    window.MathJax = { tex: { inlineMath: [["$", "$"]] }, options: { enableMenu: false } };
-  </script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // Configuración con fallback robusto
     let firebaseConfig;
     try {
       firebaseConfig = JSON.parse(window.__firebase_config);
@@ -40,7 +32,7 @@
         projectId: "chatbot-8d0a3",
         storageBucket: "chatbot-8d0a3.firebasestorage.app",
         messagingSenderId: "390359131739",
-        appId: "1:390359131739:web:23373d0ba69b4719bb417e"
+        appId: "1:390359131739:web:23373d0ba69b4719bb417e",
       };
     }
 
@@ -58,74 +50,63 @@
 
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
-    @import url("https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,700;1,300&display=swap");
-
     * { box-sizing: border-box; }
-    body { font-family: "Inter", sans-serif; background-color: #f1f5f9; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+    body { font-family: "Inter", sans-serif; background:#f1f5f9; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+    .layout-container { display:flex; height:100%; width:100%; }
+    .sidebar { width:280px; background:#0f172a; color:#94a3b8; display:flex; flex-direction:column; border-right:1px solid #1e293b; transition:transform .3s; flex-shrink:0; z-index:50; }
+    .sidebar-header { padding:1.5rem; border-bottom:1px solid #1e293b; display:flex; align-items:center; gap:.75rem; color:#fff; font-weight:800; font-size:1.1rem; }
+    .nav-scroll { flex:1; overflow-y:auto; padding:1rem 0; }
+    .nav-section { font-size:.65rem; font-weight:800; text-transform:uppercase; color:#475569; padding:1rem 1.5rem .5rem; letter-spacing:.05em; }
+    .nav-item { padding:.75rem 1.5rem; cursor:pointer; display:flex; align-items:center; gap:.75rem; font-size:.85rem; font-weight:600; transition:.2s; border-left:3px solid transparent; }
+    .nav-item:hover { background:#1e293b; color:#fff; }
+    .nav-item.active { background:#1e293b; color:#fff; border-left-color:#3b82f6; }
+    .main-area { flex:1; display:flex; flex-direction:column; background:#fff; position:relative; overflow:hidden; }
+    .top-header { height:4rem; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between; padding:0 2rem; background:#fff; z-index:20; }
+    .view-section { flex:1; overflow-y:auto; padding:2rem; display:none; height:100%; flex-direction:column; }
+    .view-section.active { display:flex; }
+    #view-chat { padding:0; }
+    .chat-box { flex:1; overflow-y:auto; padding:2rem; background:#f8fafc; }
+    .chat-input-area { padding:1.5rem 2rem; background:#fff; border-top:1px solid #e2e8f0; }
+    .chat-bubble { max-width:85%; padding:1rem 1.25rem; border-radius:1rem; font-size:.9rem; line-height:1.6; margin-bottom:1rem; box-shadow:0 2px 4px rgba(0,0,0,.05); }
+    .user-msg { align-self:flex-end; background:#2563eb; color:#fff; border-bottom-right-radius:0; margin-left:auto; }
+    .bot-msg { align-self:flex-start; background:#fff; border:1px solid #e2e8f0; color:#0f172a; border-bottom-left-radius:0; width:100%; }
+    .bot-header { font-weight:900; color:#0f172a; margin-bottom:.5rem; display:flex; align-items:center; gap:.5rem; border-bottom:2px solid #e2e8f0; padding-bottom:.5rem; }
 
-    .layout-container { display: flex; height: 100%; width: 100%; }
-    .sidebar { width: 280px; background: #0f172a; color: #94a3b8; display: flex; flex-direction: column; border-right: 1px solid #1e293b; transition: transform 0.3s; flex-shrink: 0; z-index: 50; }
-    .sidebar-header { padding: 1.5rem; border-bottom: 1px solid #1e293b; display: flex; align-items: center; gap: 0.75rem; color: white; font-weight: 800; font-size: 1.1rem; }
+    .reg-card { background:#fffbeb; border-left:4px solid #f59e0b; padding:1rem; border-radius:.5rem; margin-top:.5rem; }
+    .reg-title { font-size:.75rem; font-weight:900; color:#92400e; text-transform:uppercase; margin-bottom:.5rem; }
+    .reg-content { color:#451a03; line-height:1.6; font-size:.95rem; white-space:pre-wrap; }
+    .reg-footer { margin-top:.5rem; font-size:.7rem; color:#b45309; font-weight:800; text-align:right; }
 
-    .nav-scroll { flex: 1; overflow-y: auto; padding: 1rem 0; }
-    .nav-section { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: #475569; padding: 1rem 1.5rem 0.5rem; letter-spacing: 0.05em; }
-    .nav-item { padding: 0.75rem 1.5rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; font-size: 0.85rem; font-weight: 500; transition: all 0.2s; border-left: 3px solid transparent; }
-    .nav-item:hover { background: #1e293b; color: white; }
-    .nav-item.active { background: #1e293b; color: white; border-left-color: #3b82f6; }
+    #table-content { flex:1; overflow-y:auto; padding-bottom:6rem; display:flex; flex-direction:column; gap:.75rem; min-height:300px; }
+    .data-card { background:#fff; border:1px solid #e2e8f0; border-radius:.75rem; padding:1rem; display:flex; justify-content:space-between; align-items:center; transition:.2s; box-shadow:0 1px 2px rgba(0,0,0,.05); min-height:80px; }
+    .data-card:hover { border-color:#3b82f6; transform:translateY(-1px); }
+    .badge { font-size:.65rem; font-weight:900; text-transform:uppercase; padding:.25rem .5rem; border-radius:99px; display:inline-block; margin-bottom:.25rem; }
+    .badge-REGLA_SPEI { background:#fffbeb; color:#b45309; }
+    .badge-CERTIFICADO { background:#eff6ff; color:#1d4ed8; }
+    .badge-EXTENSION { background:#f0fdf4; color:#15803d; }
+    .badge-MANUAL { background:#f8fafc; color:#475569; }
+    .badge-ARCHIVO { background:#e0f2fe; color:#0369a1; }
 
-    .main-area { flex: 1; display: flex; flex-direction: column; background: white; position: relative; overflow: hidden; }
-    .top-header { height: 4rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; background: white; shrink: 0; z-index: 20; }
+    .form-input { width:100%; padding:.7rem; border:1px solid #cbd5e1; border-radius:.5rem; font-size:.85rem; outline:none; transition:.2s; background:#fff; color:#0f172a; font-weight:700; }
+    .form-input:focus { border-color:#2563eb; box-shadow:0 0 0 2px #bfdbfe; }
+    .form-label { font-size:.7rem; font-weight:800; color:#64748b; margin-bottom:.25rem; display:block; text-transform:uppercase; }
 
-    .view-section { flex: 1; overflow-y: auto; padding: 2rem; display: none; height: 100%; flex-direction: column; }
-    .view-section.active { display: flex; }
-    #view-chat { padding: 0; }
+    .overlay { position:fixed; inset:0; background:rgba(15,23,42,.95); backdrop-filter:blur(4px); z-index:60; display:flex; align-items:center; justify-content:center; }
+    .modal { background:#fff; width:90%; max-width:800px; max-height:90vh; border-radius:1rem; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,.25); }
+    .hidden-ui { display:none !important; opacity:0; pointer-events:none; }
+    .admin-only.hidden-ui { display:none !important; }
 
-    .chat-box { flex: 1; overflow-y: auto; padding: 2rem; background: #f8fafc; }
-    .chat-input-area { padding: 1.5rem 2rem; background: white; border-top: 1px solid #e2e8f0; }
+    #toast { position:fixed; top:2rem; left:50%; transform:translateX(-50%); z-index:10001; padding:.75rem 1.5rem; border-radius:99px; font-weight:900; font-size:.85rem; color:#fff; background:#0f172a; opacity:0; pointer-events:none; transition:.3s; }
+    #toast.show { opacity:1; top:3rem; }
 
-    .chat-bubble { max-width: 85%; padding: 1rem 1.25rem; border-radius: 1rem; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .user-msg { align-self: flex-end; background: #2563eb; color: white; border-bottom-right-radius: 0; margin-left: auto; }
-    .bot-msg { align-self: flex-start; background: white; border: 1px solid #e2e8f0; color: #1e293b; border-bottom-left-radius: 0; width: 100%; }
+    .select-row { width:1.2rem; height:1.2rem; margin-right:1rem; cursor:pointer; accent-color:#2563eb; }
 
-    .bot-header { font-weight: 800; color: #0f172a; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+    .avatar-circle { width:32px; height:32px; border-radius:50%; object-fit:cover; background:#334155; display:flex; align-items:center; justify-content:center; font-weight:900; color:#fff; font-size:.7rem; cursor:pointer; border:2px solid #475569; }
+    .avatar-circle:hover { border-color:#fff; }
 
-    .reg-card { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 0.5rem; margin-top: 0.5rem; }
-    .reg-title { font-size: 0.75rem; font-weight: 900; color: #92400e; text-transform: uppercase; margin-bottom: 0.5rem; }
-    .reg-content { font-family: "Georgia", serif; font-style: italic; color: #451a03; line-height: 1.6; font-size: 0.95rem; white-space: pre-wrap; }
-    .reg-footer { margin-top: 0.5rem; font-size: 0.7rem; color: #b45309; font-weight: 700; text-align: right; }
-
-    #table-content { flex: 1; overflow-y: auto; padding-bottom: 6rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 300px; }
-    .data-card { background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); min-height: 80px; }
-    .data-card:hover { border-color: #3b82f6; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transform: translateY(-1px); }
-
-    .badge { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 0.25rem 0.5rem; border-radius: 99px; display: inline-block; margin-bottom: 0.25rem; }
-    .badge-CERTIFICADO { background: #eff6ff; color: #1d4ed8; }
-    .badge-EXTENSION { background: #f0fdf4; color: #15803d; }
-    .badge-MANUAL { background: #f8fafc; color: #475569; }
-    .badge-REGLA_SPEI { background: #fffbeb; color: #b45309; }
-    .badge-ARCHIVO { background: #e0f2fe; color: #0369a1; }
-    .badge-USER { background: #eef2ff; color: #3730a3; }
-
-    .form-input { width: 100%; padding: 0.7rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.85rem; outline: none; transition: 0.2s; background: white; color: #1e293b !important; font-weight: 600; }
-    .form-input:focus { border-color: #2563eb; box-shadow: 0 0 0 2px #bfdbfe; }
-    .form-label { font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 0.25rem; display: block; text-transform: uppercase; }
-
-    .overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.95); backdrop-filter: blur(4px); z-index: 60; display: flex; align-items: center; justify-content: center; }
-    .modal { background: white; width: 90%; max-width: 800px; max-height: 90vh; border-radius: 1rem; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
-
-    .hidden-ui { display: none !important; opacity: 0; pointer-events: none; }
-
-    #toast { position: fixed; top: 2rem; left: 50%; transform: translateX(-50%); z-index: 10001; padding: 0.75rem 1.5rem; border-radius: 99px; font-weight: 700; font-size: 0.85rem; color: white; background: #0f172a; opacity: 0; pointer-events: none; transition: 0.3s; }
-    #toast.show { opacity: 1; top: 3rem; }
-
-    .select-row { width: 1.2rem; height: 1.2rem; margin-right: 1rem; cursor: pointer; accent-color: #2563eb; }
-
-    .avatar-circle { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background-color: #334155; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 0.7rem; cursor: pointer; border: 2px solid #475569; }
-    .avatar-circle:hover { border-color: white; }
-
-    @media (max-width: 768px) {
-      .sidebar { position: fixed; height: 100%; transform: translateX(-100%); }
-      .sidebar.open { transform: translateX(0); }
+    @media (max-width:768px){
+      .sidebar { position:fixed; height:100%; transform:translateX(-100%); }
+      .sidebar.open { transform:translateX(0); }
     }
   </style>
 </head>
@@ -144,24 +125,21 @@
   <!-- LOGIN -->
   <div id="login-screen" class="overlay hidden-ui">
     <div class="bg-white p-10 rounded-2xl shadow-2xl w-full max-w-sm text-center">
-      <div class="w-16 h-16 bg-slate-900 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-3xl">
-        <i class="fas fa-fingerprint"></i>
-      </div>
+      <div class="w-16 h-16 bg-slate-900 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-3xl"><i class="fas fa-fingerprint"></i></div>
       <h1 class="text-2xl font-black text-slate-900 mb-1">SPEI Ops</h1>
       <p class="text-slate-500 text-xs mb-8 font-bold uppercase tracking-widest">Acceso Corporativo</p>
       <div class="space-y-4">
-        <input type="text" id="login-id" placeholder="ID de Empleado" class="form-input text-center text-lg font-bold tracking-widest border-slate-300 focus:border-blue-500 text-slate-900" />
-        <button onclick="handleLogin()" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-lg font-bold shadow-lg transition-all active:scale-95 cursor-pointer">
-          INGRESAR
-        </button>
-        <p id="login-msg" class="text-red-500 text-xs font-bold mt-2 opacity-0 transition-opacity">Credenciales Incorrectas</p>
+        <input type="text" id="login-id" placeholder="ID de Empleado" class="form-input text-center text-lg font-black tracking-widest border-slate-300" />
+        <button onclick="handleLogin()" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-lg font-black shadow-lg transition-all active:scale-95 cursor-pointer">INGRESAR</button>
+        <p id="login-msg" class="text-red-500 text-xs font-black mt-2 opacity-0 transition-opacity">Credenciales Incorrectas</p>
       </div>
-      <p class="mt-8 text-[10px] text-slate-400 font-bold uppercase tracking-wider">v31 • Creado por Daniel Anzaldo</p>
+      <p class="mt-8 text-[10px] text-slate-400 font-black uppercase tracking-wider">v30.3 • Creado por Daniel Anzaldo</p>
     </div>
   </div>
 
   <!-- APP PRINCIPAL -->
   <div id="app-layout" class="layout-container hidden-ui">
+
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
@@ -176,7 +154,7 @@
         <div class="admin-only hidden-ui">
           <div class="nav-section">Gestión</div>
           <div onclick="navigate('admin-all')" class="nav-item text-blue-400" id="nav-all"><i class="fas fa-globe w-5"></i> VER TODO</div>
-          <div onclick="navigate('admin-rules')" class="nav-item text-amber-500" id="nav-rules"><i class="fas fa-balance-scale w-5"></i> Normativa</div>
+          <div onclick="navigate('admin-rules')" class="nav-item text-amber-500" id="nav-rules"><i class="fas fa-balance-scale w-5"></i> Normativa SPEI</div>
           <div onclick="navigate('admin-cert')" class="nav-item" id="nav-cert"><i class="fas fa-certificate w-5"></i> Certificados</div>
           <div onclick="navigate('admin-ext')" class="nav-item" id="nav-ext"><i class="fas fa-address-book w-5"></i> Directorio</div>
           <div onclick="navigate('admin-docs')" class="nav-item" id="nav-docs"><i class="fas fa-file-alt w-5"></i> Manuales</div>
@@ -191,14 +169,14 @@
         <div class="flex items-center gap-3 mb-4">
           <div onclick="openProfileModal()" class="avatar-circle" id="user-avatar-container">
             <span id="user-initials">DA</span>
-            <img id="user-img-display" class="hidden w-full h-full rounded-full object-cover" src="" alt="avatar" />
+            <img id="user-img-display" class="hidden w-full h-full rounded-full object-cover" src="" />
           </div>
           <div class="overflow-hidden">
-            <p class="text-xs font-bold text-white truncate" id="user-name-display">Usuario</p>
-            <p class="text-[10px] text-slate-400 uppercase font-bold truncate" id="user-role-display">Rol</p>
+            <p class="text-xs font-black text-white truncate" id="user-name-display">Usuario</p>
+            <p class="text-[10px] text-slate-400 uppercase font-black truncate" id="user-role-display">Rol</p>
           </div>
         </div>
-        <button onclick="logout()" class="w-full bg-slate-800 hover:bg-red-900/50 text-slate-300 hover:text-red-200 py-2 rounded text-xs font-bold transition-all">
+        <button onclick="logout()" class="w-full bg-slate-800 hover:bg-red-900/50 text-slate-300 hover:text-red-200 py-2 rounded text-xs font-black transition-all">
           <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
         </button>
       </div>
@@ -211,7 +189,7 @@
       <div class="top-header">
         <div class="flex items-center gap-3">
           <button class="md:hidden text-slate-500 text-xl" onclick="toggleSidebar()"><i class="fas fa-bars text-xl"></i></button>
-          <h2 class="font-black text-slate-800 text-lg" id="page-title">Chat</h2>
+          <h2 class="font-black text-slate-800 text-lg" id="page-title">Chat Operativo</h2>
         </div>
         <div class="flex gap-2" id="header-actions"></div>
       </div>
@@ -222,21 +200,20 @@
           <div class="bot-msg chat-bubble shadow-sm w-full">
             <div class="bot-header"><i class="fas fa-cat text-blue-600"></i> Speikito</div>
             <p class="text-sm text-slate-600">
-              Hola 🐱. Puedo buscar en tu base (normativa/operativa) y, si no hay coincidencia exacta, te ayudo a aclarar qué falta o qué buscar.
+              Hola. Soy <b>Speikito</b> 🐱.
+              <br/>Si tu pregunta coincide con normativa cargada, te respondo con evidencia.
+              <br/>Si no coincide, te ayudo a aclarar qué falta / qué buscar (sin inventar reglas).
             </p>
           </div>
         </div>
 
         <div class="chat-input-area">
           <form id="chat-form" class="relative max-w-5xl mx-auto flex gap-2">
-            <input type="text" id="chat-input" placeholder="Ej: devoluciones extemporáneas / retorno / causa de rechazo..." class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-500 transition-all" autocomplete="off" />
-            <button type="submit" id="btn-send" class="w-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg hover:bg-blue-700 active:scale-90 transition-all">
+            <input type="text" id="chat-input" placeholder="Ej: ¿Qué regla aplica para devoluciones?" class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm font-black text-slate-700 outline-none focus:border-blue-500 transition-all" autocomplete="off" />
+            <button type="submit" class="w-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg hover:bg-blue-700 active:scale-90 transition-all">
               <i class="fas fa-paper-plane text-lg"></i>
             </button>
           </form>
-          <div class="max-w-5xl mx-auto mt-2 text-[11px] text-slate-500 font-semibold">
-            Tip: escribe 3–6 palabras clave. Ej: <span class="font-bold">“retorno extemporáneo TP23”</span>.
-          </div>
         </div>
       </div>
 
@@ -249,133 +226,26 @@
             <i class="fas fa-sync-alt"></i>
           </button>
         </div>
-        <div id="table-content" class="space-y-2 pb-20 overflow-y-auto w-full"><div class="text-center py-10 text-slate-400 italic">Cargando datos...</div></div>
+        <div id="table-content" class="space-y-2 pb-20 overflow-y-auto w-full">
+          <div class="text-center py-10 text-slate-400 italic">Cargando datos...</div>
+        </div>
       </div>
     </main>
-  </div>
-
-  <!-- MODAL REGISTRO -->
-  <div id="modal-capture" class="overlay hidden-ui">
-    <div class="modal">
-      <div class="p-5 border-b flex justify-between items-center bg-slate-50">
-        <h3 class="font-bold text-slate-800">Nuevo Registro</h3>
-        <button onclick="closeModal('modal-capture')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
-      </div>
-
-      <div class="p-6 overflow-y-auto bg-white flex-1">
-        <div class="mb-6">
-          <label class="form-label">Tipo de Registro</label>
-          <div class="grid grid-cols-2 gap-3 mb-2">
-            <button onclick="setFormType('CERTIFICADO')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-blue-50 focus:ring-2 ring-blue-500">
-              <i class="fas fa-certificate block text-xl mb-1 text-blue-500"></i> Certificado
-            </button>
-            <button onclick="setFormType('EXTENSION')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-emerald-50 focus:ring-2 ring-emerald-500">
-              <i class="fas fa-address-book block text-xl mb-1 text-emerald-500"></i> Extensión
-            </button>
-            <button onclick="setFormType('REGLA')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-amber-50 focus:ring-2 ring-amber-500">
-              <i class="fas fa-balance-scale block text-xl mb-1 text-amber-500"></i> Regla
-            </button>
-            <button onclick="setFormType('MANUAL')" class="type-btn p-3 border rounded-xl text-xs font-bold text-center hover:bg-slate-100 focus:ring-2 ring-slate-500">
-              <i class="fas fa-book block text-xl mb-1 text-slate-500"></i> Manual
-            </button>
-          </div>
-          <input type="hidden" id="current-type" value="MANUAL" />
-          <input type="hidden" id="editing-id" value="" />
-        </div>
-
-        <div id="forms-area">
-          <div id="form-cert" class="hidden space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-              <div><label class="form-label">Últimos 4</label><input id="c-num" class="form-input uppercase" maxlength="4" /></div>
-              <div><label class="form-label">Negocio</label><select id="c-neg" class="form-input"><option>SPEI</option><option>CODI</option><option>DIMO</option><option>SPID</option><option>BDT</option><option>R2</option></select></div>
-              <div><label class="form-label">Entorno</label><select id="c-env" class="form-input"><option>PRODUCCION</option><option>BETA</option></select></div>
-              <div><label class="form-label">Estatus</label><input type="text" id="c-stat" class="form-input" /></div>
-              <div><label class="form-label">Vigencia Inicio</label><input id="c-ini" type="date" class="form-input" /></div>
-              <div><label class="form-label">Vigencia Fin</label><input id="c-fin" type="date" class="form-input" /></div>
-            </div>
-          </div>
-
-          <div id="form-ext" class="hidden space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-              <div><label class="form-label">Extensión</label><input id="e-num" type="text" class="form-input" /></div>
-              <div><label class="form-label">Nombre</label><input id="e-nom" type="text" class="form-input" /></div>
-              <div class="col-span-2"><label class="form-label">Área</label><input id="e-area" class="form-input" /></div>
-            </div>
-          </div>
-
-          <div id="form-rule" class="hidden space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-              <div><label class="form-label">Regla</label><input id="r-rule" class="form-input" placeholder="Ej. 17a" /></div>
-              <div><label class="form-label">Capítulo</label><input id="r-chap" class="form-input" placeholder="Ej. Cap 2" /></div>
-            </div>
-            <div><label class="form-label">Tema</label><input id="r-topic" class="form-input" /></div>
-            <div><label class="form-label">Texto Literal</label><textarea id="r-text" class="form-input h-32"></textarea></div>
-          </div>
-
-          <div id="form-doc" class="hidden space-y-4">
-            <div><label class="form-label">Título</label><input id="d-title" class="form-input" /></div>
-            <div><label class="form-label">Contenido</label><textarea id="d-content" class="form-input h-32"></textarea></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="p-5 border-t bg-slate-50 flex justify-end gap-3">
-        <button onclick="closeModal('modal-capture')" class="text-slate-500 font-bold text-xs px-4">Cancelar</button>
-        <button onclick="saveRegistry()" class="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-lg hover:bg-blue-600 transition-all">GUARDAR</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL CARGA MASIVA -->
-  <div id="modal-upload" class="overlay hidden-ui">
-    <div class="modal max-w-lg">
-      <div class="p-5 border-b bg-slate-50"><h3 class="font-bold text-amber-700">Cargar Normativa</h3></div>
-      <div class="p-8 text-center">
-        <p class="text-xs text-slate-500 mb-4 text-left leading-relaxed">
-          Sube tu archivo (.csv/.xlsx). Se intentará detectar columnas como: <b>Capítulo, Regla, Texto_literal, Tema_operativo</b>.
-        </p>
-        <div class="p-8 text-center border-2 border-dashed border-amber-300 bg-amber-50 rounded-xl cursor-pointer hover:bg-amber-100 transition-colors" onclick="document.getElementById('file-in').click()">
-          <i class="fas fa-file-import text-4xl text-amber-500 mb-3"></i>
-          <p class="text-sm font-bold text-amber-800">Seleccionar Archivo</p>
-        </div>
-        <input type="file" id="file-in" class="hidden" accept=".xlsx,.csv" onchange="handleBulkUpload(this)" />
-      </div>
-      <div class="p-5 border-t flex justify-end">
-        <button onclick="document.getElementById('modal-upload').classList.add('hidden-ui')" class="text-slate-400 font-bold text-xs">Cerrar</button>
-      </div>
-    </div>
   </div>
 
   <!-- MODAL PERFIL -->
   <div id="modal-profile" class="overlay hidden-ui">
     <div class="modal max-w-sm">
-      <div class="p-5 border-b bg-slate-50"><h3 class="font-bold">Foto de Perfil</h3></div>
+      <div class="p-5 border-b bg-slate-50"><h3 class="font-black">Foto de Perfil</h3></div>
       <div class="p-8 text-center">
         <div class="w-24 h-24 rounded-full bg-slate-200 mx-auto mb-4 overflow-hidden border-4 border-white shadow-lg cursor-pointer" onclick="document.getElementById('profile-up').click()">
-          <img id="profile-prev" src="" class="w-full h-full object-cover hidden" alt="preview" />
+          <img id="profile-prev" src="" class="w-full h-full object-cover hidden" />
           <i id="profile-icon" class="fas fa-camera text-3xl text-slate-400 mt-8"></i>
         </div>
         <input type="file" id="profile-up" class="hidden" accept="image/*" onchange="handleProfileUpload(this)" />
         <p class="text-xs text-slate-500">Clic para cambiar</p>
       </div>
-      <div class="p-5 border-t text-center"><button onclick="closeModal('modal-profile')" class="text-slate-400 text-xs">Cerrar</button></div>
-    </div>
-  </div>
-
-  <!-- MODAL USUARIO -->
-  <div id="modal-user" class="overlay hidden-ui">
-    <div class="modal max-w-sm">
-      <div class="p-5 border-b bg-slate-50"><h3 class="font-bold">Nuevo Usuario</h3></div>
-      <div class="p-6 space-y-4">
-        <input id="u-name" class="form-input" placeholder="Nombre" />
-        <input id="u-id" class="form-input" placeholder="ID Empleado" />
-        <select id="u-role" class="form-input">
-          <option value="user">Usuario Operativo</option>
-          <option value="admin">Administrador</option>
-        </select>
-        <button onclick="saveUser()" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-xs mt-4">Crear</button>
-      </div>
-      <div class="p-4 text-center"><button onclick="closeModal('modal-user')" class="text-slate-400 text-xs">Cancelar</button></div>
+      <div class="p-5 border-t text-center"><button onclick="closeModal('modal-profile')" class="text-slate-400 text-xs font-black">Cerrar</button></div>
     </div>
   </div>
 
@@ -386,57 +256,50 @@
     let knowledgeBase = [];
     let team = [];
 
-    // ---- UTIL: normalización + tokenización (MEJORA #1) ----
-    const normalize = (s = "") =>
-      String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-
-    const tokenize = (q = "") => {
-      const stop = new Set(["que","como","para","por","con","sin","una","uno","unos","unas","del","de","la","el","los","las","y","o","a","en","un"]);
-      return normalize(q)
-        .split(/[^a-z0-9]+/g)
-        .filter(w => w && w.length >= 4 && !stop.has(w));
-    };
-
-    const escapeHtml = (s = "") =>
-      String(s)
+    // -------- Utils
+    function escapeHtml(str) {
+      return String(str || "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+    }
 
-    // ---- TOAST ----
+    function normalizeText(s) {
+      return String(s || "")
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+    }
+
+    // -------- Global
     window.toast = (m, e) => {
       const t = document.getElementById("toast");
       t.innerText = m;
-      t.className =
-        `fixed top-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-xs font-black shadow-2xl z-[10002] transition-all opacity-100 ` +
-        (e ? "bg-red-500 text-white" : "bg-emerald-500 text-white");
+      t.className = `fixed top-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-xs font-black shadow-2xl z-[10002] transition-all opacity-100 ${e ? "bg-red-500 text-white" : "bg-emerald-500 text-white"}`;
       setTimeout(() => t.classList.remove("opacity-100"), 3000);
     };
 
-    // ---- UI ----
     window.toggleSidebar = () => document.getElementById("sidebar").classList.toggle("open");
     window.closeModal = (id) => document.getElementById(id).classList.add("hidden-ui");
-    window.openModal = (id) => {
-      document.getElementById(id).classList.remove("hidden-ui");
-      if (id === "modal-capture") { window.setFormType("MANUAL"); document.getElementById("editing-id").value = ""; }
-    };
-    window.openProfileModal = () => window.openModal("modal-profile");
+    window.openProfileModal = () => document.getElementById("modal-profile").classList.remove("hidden-ui");
 
-    // ---- LOGIN ----
     window.handleLogin = () => {
       const val = document.getElementById("login-id").value.trim();
       if (val === "682930") { login({ name: "Daniel Anzaldo", role: "admin", empNumber: "682930" }); return; }
       const u = team.find(x => x.empNumber === val);
-      if (u) login(u); else document.getElementById("login-msg").style.opacity = "1";
+      if (u) login(u);
+      else document.getElementById("login-msg").style.opacity = "1";
     };
-    window.logout = () => { localStorage.removeItem("spei_v31_session"); location.reload(); };
 
-    // ---- NAV ----
+    window.logout = () => { localStorage.removeItem("spei_v30_3_session"); location.reload(); };
+
+    // NAV
     window.navigate = (view) => {
       if (window.innerWidth < 768) document.getElementById("sidebar").classList.remove("open");
       document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+
       const chat = document.getElementById("view-chat");
       const table = document.getElementById("view-table");
       const title = document.getElementById("page-title");
@@ -444,344 +307,185 @@
 
       if (view === "chat") {
         document.getElementById("nav-chat").classList.add("active");
-        chat.classList.remove("hidden-ui");
-        table.classList.add("hidden-ui");
-        title.innerText = "Chat";
-        acts.innerHTML = "";
+        chat.classList.remove("hidden-ui"); table.classList.add("hidden-ui");
+        title.innerText = "Chat Operativo"; acts.innerHTML = "";
       } else {
         let type = "ALL", label = "Base Completa", navId = "nav-all";
-        if (view === "admin-rules") { type = "REGLA_SPEI"; label = "Normativa"; navId = "nav-rules"; }
+        if (view === "admin-rules") { type = "REGLA_SPEI"; label = "Normativa SPEI"; navId = "nav-rules"; }
         if (view === "admin-cert") { type = "CERTIFICADO"; label = "Certificados"; navId = "nav-cert"; }
-        if (view === "admin-ext") { type = "EXTENSION"; label = "Directorio"; navId = "nav-ext"; }
+        if (view === "admin-ext")  { type = "EXTENSION"; label = "Directorio"; navId = "nav-ext"; }
         if (view === "admin-docs") { type = "MANUAL"; label = "Manuales"; navId = "nav-docs"; }
-        if (view === "admin-files") { type = "ARCHIVO"; label = "Archivos"; navId = "nav-files"; }
+        if (view === "admin-files"){ type = "ARCHIVO"; label = "Archivos"; navId = "nav-files"; }
 
         document.getElementById(navId)?.classList.add("active");
-        chat.classList.add("hidden-ui");
-        table.classList.remove("hidden-ui");
-        title.innerText = label;
-        document.body.dataset.viewType = type;
+        chat.classList.add("hidden-ui"); table.classList.remove("hidden-ui");
+        title.innerText = label; document.body.dataset.viewType = type;
 
-        if (view === "admin-rules") {
-          acts.innerHTML = `<button onclick="document.getElementById('modal-upload').classList.remove('hidden-ui')" class="bg-amber-600 text-white px-3 py-1 rounded text-xs font-bold shadow hover:bg-amber-700"><i class="fas fa-upload"></i> Cargar</button>`;
-        } else if (view === "admin-users") {
-          title.innerText = "Usuarios";
-          document.body.dataset.viewType = "USERS";
-          acts.innerHTML = `<button onclick="document.getElementById('modal-user').classList.remove('hidden-ui')" class="bg-indigo-600 text-white px-3 py-1 rounded text-xs font-bold shadow hover:bg-indigo-700">Nuevo Usuario</button>`;
-          renderList("USERS");
-          return;
-        } else {
-          acts.innerHTML =
-            `<button onclick="window.openModal('modal-capture')" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold">Nuevo</button>
-             <button onclick="window.deleteSelected()" class="bg-red-50 text-red-600 px-3 py-1 rounded-lg text-xs font-bold shadow-sm ml-2 hover:bg-red-100 transition-all"><i class="fas fa-trash-alt"></i> Borrar</button>`;
-        }
+        acts.innerHTML = `<button onclick="window.deleteSelected()" class="bg-red-50 text-red-600 px-3 py-1 rounded-lg text-xs font-black shadow-sm hover:bg-red-100 transition-all"><i class="fas fa-trash-alt"></i> Borrar</button>`;
         renderList(type);
       }
     };
 
-    // ---- FORMS ----
-    window.setFormType = (t) => {
-      document.getElementById("current-type").value = t;
-      ["form-cert","form-ext","form-rule","form-doc"].forEach(f => document.getElementById(f).classList.add("hidden"));
-      if (t === "CERTIFICADO") document.getElementById("form-cert").classList.remove("hidden");
-      else if (t === "EXTENSION") document.getElementById("form-ext").classList.remove("hidden");
-      else if (t === "REGLA") document.getElementById("form-rule").classList.remove("hidden");
-      else document.getElementById("form-doc").classList.remove("hidden");
-    };
-
-    window.saveRegistry = async () => {
-      const type = document.getElementById("current-type").value;
-      const id = document.getElementById("editing-id").value || "doc_" + Date.now();
-      let data = { contentType: type, date: new Date().toISOString(), author: currentUser?.name || "user" };
-
-      if (type === "CERTIFICADO") {
-        data.num = document.getElementById("c-num").value;
-        data.negocio = document.getElementById("c-neg").value;
-        data.estatus = document.getElementById("c-stat").value;
-        data.vigenciaFin = document.getElementById("c-fin").value;
-        data.title = `CERT ${data.num}`;
-        data.content = `${data.negocio} | ${data.estatus}`;
-      } else if (type === "EXTENSION") {
-        data.ext = document.getElementById("e-num").value;
-        data.nombre = document.getElementById("e-nom").value;
-        data.area = document.getElementById("e-area").value;
-        data.title = `EXT ${data.ext}`;
-        data.content = `${data.nombre} - ${data.area}`;
-      } else if (type === "REGLA") {
-        data.regla = document.getElementById("r-rule").value;
-        data.content = document.getElementById("r-text").value;
-        data.capitulo = document.getElementById("r-chap").value;
-        data.tema = document.getElementById("r-topic").value;
-        data.title = `Regla ${data.regla}`;
-        // Uniformar como REGLA_SPEI (MEJORA #2)
-        data.contentType = "REGLA_SPEI";
-      } else {
-        data.title = document.getElementById("d-title").value;
-        data.content = document.getElementById("d-content").value;
-      }
-
-      await setDoc(doc(db, "artifacts", appId, "public", "data", "knowledge", id), data, { merge: true });
-      window.toast("Guardado");
-      window.closeModal("modal-capture");
-      if (document.body.dataset.viewType) renderList(document.body.dataset.viewType);
-    };
-
-    window.saveUser = async () => {
-      const n = document.getElementById("u-name").value;
-      const i = document.getElementById("u-id").value;
-      if (!n || !i) return window.toast("Faltan datos", true);
-      await setDoc(doc(db, "artifacts", appId, "public", "data", "team", i), { name: n, empNumber: i, role: document.getElementById("u-role").value });
-      window.toast("Usuario Creado");
-      window.closeModal("modal-user");
-      renderList("USERS");
-    };
-
-    window.deleteRec = async (id) => { if (confirm("¿Eliminar?")) { await deleteDoc(doc(db, "artifacts", appId, "public", "data", "knowledge", id)); renderList(document.body.dataset.viewType); } };
-    window.deleteUser = async (id) => { if (confirm("¿Eliminar?")) { await deleteDoc(doc(db, "artifacts", appId, "public", "data", "team", id)); renderList("USERS"); } };
-
-    // ---- BORRADO MASIVO ----
-    window.toggleSelectAll = (el) => { document.querySelectorAll(".select-row").forEach(cb => cb.checked = el.checked); };
-
-    window.deleteSelected = async () => {
-      const selected = Array.from(document.querySelectorAll(".select-row:checked")).map(cb => cb.value);
-      if (selected.length === 0) return window.toast("Nada seleccionado", true);
-
-      if (confirm(`¿Borrar ${selected.length} registros seleccionados?`)) {
-        document.getElementById("page-title").innerText = "Borrando...";
-        const batch = writeBatch(db);
-        const colName = document.body.dataset.viewType === "USERS" ? "team" : "knowledge";
-
-        selected.forEach(id => {
-          const ref = doc(db, "artifacts", appId, "public", "data", colName, id);
-          batch.delete(ref);
-        });
-
-        await batch.commit();
-        window.toast(`${selected.length} registros eliminados`);
-        if (document.body.dataset.viewType === "USERS") renderList("USERS");
-        else renderList(document.body.dataset.viewType);
-      }
-    };
-
-    // ---- CARGA MASIVA ----
-    window.handleBulkUpload = async (input) => {
-      const f = input.files[0];
-      if (!f) return;
-
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-
-        const batch = writeBatch(db);
-
-        json.forEach(row => {
-          const id = "imp_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
-          const ref = doc(db, "artifacts", appId, "public", "data", "knowledge", id);
-
-          let entry = { date: new Date().toISOString(), author: currentUser?.name || "user" };
-
-          // Detección automática
-          if (row.Regla || row.REGLA || row.regla) {
-            entry.contentType = "REGLA_SPEI";
-            entry.regla = row.Regla || row.REGLA || row.regla;
-            entry.capitulo = row["Capítulo"] || row.CAPITULO || row.capitulo || "";
-            entry.content = row.Texto_literal || row.TEXTO_LITERAL || row.CONTENIDO || row.texto || "";
-            entry.tema = row.Tema_operativo || row.TEMA || row.TITULO || row.tema || "";
-            entry.keywords = row.Palabras_clave || row.KEYWORDS || row.keywords || "";
-            entry.ia_text = row.Texto_normalizado_IA || row.IA || row.ia_text || "";
-            entry.title = `Regla ${entry.regla}`;
-          } else if (row.EXTENSION || row.EXT) {
-            entry.contentType = "EXTENSION";
-            entry.ext = row.EXTENSION || row.EXT;
-            entry.nombre = row.NOMBRE || row.nombre || "";
-            entry.area = row.AREA || row.area || "";
-            entry.title = `EXT ${entry.ext}`;
-            entry.content = `${entry.nombre} - ${entry.area}`;
-          } else if (row.NUMERO || row.CERTIFICADO) {
-            entry.contentType = "CERTIFICADO";
-            entry.num = row.NUMERO || row.CERTIFICADO;
-            entry.negocio = row.NEGOCIO || "";
-            entry.estatus = row.ESTATUS || "";
-            entry.vigenciaFin = row.FIN || row.VIGENCIA_FIN || "";
-            entry.title = `CERT ${entry.num}`;
-            entry.content = `${entry.negocio} | ${entry.estatus}`;
-          } else {
-            entry.contentType = "MANUAL";
-            entry.title = row.TITULO || row.title || "Importado";
-            entry.content = row.CONTENIDO || row.content || "";
-          }
-
-          batch.set(ref, entry);
-        });
-
-        await batch.commit();
-        window.toast("Carga Exitosa");
-        window.closeModal("modal-upload");
-        if (document.body.dataset.viewType) renderList(document.body.dataset.viewType);
-      };
-
-      reader.readAsArrayBuffer(f);
-    };
-
-    // ---- LISTA ----
+    // -------- Render list (mínimo)
     function renderList(type) {
       const list = document.getElementById("table-content");
       if (!list) return;
 
-      let data = type === "USERS" ? team : (type === "ALL" ? knowledgeBase : knowledgeBase.filter(k => k.contentType === type));
-
-      const q = normalize(document.getElementById("table-search")?.value || "");
-      if (q) {
-        const toks = tokenize(q);
-        data = data.filter(i => {
-          const t = normalize((i.title || "") + " " + (i.content || "") + " " + (i.tema || "") + " " + (i.keywords || ""));
-          return toks.length ? toks.some(w => t.includes(w)) : t.includes(q);
-        });
-      }
-
-      if (!data.length) { list.innerHTML = "<div class='text-center py-10 text-slate-400'>Sin registros</div>"; return; }
+      let data = (type === "ALL") ? knowledgeBase : knowledgeBase.filter(k => k.contentType === type);
+      if (!data.length) { list.innerHTML = "<div class='text-center py-10 text-slate-400 font-black'>Sin registros</div>"; return; }
 
       list.innerHTML = data.map(i => {
-        const isUser = type === "USERS";
-        const id = isUser ? i.empNumber : i.id;
-        const title = isUser ? i.name : i.title;
-        const desc = isUser ? i.role : ((i.content || "").slice(0, 80));
-
+        const id = i.id;
+        const title = i.title || "(Sin título)";
+        const desc = (i.content || "").substring(0, 90);
         return `
           <div class="data-card">
             <div class="flex items-center w-full overflow-hidden">
               <input type="checkbox" class="mr-3 accent-blue-600 w-4 h-4 select-row" value="${escapeHtml(id)}">
-              <div class="min-w-0">
-                <span class="badge badge-${escapeHtml(i.contentType || "USER")}">${escapeHtml(i.contentType || "USUARIO")}</span>
-                <h4 class="font-bold text-sm mt-1 truncate">${escapeHtml(title || "")}</h4>
-                <p class="text-xs text-slate-500 line-clamp-1">${escapeHtml(desc || "")}</p>
+              <div>
+                <span class="badge badge-${escapeHtml(i.contentType || "MANUAL")}">${escapeHtml(i.contentType || "MANUAL")}</span>
+                <h4 class="font-black text-sm mt-1">${escapeHtml(title)}</h4>
+                <p class="text-xs text-slate-500">${escapeHtml(desc)}</p>
               </div>
             </div>
             <div class="flex gap-2">
-              <button onclick="${isUser ? `window.deleteUser('${escapeHtml(id)}')` : `window.deleteRec('${escapeHtml(id)}')`}" class="text-red-500"><i class="fas fa-trash"></i></button>
+              <button onclick="window.deleteRec('${escapeHtml(id)}')" class="text-red-500"><i class="fas fa-trash"></i></button>
             </div>
-          </div>`;
+          </div>
+        `;
       }).join("");
     }
 
-    window.filterList = () => renderList(document.body.dataset.viewType);
+    window.filterList = () => renderList(document.body.dataset.viewType || "ALL");
 
-    // =========================
-    // IA: SIEMPRE RESPONDE (MEJORA #3)
-    // - Si hay reglas, usa SOLO ese contexto.
-    // - Si NO hay reglas, no inventa; hace aclaraciones y sugerencias.
-    // =========================
+    window.deleteRec = async (id) => {
+      if (!confirm("¿Eliminar?")) return;
+      await deleteDoc(doc(db, "artifacts", appId, "public", "data", "knowledge", id));
+      renderList(document.body.dataset.viewType || "ALL");
+    };
+
+    window.toggleSelectAll = (el) => document.querySelectorAll(".select-row").forEach(cb => cb.checked = el.checked);
+
+    window.deleteSelected = async () => {
+      const selected = Array.from(document.querySelectorAll(".select-row:checked")).map(cb => cb.value);
+      if (!selected.length) return window.toast("Nada seleccionado", true);
+
+      if (!confirm(`¿Borrar ${selected.length} registros seleccionados?`)) return;
+
+      const batch = writeBatch(db);
+      selected.forEach(id => batch.delete(doc(db, "artifacts", appId, "public", "data", "knowledge", id)));
+      await batch.commit();
+
+      window.toast(`${selected.length} registros eliminados`);
+      renderList(document.body.dataset.viewType || "ALL");
+    };
+
+    // -------- IA (NO JSON). Si hay reglas, se “amarran” al contexto; si no hay reglas, solo ayuda a aclarar.
     async function askGeminiGuarded(question, context, hasRules) {
-      const mode = hasRules ? "estricto" : "aclaracion";
-
       const guard = hasRules
         ? `INSTRUCCIONES:
 - Usa SOLO la información del CONTEXTO.
-- Si el contexto no contiene la respuesta, di explícitamente: "No hay evidencia en la base cargada".
+- Si el contexto no contiene la respuesta, di: "No hay evidencia en la base cargada".
 - No inventes datos.`
         : `INSTRUCCIONES:
-- NO afirmes hechos como si vinieran de normativa (porque no hay coincidencias en la base).
-- Tu salida debe ayudar a: (1) pedir datos faltantes, (2) sugerir palabras clave, (3) decir qué falta cargar.
+- No afirmes hechos como si vinieran de normativa (no hay coincidencias).
+- Ayuda a aclarar: qué dato falta, qué palabras clave buscar, qué falta cargar.
 - Prohibido inventar reglas/capítulos/textos.`;
 
       const prompt = `
-Eres "Speikito", asistente de consulta.
+Eres Speikito, asistente de consulta.
 
-MODO: ${mode}
 ${guard}
 
-PREGUNTA: ${question}
+PREGUNTA:
+${question}
 
 ${context ? `CONTEXTO:\n${context}` : "CONTEXTO: (vacío)"}
 
-RESPONDE EN JSON ESTRICTO:
-{
-  "modo": "${mode}",
-  "respuesta": "texto para el usuario",
-  "citas": [
-    { "regla": "", "capitulo": "", "extracto_literal": "" }
-  ],
-  "preguntas_aclaracion": ["..."],
-  "sugerencias_busqueda": ["..."]
-}
-REGLAS DEL JSON:
-- Si modo="${mode}" y no hay citas, usa "citas": [].
-- Si modo="aclaracion" entonces "citas" SIEMPRE debe ser [].
+FORMATO DE RESPUESTA (TEXTO NORMAL, NO JSON):
+- Respuesta:
+- Citas (si aplica): (cada cita con: Regla / Capítulo / Texto literal entre « »)
+- Preguntas para aclarar (si aplica):
+- Sugerencias de búsqueda (si aplica):
 `;
 
-      const res = await fetch("/api/gemini", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        return JSON.stringify({
-          modo: "error",
-          respuesta: `Error API (${res.status}): ${err?.error || err?.message || "No se pudo consultar la IA"}`,
-          citas: [],
-          preguntas_aclaracion: [],
-          sugerencias_busqueda: []
+      try {
+        const res = await fetch("/api/gemini", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt }),
         });
-      }
 
-      const data = await res.json();
-      const text = data?.candidates?.[0]?.content?.parts?.map(p => p.text).join("") || "";
-      return text || JSON.stringify({
-        modo,
-        respuesta: "Sin respuesta de IA.",
-        citas: [],
-        preguntas_aclaracion: [],
-        sugerencias_busqueda: []
-      });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          return `Error API (${res.status}): ${err?.error || err?.detail?.message || err?.message || "No se pudo consultar la IA"}`;
+        }
+
+        const data = await res.json();
+        return data?.candidates?.[0]?.content?.parts?.map(p => p.text).join("") || "Sin respuesta de IA.";
+      } catch {
+        return "Error de conexión.";
+      }
     }
 
-    function renderGuarded(aiText, hasRules, hitsCount, rulesCount) {
-      let obj = null;
-      try { obj = JSON.parse(aiText); } catch { obj = null; }
-
+    function renderGuarded(aiText, hitsCount, rulesCount) {
       const meta = `<div class="reg-footer">Matches: ${hitsCount} • Reglas: ${rulesCount}</div>`;
-
-      if (!obj) {
-        return `<div class="reg-card">
-          <div class="reg-title">${hasRules ? "Respuesta (con contexto)" : "Aclaración (sin coincidencias)"}</div>
-          <div class="reg-content">${escapeHtml(aiText)}</div>
-          ${meta}
-        </div>`;
-      }
-
-      const citas = (obj.citas || []).map(c => `
-        <div class="mt-3 p-3 rounded bg-white border border-amber-200">
-          <div class="text-xs font-black text-amber-700 uppercase mb-1">Cita</div>
-          <div class="text-sm text-slate-800 whitespace-pre-wrap">«${escapeHtml(c.extracto_literal || "")}»</div>
-          <div class="text-[11px] text-amber-700 font-bold mt-2">Regla: ${escapeHtml(c.regla || "-")} • Capítulo: ${escapeHtml(c.capitulo || "-")}</div>
-        </div>
-      `).join("");
-
-      const preguntas = (obj.preguntas_aclaracion || []).length
-        ? `<div class="mt-3 text-xs"><b>Para afinar la búsqueda:</b><br>${(obj.preguntas_aclaracion || []).map(x => `• ${escapeHtml(x)}`).join("<br>")}</div>`
-        : "";
-
-      const sugerencias = (obj.sugerencias_busqueda || []).length
-        ? `<div class="mt-2 text-xs"><b>Sugerencias:</b><br>${(obj.sugerencias_busqueda || []).map(x => `• ${escapeHtml(x)}`).join("<br>")}</div>`
-        : "";
-
       return `
         <div class="reg-card">
-          <div class="reg-title">${escapeHtml(obj.modo || (hasRules ? "estricto" : "aclaracion"))}</div>
-          <div class="reg-content">${escapeHtml(obj.respuesta || "")}</div>
-          ${citas}
-          ${preguntas}
-          ${sugerencias}
+          <div class="reg-title">Respuesta</div>
+          <div class="reg-content">${escapeHtml(aiText)}</div>
           ${meta}
         </div>
       `;
     }
 
-    // ---- CHAT ----
+    function buildOpsHtml(hits) {
+      if (!hits.length) return "";
+      let h = `<div class="mb-2 font-black text-xs text-blue-600">RESULTADOS OPERATIVOS</div>`;
+      hits.slice(0, 10).forEach(x => {
+        if (x.contentType === "CERTIFICADO") {
+          h += `<div class="bg-blue-50 p-2 rounded mb-1 text-xs border border-blue-100 font-mono"><b>${escapeHtml(x.title)}</b><br>Estatus: ${escapeHtml(x.estatus || "-")} | Vence: ${escapeHtml(x.vigenciaFin || "-")}</div>`;
+        } else if (x.contentType === "EXTENSION") {
+          h += `<div class="bg-emerald-50 p-2 rounded mb-1 text-xs"><b>${escapeHtml(x.ext || "")}</b> - ${escapeHtml(x.nombre || "")} (${escapeHtml(x.area || "")})</div>`;
+        } else {
+          h += `<div class="bg-white p-2 rounded border mb-1 text-xs"><b>${escapeHtml(x.title || "")}</b><br>${escapeHtml((x.content || "").slice(0, 140))}</div>`;
+        }
+      });
+      return h;
+    }
+
+    // CHAT
+    document.getElementById("chat-form").onsubmit = async (e) => {
+      e.preventDefault();
+      const v = document.getElementById("chat-input").value.trim();
+      if (!v) return;
+
+      document.getElementById("chat-input").value = "";
+      addMsg(v, true);
+
+      // Búsqueda por “contiene”. (mejora futura: scoring por keywords)
+      const normV = normalizeText(v);
+      const hits = knowledgeBase.filter(k => {
+        const text = normalizeText((k.title || "") + " " + (k.content || "") + " " + (k.tema || "") + " " + (k.keywords || ""));
+        return normV && text.includes(normV);
+      });
+
+      const rules = hits.filter(k => k.contentType === "REGLA_SPEI");
+      const hasRules = rules.length > 0;
+
+      // Contexto: si hay reglas, solo reglas; si no, mandamos “top hits” de todo para que ayude a orientar.
+      const context = hasRules
+        ? rules.map(r => `Regla: ${r.regla}\nCapítulo: ${r.capitulo}\nTexto: ${r.content}\n---`).join("\n")
+        : hits.slice(0, 6).map(x => `Tipo: ${x.contentType}\nTítulo: ${x.title}\nContenido: ${(x.content || "").slice(0, 400)}\n---`).join("\n");
+
+      const aiText = await askGeminiGuarded(v, context, hasRules);
+
+      const opsHtml = buildOpsHtml(hits.filter(x => x.contentType !== "REGLA_SPEI"));
+      const finalHtml = renderGuarded(aiText, hits.length, rules.length) + (opsHtml ? `<div class="mt-3">${opsHtml}</div>` : "");
+
+      addMsg(finalHtml, false);
+    };
+
     function addMsg(t, u) {
       const d = document.createElement("div");
       d.className = `chat-bubble ${u ? "user-msg" : "bot-msg"} shadow-sm`;
@@ -791,121 +495,37 @@ REGLAS DEL JSON:
       const r = document.createElement("div");
       r.className = `flex w-full mb-2 ${u ? "justify-end" : "justify-start"}`;
       r.appendChild(d);
+
       b.appendChild(r);
       b.scrollTop = b.scrollHeight;
     }
 
-    function setSending(isSending) {
-      const btn = document.getElementById("btn-send");
-      const input = document.getElementById("chat-input");
-      if (!btn || !input) return;
-      btn.disabled = isSending;
-      input.disabled = isSending;
-      btn.classList.toggle("opacity-60", isSending);
-      btn.classList.toggle("cursor-not-allowed", isSending);
-    }
-
-    document.getElementById("chat-form").onsubmit = async (e) => {
-      e.preventDefault();
-      const v = document.getElementById("chat-input").value.trim();
-      if (!v) return;
-
-      document.getElementById("chat-input").value = "";
-      addMsg(escapeHtml(v), true);
-
-      setSending(true);
-
-      // MEJORA #1: búsqueda por tokens, no por frase completa
-      const tokens = tokenize(v);
-      const nv = normalize(v);
-
-      const hits = knowledgeBase
-        .map(k => {
-          const searchable = normalize((k.title || "") + " " + (k.content || "") + " " + (k.tema || "") + " " + (k.keywords || ""));
-          let score = 0;
-          if (tokens.length) {
-            for (const w of tokens) if (searchable.includes(w)) score += 2;
-          } else {
-            if (searchable.includes(nv)) score += 1;
-          }
-          // boost si es regla
-          if (k.contentType === "REGLA_SPEI") score += 1;
-          return { ...k, __score: score };
-        })
-        .filter(k => k.__score > 0)
-        .sort((a, b) => b.__score - a.__score)
-        .slice(0, 12);
-
-      const rules = hits.filter(k => k.contentType === "REGLA_SPEI").slice(0, 6);
-
-      // Contexto armado (MEJORA #3: siempre hay respuesta, con o sin reglas)
-      const ctxRules = rules.map(r =>
-        `Regla: ${r.regla || ""}\nCapítulo: ${r.capitulo || ""}\nTexto: ${(r.content || "").slice(0, 1200)}\n---`
-      ).join("\n");
-
-      const ctxOps = hits.filter(k => k.contentType !== "REGLA_SPEI")
-        .slice(0, 6)
-        .map(x => `Tipo:${x.contentType} | Título:${x.title} | Cont:${(x.content || "").slice(0, 250)}`)
-        .join("\n");
-
-      const ctx = [
-        ctxRules ? `BASE (REGLAS):\n${ctxRules}` : "",
-        ctxOps ? `BASE (OPERATIVO):\n${ctxOps}` : ""
-      ].filter(Boolean).join("\n\n");
-
-      // Llamada a IA con guardrails
-      const aiText = await askGeminiGuarded(v, ctx, rules.length > 0);
-
-      // Si quieres, también mostrar hits operativos aparte:
-      // (MEJORA #4: nunca “se queda mudo”, pero sí enseña resultados)
-      let opsHtml = "";
-      const opsOnly = hits.filter(x => x.contentType !== "REGLA_SPEI");
-      if (opsOnly.length) {
-        opsHtml += `<div class="mb-2 font-bold text-xs text-blue-600">RESULTADOS EN TU BASE</div>`;
-        opsOnly.forEach(x => {
-          if (x.contentType === "CERTIFICADO") {
-            opsHtml += `<div class="bg-blue-50 p-2 rounded mb-1 text-xs border border-blue-100 font-mono"><b>${escapeHtml(x.title || "")}</b><br>Estatus: ${escapeHtml(x.estatus || "")} | Vence: ${escapeHtml(x.vigenciaFin || "")}</div>`;
-          } else if (x.contentType === "EXTENSION") {
-            opsHtml += `<div class="bg-emerald-50 p-2 rounded mb-1 text-xs"><b>${escapeHtml(x.ext || "")}</b> - ${escapeHtml(x.nombre || "")} (${escapeHtml(x.area || "")})</div>`;
-          } else {
-            opsHtml += `<div class="bg-white p-2 rounded border mb-1 text-xs"><b>${escapeHtml(x.title || "")}</b><div class="text-slate-500 mt-1">${escapeHtml((x.content || "").slice(0, 160))}</div></div>`;
-          }
-        });
-      }
-
-      const finalHtml = renderGuarded(aiText, rules.length > 0, hits.length, rules.length) + (opsHtml ? `<div class="mt-3">${opsHtml}</div>` : "");
-      addMsg(finalHtml, false);
-
-      setSending(false);
-    };
-
-    // ---- PERFIL ----
+    // PERFIL (opcional)
     window.handleProfileUpload = (input) => {
       const f = input.files[0];
+      if (!f) return;
       const r = new FileReader();
-      r.onload = (e) => {
-        if (currentUser) {
-          setDoc(doc(db, "artifacts", appId, "public", "data", "team", currentUser.empNumber), { photoURL: e.target.result }, { merge: true });
-          updateAvatar(e.target.result);
-        }
+      r.onload = async (e) => {
+        if (!currentUser) return;
+        await setDoc(doc(db, "artifacts", appId, "public", "data", "team", currentUser.empNumber), { photoURL: e.target.result }, { merge: true });
+        updateAvatar(e.target.result);
       };
-      if (f) r.readAsDataURL(f);
+      r.readAsDataURL(f);
     };
 
     function updateAvatar(url) {
-      if (url) {
-        document.getElementById("user-initials").classList.add("hidden");
-        document.getElementById("user-img-display").src = url;
-        document.getElementById("user-img-display").classList.remove("hidden");
-        document.getElementById("profile-prev").src = url;
-        document.getElementById("profile-prev").classList.remove("hidden");
-        document.getElementById("profile-icon").classList.add("hidden");
-      }
+      if (!url) return;
+      document.getElementById("user-initials").classList.add("hidden");
+      document.getElementById("user-img-display").src = url;
+      document.getElementById("user-img-display").classList.remove("hidden");
+      document.getElementById("profile-prev").src = url;
+      document.getElementById("profile-prev").classList.remove("hidden");
+      document.getElementById("profile-icon").classList.add("hidden");
     }
 
     function login(u) {
       currentUser = u;
-      localStorage.setItem("spei_v31_session", JSON.stringify(u));
+      localStorage.setItem("spei_v30_3_session", JSON.stringify(u));
       document.body.setAttribute("data-role", u.role);
 
       document.getElementById("login-screen").classList.add("hidden-ui");
@@ -913,7 +533,7 @@ REGLAS DEL JSON:
       document.getElementById("app-layout").classList.remove("hidden-ui");
 
       document.getElementById("user-name-display").innerText = u.name;
-      document.getElementById("user-role-display").innerText = u.role === "admin" ? "ADMIN" : "OPERATIVO";
+      document.getElementById("user-role-display").innerText = (u.role === "admin") ? "ADMIN" : "OPERATIVO";
 
       if (u.role !== "admin") document.querySelectorAll(".admin-only").forEach(e => e.classList.add("hidden-ui"));
       else document.querySelectorAll(".admin-only").forEach(e => e.classList.remove("hidden-ui"));
@@ -921,7 +541,6 @@ REGLAS DEL JSON:
       if (u.photoURL) updateAvatar(u.photoURL);
     }
 
-    // ---- AUTH ----
     const initAuth = async () => {
       try {
         if (typeof __initial_auth_token !== "undefined" && __initial_auth_token) {
@@ -935,26 +554,29 @@ REGLAS DEL JSON:
     async function init() {
       await initAuth();
 
-      onAuthStateChanged(auth, (u) => {
-        if (u) {
-          onSnapshot(collection(db, "artifacts", appId, "public", "data", "team"), (s) => {
-            team = s.docs.map(d => ({ id: d.id, ...d.data() }));
-            if (!team.length) {
-              setDoc(doc(db, "artifacts", appId, "public", "data", "team", "682930"), { name: "Daniel Anzaldo", role: "admin", empNumber: "682930" });
-            }
+      onAuthStateChanged(auth, async (u) => {
+        if (!u) return;
 
-            const savedSession = localStorage.getItem("spei_v31_session");
-            if (savedSession) login(JSON.parse(savedSession));
-            else document.getElementById("login-screen").classList.remove("hidden-ui");
+        // Team
+        onSnapshot(collection(db, "artifacts", appId, "public", "data", "team"), async (s) => {
+          team = s.docs.map(d => ({ id: d.id, ...d.data() }));
+          if (!team.length) {
+            await setDoc(doc(db, "artifacts", appId, "public", "data", "team", "682930"), { name: "Daniel Anzaldo", role: "admin", empNumber: "682930" });
+          }
 
-            document.getElementById("loading-screen").classList.add("hidden-ui");
-          });
+          const saved = localStorage.getItem("spei_v30_3_session");
+          if (saved) login(JSON.parse(saved));
+          else document.getElementById("login-screen").classList.remove("hidden-ui");
 
-          onSnapshot(collection(db, "artifacts", appId, "public", "data", "knowledge"), (s) => {
-            knowledgeBase = s.docs.map(d => ({ id: d.id, ...d.data() }));
-            if (document.body.dataset.viewType) renderList(document.body.dataset.viewType);
-          });
-        }
+          document.getElementById("loading-screen").classList.add("hidden-ui");
+        });
+
+        // Knowledge
+        onSnapshot(collection(db, "artifacts", appId, "public", "data", "knowledge"), (s) => {
+          knowledgeBase = s.docs.map(d => ({ id: d.id, ...d.data() }));
+          const viewType = document.body.dataset.viewType;
+          if (viewType) renderList(viewType);
+        });
       });
     }
 
@@ -962,3 +584,18 @@ REGLAS DEL JSON:
   </script>
 </body>
 </html>
+
+
+========================
+NOTAS RÁPIDAS (IMPORTANTE)
+========================
+1) Crea la carpeta /api y dentro pega gemini.js (exacto).
+2) Tu index.html va en la raíz del proyecto.
+3) En Vercel: Settings -> Environment Variables:
+   GEMINI_API_KEY = TU_API_KEY
+4) Si antes tenías un endpoint diferente, en el frontend SIEMPRE debe llamar:
+   fetch("/api/gemini", { method:"POST", ... })
+5) Esta versión:
+   - Nunca imprime JSON en el chat
+   - Si NO hay coincidencia en normativa, igual consulta a IA pero SOLO para "aclarar / orientar" sin inventar reglas
+   - Si hay reglas, obliga a usar SOLO ese contexto
