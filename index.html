@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
-  <title>Speikito • Operación SPEI</title>
+  <title> Speikito IA PRO </title>
 
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -66,7 +66,8 @@
     #login-screen { background:#0b1220; }
     .login-image-wrap { position: relative; width: min(420px, 92vw); height: min(860px, 92vh);
       border-radius: 28px; overflow:hidden; box-shadow: 0 30px 80px rgba(0,0,0,.45); border: 1px solid rgba(148,163,184,0.18); }
-    .login-image-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
+    .login-image-wrap img, .login-image-wrap video { width:100%; height:100%; object-fit:cover; display:block; }
+    .login-top { position:absolute; top:18px; left:18px; right:18px; display:flex; align-items:center; justify-content:center; text-align:center; padding:10px 14px; border-radius:999px; font-weight:950; letter-spacing:.02em; font-size:14px; color:rgba(226,232,240,.95); background:rgba(2,6,23,0.55); border:1px solid rgba(148,163,184,0.25); backdrop-filter: blur(8px); text-shadow:0 2px 10px rgba(0,0,0,.6); }
     .login-controls { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; padding: 26px; gap: 12px; }
     .login-controls .hint { font-size: 11px; font-weight: 800; letter-spacing:.08em; text-transform: uppercase; color: rgba(226,232,240,.85); text-shadow: 0 2px 10px rgba(0,0,0,.6); }
     .login-input { width:100%; padding: 14px 16px; border-radius: 16px;
@@ -150,17 +151,11 @@
 
   <!-- LOGIN (IMAGEN COMO PANTALLA) -->
   <div id="login-screen" class="overlay hidden-ui">
-    <div class="login-image-wrap">
       <!-- IMPORTANTE: coloca tu archivo en la RAÍZ del repo (junto a index.html) -->
-      <img src="speikitologin.png" alt="Speikito Login" onerror="this.style.display='none'; document.getElementById('login-fallback').classList.remove('hidden-ui');" />
-      <div id="login-fallback" class="hidden-ui" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background: radial-gradient(circle at 30% 20%, #1d4ed8, #0b1220 70%);">
-        <div class="text-center text-white px-6">
-          <div class="text-2xl font-black">SPEI Ops</div>
-          <div class="text-sm opacity-80 font-bold mt-1">Sube <span class="font-black">speikitologin.png</span> a la raíz</div>
-        </div>
-      </div>
-
-      <!-- Controles encima de tu imagen (no es fondo) -->
+      <video id="login-video" autoplay muted loop playsinline preload="auto" poster="speikitologin.jpeg">
+        <source src="speikitologin.mp4" type="video/mp4">
+      </video>
+      <div class="login-top">Bienvenido, Operación SPEI</div>
       <div class="login-controls">
         <div class="hint">Acceso corporativo</div>
         <input id="login-id" class="login-input" placeholder="ID DE EMPLEADO" inputmode="numeric" autocomplete="off" />
@@ -174,7 +169,7 @@
   <div id="app-layout" class="layout-container hidden-ui">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <i class="fas fa-cat text-blue-500"></i> SPEI Ops
+        <i class="fas fa-cat text-blue-500"></i> Speikito IA PRO
         <button class="ml-auto md:hidden text-slate-400" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
       </div>
 
@@ -225,7 +220,7 @@
             <div class="chat-bubble bot-msg">
               <div class="bot-title"><i class="fas fa-cat text-blue-600"></i> Speikito IA PRO</div>
               <div class="text-sm text-slate-700">
-                Hola 😺, soy Speikito.<br>  Busco primero en nuestra base operativa.<br> Si hace falta más contexto, apoyo la respuesta con IA.
+                Hola soy Speikito 😺  <b>  Busco primero en nuestra base operativa.
                 <div class="mt-2 text-xs text-slate-500 font-bold">Tip: escribe <span class="font-black">/ia</span> al final para forzar IA. Ej: “¿Qué es un certificado? /ia”</div>
               </div>
             </div>
