@@ -1,908 +1,322 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
+import React, { useState, useMemo } from 'react';
+import { Search, Plus, Download, AlertCircle, Calendar, BarChart3 } from 'lucide-react';
 
-  <title> Speikito IA PRO </title>
+// Datos iniciales basados en la imagen proporcionada
+const INITIAL_DATA = [
+  {
+    id: '1',
+    fecha: '2026-03-31',
+    descripcion: 'Error en el límite de transacciones permitidas en el Web Service.',
+    afectacionEnviadas: 0,
+    afectacionRecibidas: 9902,
+    afectacionDevoluciones: 0,
+    quejas: 8,
+    totalOperaciones: 8
+  }
+];
 
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/616/616430.png" />
+export default function App() {
+  const [incidents, setIncidents] = useState(INITIAL_DATA);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchDate, setSearchDate] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  // Estado del formulario
+  const [formData, setFormData] = useState({
+    fecha: new Date().toISOString().split('T')[0],
+    descripcion: '',
+    afectacionEnviadas: 0,
+    afectacionRecibidas: 0,
+    afectacionDevoluciones: 0,
+    quejas: 0,
+    totalOperaciones: 0
+  });
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc, writeBatch, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  // Filtrado de incidencias
+  const filteredIncidents = useMemo(() => {
+    return incidents.filter(inc => {
+      const matchDate = searchDate ? inc.fecha === searchDate : true;
+      const matchText = inc.descripcion.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchDate && matchText;
+    });
+  }, [incidents, searchDate, searchTerm]);
 
-    // Configuración con fallback robusto
-    let firebaseConfig;
-    try {
-      firebaseConfig = JSON.parse(window.__firebase_config);
-    } catch (e) {
-      firebaseConfig = {
-        apiKey: "AIzaSyDPi5pcDL6OL2zCJK_0n3A_RdDGt3U3LVQ",
-        authDomain: "chatbot-8d0a3.firebaseapp.com",
-        projectId: "chatbot-8d0a3",
-        storageBucket: "chatbot-8d0a3.firebasestorage.app",
-        messagingSenderId: "390359131739",
-        appId: "1:390359131739:web:23373d0ba69b4719bb417e",
-      };
-    }
+  // Cálculo de Totales Dinámicos
+  const totals = useMemo(() => {
+    return filteredIncidents.reduce((acc, curr) => ({
+      afectacionEnviadas: acc.afectacionEnviadas + Number(curr.afectacionEnviadas || 0),
+      afectacionRecibidas: acc.afectacionRecibidas + Number(curr.afectacionRecibidas || 0),
+      afectacionDevoluciones: acc.afectacionDevoluciones + Number(curr.afectacionDevoluciones || 0),
+      quejas: acc.quejas + Number(curr.quejas || 0),
+      totalOperaciones: acc.totalOperaciones + Number(curr.totalOperaciones || 0),
+    }), { afectacionEnviadas: 0, afectacionRecibidas: 0, afectacionDevoluciones: 0, quejas: 0, totalOperaciones: 0 });
+  }, [filteredIncidents]);
 
-    const appId = (typeof __app_id !== "undefined" && __app_id) ? __app_id : firebaseConfig.projectId;
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === 'fecha' || name === 'descripcion' ? value : Number(value)
+    }));
+  };
 
-    window.fb = { auth, db, appId, doc, setDoc, collection, onSnapshot, deleteDoc, writeBatch, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getDoc };
-  </script>
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIncidents(prev => [{ ...formData, id: Date.now().toString() }, ...prev]);
+    setIsModalOpen(false);
+    // Resetear formulario
+    setFormData({
+      fecha: new Date().toISOString().split('T')[0],
+      descripcion: '',
+      afectacionEnviadas: 0,
+      afectacionRecibidas: 0,
+      afectacionDevoluciones: 0,
+      quejas: 0,
+      totalOperaciones: 0
+    });
+  };
 
-  <style>
-    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
-    * { box-sizing: border-box; }
-    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:#0b1220; height:100vh; overflow:hidden; }
+  // Función para exportar a CSV (Ideal para inyectar en macros VBA)
+  const exportToCSV = () => {
+    const headers = ['FECHA', 'DESCRIPCION', 'AFECTACION ENVIADAS', 'AFECTACION RECIBIDAS', 'AFECTACION DEVOLUCIONES RECIBIDAS', 'QUEJAS', 'TOTAL DE OPERACIONES'];
+    const rows = filteredIncidents.map(inc => [
+      inc.fecha,
+      `"${inc.descripcion}"`, // Escapar comas en descripción
+      inc.afectacionEnviadas,
+      inc.afectacionRecibidas,
+      inc.afectacionDevoluciones,
+      inc.quejas,
+      inc.totalOperaciones
+    ]);
+    
+    // Fila de totales
+    rows.push(['TOTAL', '', totals.afectacionEnviadas, totals.afectacionRecibidas, totals.afectacionDevoluciones, totals.quejas, totals.totalOperaciones]);
 
-    /* Toast */
-    #toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 9999;
-      padding: 10px 16px; border-radius: 999px; font-weight: 800; font-size: 12px; color: white;
-      background: rgba(15,23,42,0.92); backdrop-filter: blur(8px); border: 1px solid rgba(148,163,184,0.25);
-      opacity: 0; pointer-events: none; transition: .25s; }
-    #toast.show { opacity: 1; top: 26px; }
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Reporte_SPEI_${searchDate || 'Global'}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
-    /* Loading */
-    .overlay { position: fixed; inset: 0; background: rgba(2,6,23,0.92); backdrop-filter: blur(6px); z-index: 60;
-      display:flex; align-items:center; justify-content:center; }
-    .hidden-ui { display:none !important; }
+  const formatNumber = (num) => new Intl.NumberFormat('es-MX').format(num);
 
-    /* Login as IMAGE SCREEN (no background) */
-    #login-screen { background:#0b1220; }
-    .login-image-wrap { position: relative; width: min(420px, 92vw); height: min(860px, 92vh);
-      border-radius: 28px; overflow:hidden; box-shadow: 0 30px 80px rgba(0,0,0,.45); border: 1px solid rgba(148,163,184,0.18); }
-    .login-image-wrap img, .login-image-wrap video { width:100%; height:100%; object-fit:cover; display:block; }
-    .login-top { position:absolute; top:18px; left:18px; right:18px; display:flex; align-items:center; justify-content:center; text-align:center; padding:10px 14px; border-radius:999px; font-weight:950; letter-spacing:.02em; font-size:14px; color:rgba(226,232,240,.95); background:rgba(2,6,23,0.55); border:1px solid rgba(148,163,184,0.25); backdrop-filter: blur(8px); text-shadow:0 2px 10px rgba(0,0,0,.6); }
-    .login-controls { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; padding: 26px; gap: 12px; }
-    .login-controls .hint { font-size: 11px; font-weight: 800; letter-spacing:.08em; text-transform: uppercase; color: rgba(226,232,240,.85); text-shadow: 0 2px 10px rgba(0,0,0,.6); }
-    .login-input { width:100%; padding: 14px 16px; border-radius: 16px;
-      background: rgba(2,6,23,0.55); border: 1px solid rgba(59,130,246,0.55);
-      color: rgba(226,232,240,0.95); font-weight: 900; letter-spacing: .14em; text-align:center; outline:none; }
-    .login-input:focus { border-color: rgba(147,197,253,0.9); box-shadow: 0 0 0 3px rgba(59,130,246,0.25); }
-    .login-btn { width:100%; padding: 14px 16px; border-radius: 16px; font-weight: 900; letter-spacing:.04em;
-      background: rgba(15,23,42,0.65); border: 1px solid rgba(148,163,184,0.25);
-      color: rgba(226,232,240,0.92); }
-    .login-btn:hover { background: rgba(15,23,42,0.78); }
-    .login-msg { font-size: 12px; font-weight: 900; color: rgb(248,113,113); text-align:center; opacity: 0; transition: .2s; text-shadow:0 2px 8px rgba(0,0,0,.5); }
-    .login-msg.show { opacity: 1; }
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-4 md:p-6 pb-24 md:pb-6">
+      {/* Header Responsivo */}
+      <header className="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <AlertCircle className="text-blue-600" />
+            Control SPEI
+          </h1>
+          <p className="text-slate-500 text-xs md:text-sm mt-1">Monitoreo de incidencias operativas</p>
+        </div>
+        <div className="flex gap-2 w-full md:w-auto">
+          <button onClick={exportToCSV} className="flex-1 md:flex-none flex justify-center items-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-3 md:py-2 rounded-xl md:rounded-lg hover:bg-slate-50 transition-colors shadow-sm text-sm font-medium">
+            <Download size={18} />
+            Exportar CSV
+          </button>
+          <button onClick={() => setIsModalOpen(true)} className="hidden md:flex flex-none items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium">
+            <Plus size={18} />
+            Registrar Incidencia
+          </button>
+        </div>
+      </header>
 
-    /* App layout */
-    .layout-container { display:flex; height:100%; width:100%; background:#0b1220; }
-    .sidebar { width:280px; background:#0f172a; color:#94a3b8; border-right:1px solid #1e293b; display:flex; flex-direction:column; z-index: 20; flex-shrink:0; transition: transform .25s ease; }
-    .sidebar-header { padding: 18px 18px; border-bottom:1px solid #1e293b; display:flex; align-items:center; gap:10px; color:white; font-weight:900; }
-    .nav-scroll { flex:1; overflow:auto; padding: 10px 0; }
-    .nav-section { font-size:10px; font-weight:900; text-transform:uppercase; color:#475569; padding: 14px 18px 8px; letter-spacing:.12em; }
-    .nav-item { padding: 12px 18px; cursor:pointer; display:flex; gap:10px; align-items:center; font-size: 13px; font-weight: 700; border-left: 3px solid transparent; }
-    .nav-item:hover { background:#1e293b; color:white; }
-    .nav-item.active { background:#1e293b; color:white; border-left-color:#3b82f6; }
-    .main-area { flex:1; display:flex; flex-direction:column; background:white; overflow:hidden; }
-    .top-header { height:64px; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between; padding: 0 18px; }
-    .view { flex:1; overflow:auto; }
-    .chat-box { padding: 18px; background: #f8fafc; height: calc(100vh - 64px - 86px); overflow:auto; }
-    .chat-input-area { padding: 16px 18px; border-top: 1px solid #e2e8f0; background:white; height: 86px; display:flex; align-items:center; }
-    .chat-bubble { max-width: 92%; padding: 12px 14px; border-radius: 16px; font-size: 14px; line-height: 1.55; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
-    .user-msg { background:#2563eb; color:white; border-bottom-right-radius: 4px; }
-    .bot-msg { background:white; border: 1px solid #e2e8f0; color:#0f172a; border-bottom-left-radius: 4px; width: 100%; }
-    .bot-title { font-weight: 900; display:flex; gap:8px; align-items:center; margin-bottom: 6px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
-
-    /* Base results card */
-    .kb-results { background:#fff7ed; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 12px; }
-    .kb-row { padding: 10px 10px; border: 1px solid #fde68a; background: #fffbeb; border-radius: 10px; margin-top: 8px; }
-    .kb-row h4 { font-weight: 900; font-size: 13px; color: #7c2d12; }
-    .kb-row p { font-size: 12px; color:#92400e; margin-top: 2px; }
-
-    /* Table view */
-    .view-section { display:none; padding:18px; }
-    .view-section.active { display:block; }
-    .data-card { background:white; border:1px solid #e2e8f0; border-radius: 14px; padding: 12px; display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom: 10px; }
-    .badge { font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; padding: 4px 8px; border-radius: 999px; display:inline-block; }
-    .badge-REGLA_SPEI { background:#fffbeb; color:#b45309; }
-    .badge-CERTIFICADO { background:#eff6ff; color:#1d4ed8; }
-    .badge-EXTENSION { background:#f0fdf4; color:#15803d; }
-    .badge-MANUAL { background:#f1f5f9; color:#334155; }
-    .badge-ARCHIVO { background:#e0f2fe; color:#0369a1; }
-
-    .form-input { width:100%; padding: 12px 12px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 13px; font-weight: 700; outline:none; }
-    .form-input:focus { border-color:#2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
-    .form-label { font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color:#64748b; margin-bottom: 6px; display:block; }
-
-    .modal-overlay { position: fixed; inset:0; background: rgba(2,6,23,0.85); z-index: 70; display:flex; align-items:center; justify-content:center; }
-    .modal { width:min(860px, 94vw); max-height: 92vh; background:white; border-radius: 18px; overflow:hidden; box-shadow: 0 25px 70px rgba(0,0,0,.35); display:flex; flex-direction:column; }
-    .modal-head { padding: 14px 16px; border-bottom: 1px solid #e2e8f0; background:#f8fafc; display:flex; align-items:center; justify-content:space-between; }
-    .modal-body { padding: 16px; overflow:auto; }
-    .modal-foot { padding: 14px 16px; border-top: 1px solid #e2e8f0; background:#f8fafc; display:flex; justify-content:flex-end; gap:10px; }
-
-    .admin-only.hidden-ui { display:none !important; }
-
-    @media (max-width: 768px){
-      .sidebar { position: fixed; inset:0 auto 0 0; height:100%; transform: translateX(-100%); }
-      .sidebar.open { transform: translateX(0); }
-      #sidebar-backdrop { display:none; }
-      #sidebar-backdrop.show { display:block; position:fixed; inset:0; background: rgba(0,0,0,.45); z-index: 10; }
-    }
-  </style>
-</head>
-
-<body>
-  <div id="toast">OK</div>
-
-  <!-- LOADING -->
-  <div id="loading-screen" class="overlay">
-    <div class="text-center">
-      <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-      <p class="text-xs font-black uppercase tracking-widest text-slate-300">Iniciando Speikito…</p>
-    </div>
-  </div>
-
-  <!-- LOGIN (IMAGEN COMO PANTALLA) -->
-  <div id="login-screen" class="overlay hidden-ui">
-      <!-- IMPORTANTE: coloca tu archivo en la RAÍZ del repo (junto a index.html) -->
-      <video id="login-video" autoplay muted loop playsinline preload="auto" poster="speikitologin.jpeg">
-        <source src="speikitologin.mp4" type="video/mp4">
-      </video>
-      <div class="login-top">Bienvenido, Operación SPEI</div>
-      <div class="login-controls">
-        <div class="hint">By Daniel Anzaldo</div>
-        <input id="login-id" class="login-input" placeholder="ID DE EMPLEADO" inputmode="numeric" autocomplete="off" />
-        <button id="btn-login" class="login-btn" onclick="handleLogin()"><i class="fas fa-fingerprint mr-2"></i>INGRESAR</button>
-        <div id="login-msg" class="login-msg">Credenciales incorrectas</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- APP -->
-  <div id="app-layout" class="layout-container hidden-ui">
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <i class="fas fa-cat text-blue-500"></i> Speikito IA PRO
-        <button class="ml-auto md:hidden text-slate-400" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
-      </div>
-
-      <div class="nav-scroll">
-        <div class="nav-section">Operación</div>
-        <div onclick="navigate('chat')" class="nav-item active" id="nav-chat"><i class="fas fa-comments w-5"></i> Speikito</div>
-
-        <div class="admin-only hidden-ui">
-          <div class="nav-section">Gestión</div>
-          <div onclick="navigate('admin-all')" class="nav-item text-blue-400" id="nav-all"><i class="fas fa-globe w-5"></i> Ver todo</div>
-          <div onclick="navigate('admin-rules')" class="nav-item text-amber-600" id="nav-rules"><i class="fas fa-balance-scale w-5"></i> Normativa</div>
-          <div onclick="navigate('admin-cert')" class="nav-item" id="nav-cert"><i class="fas fa-certificate w-5"></i> Certificados</div>
-          <div onclick="navigate('admin-ext')" class="nav-item" id="nav-ext"><i class="fas fa-address-book w-5"></i> Directorio</div>
-          <div onclick="navigate('admin-docs')" class="nav-item" id="nav-docs"><i class="fas fa-book w-5"></i> Manuales</div>
-          <div onclick="navigate('admin-users')" class="nav-item text-indigo-400" id="nav-users"><i class="fas fa-users-cog w-5"></i> Usuarios</div>
+      {/* KPI Cards - Scroll horizontal en móvil para optimizar espacio */}
+      <div className="flex overflow-x-auto md:grid md:grid-cols-4 gap-4 mb-6 pb-2 md:pb-0 snap-x">
+        <div className="min-w-[200px] flex-1 bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-blue-500 snap-center">
+          <p className="text-[10px] md:text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">Total Afectadas (Rx)</p>
+          <p className="text-xl md:text-2xl font-bold text-slate-800">{formatNumber(totals.afectacionRecibidas)}</p>
+        </div>
+        <div className="min-w-[200px] flex-1 bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-indigo-500 snap-center">
+          <p className="text-[10px] md:text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">Total Afectadas (Tx)</p>
+          <p className="text-xl md:text-2xl font-bold text-slate-800">{formatNumber(totals.afectacionEnviadas)}</p>
+        </div>
+        <div className="min-w-[200px] flex-1 bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-orange-500 snap-center">
+          <p className="text-[10px] md:text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">Quejas Acumuladas</p>
+          <p className="text-xl md:text-2xl font-bold text-slate-800">{formatNumber(totals.quejas)}</p>
+        </div>
+        <div className="min-w-[200px] flex-1 bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-slate-700 snap-center">
+          <p className="text-[10px] md:text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">Volumen Operaciones</p>
+          <p className="text-xl md:text-2xl font-bold text-slate-800">{formatNumber(totals.totalOperaciones)}</p>
         </div>
       </div>
 
-      <div class="p-4 border-t border-slate-800">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center text-white font-black text-xs" id="user-avatar">DA</div>
-          <div class="overflow-hidden">
-            <p class="text-xs font-black text-white truncate" id="user-name">Usuario</p>
-            <p class="text-[10px] text-slate-400 uppercase font-black truncate" id="user-role">ROL</p>
+      {/* Filtros */}
+      <div className="bg-white p-4 rounded-xl md:rounded-t-xl md:rounded-b-none md:border md:border-b-0 border-slate-200 flex flex-col gap-3 shadow-sm md:shadow-none mb-2 md:mb-0">
+        <h2 className="hidden md:flex text-lg font-semibold items-center gap-2">
+          <BarChart3 size={20} className="text-slate-500"/>
+          Registro de Incidencias
+        </h2>
+        <div className="flex flex-col md:flex-row gap-3 w-full">
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="Buscar por descripción..." 
+              className="w-full pl-10 pr-4 py-3 md:py-2 border border-slate-300 rounded-xl md:rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-base md:text-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2 w-full md:w-auto">
+            <div className="relative w-full md:w-48 flex-1">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input 
+                type="date" 
+                className="w-full pl-10 pr-4 py-3 md:py-2 border border-slate-300 rounded-xl md:rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-base md:text-sm"
+                value={searchDate}
+                onChange={(e) => setSearchDate(e.target.value)}
+              />
+            </div>
+            {searchDate && (
+               <button onClick={() => setSearchDate('')} className="text-sm text-blue-600 hover:bg-blue-50 px-3 rounded-xl md:rounded-lg whitespace-nowrap">
+                 Limpiar
+               </button>
+            )}
           </div>
         </div>
-        <button onclick="logout()" class="w-full bg-slate-800 hover:bg-red-900/50 text-slate-300 hover:text-red-200 py-2 rounded text-xs font-black transition-all">
-          <i class="fas fa-sign-out-alt mr-2"></i>Cerrar sesión
-        </button>
-      </div>
-    </aside>
-
-    <div id="sidebar-backdrop" onclick="toggleSidebar()"></div>
-
-    <main class="main-area">
-      <div class="top-header">
-        <div class="flex items-center gap-3">
-          <button class="md:hidden text-slate-500 text-xl" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-          <h2 class="font-black text-slate-900 text-lg" id="page-title">Chat Operativo</h2>
-        </div>
-        <div class="flex gap-2" id="header-actions"></div>
       </div>
 
-      <!-- CHAT -->
-      <section id="view-chat" class="view">
-        <div id="chat-box" class="chat-box">
-          <div class="flex justify-start mb-3">
-            <div class="chat-bubble bot-msg">
-              <div class="bot-title"><i class="fas fa-cat text-blue-600"></i> Speikito </div>
-              <div class="text-sm text-slate-700">
-                Hola soy Speikito 😺 <b> Busco primero en nuestra base operativa.
-                <div class="mt-2 text-xs text-slate-500 font-bold">Tip: escribe <span class="font-black">/</span> Ej: “¿Qué es un SPEI? ”</div>
+      {/* VISTA MÓVIL (Tarjetas en lugar de tabla) */}
+      <div className="md:hidden space-y-4 mt-4">
+        {filteredIncidents.length > 0 ? (
+          filteredIncidents.map((inc) => (
+            <div key={inc.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 active:scale-[0.99] transition-transform">
+              <div className="flex justify-between items-start mb-3">
+                <span className="font-bold text-slate-800 text-sm">{inc.fecha}</span>
+                <span className="text-xs bg-slate-800 text-white px-2 py-1 rounded-md font-medium">
+                  {formatNumber(inc.totalOperaciones)} Ops
+                </span>
+              </div>
+              <p className="text-sm text-slate-600 mb-4 line-clamp-3">{inc.descripcion}</p>
+              <div className="grid grid-cols-2 gap-x-2 gap-y-3 text-xs border-t border-slate-100 pt-3">
+                <div className="flex flex-col"><span className="text-slate-400 mb-0.5">Enviadas</span> <span className="font-semibold text-slate-700 text-sm">{inc.afectacionEnviadas === 0 ? 'NA' : formatNumber(inc.afectacionEnviadas)}</span></div>
+                <div className="flex flex-col"><span className="text-slate-400 mb-0.5">Recibidas</span> <span className="font-semibold text-slate-700 text-sm">{inc.afectacionRecibidas === 0 ? '-' : formatNumber(inc.afectacionRecibidas)}</span></div>
+                <div className="flex flex-col"><span className="text-slate-400 mb-0.5">Devoluciones</span> <span className="font-semibold text-slate-700 text-sm">{inc.afectacionDevoluciones === 0 ? '-' : formatNumber(inc.afectacionDevoluciones)}</span></div>
+                <div className="flex flex-col"><span className="text-slate-400 mb-0.5">Quejas</span> <span className="font-semibold text-slate-700 text-sm">{formatNumber(inc.quejas)}</span></div>
               </div>
             </div>
+          ))
+        ) : (
+          <div className="bg-white p-8 text-center text-slate-500 rounded-xl border border-slate-200 shadow-sm">
+            No hay incidencias registradas.
           </div>
-        </div>
-        <div class="chat-input-area">
-          <form id="chat-form" class="w-full max-w-5xl mx-auto flex gap-2">
-            <input id="chat-input" class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-black text-slate-800 outline-none focus:border-blue-500"
-              placeholder="Pregunta aquí…" autocomplete="off" />
-            <button class="w-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg hover:bg-blue-700 active:scale-95" type="submit">
-              <i class="fas fa-paper-plane text-lg"></i>
-            </button>
-          </form>
-        </div>
-      </section>
-
-      <!-- TABLE -->
-      <section id="view-table" class="view-section">
-        <div class="flex flex-wrap gap-2 items-center mb-4">
-          <input id="table-search" class="form-input max-w-sm" placeholder="Filtrar…" oninput="renderCurrent()" />
-          <button class="px-3 py-2 rounded-xl border font-black text-xs" onclick="renderCurrent()"><i class="fas fa-sync-alt mr-2"></i>Refrescar</button>
-          <button class="admin-only hidden-ui px-3 py-2 rounded-xl bg-blue-600 text-white font-black text-xs" onclick="openModal('modal-capture')"><i class="fas fa-plus mr-2"></i>Nuevo</button>
-          <button class="admin-only hidden-ui px-3 py-2 rounded-xl bg-amber-600 text-white font-black text-xs" onclick="openModal('modal-upload')"><i class="fas fa-upload mr-2"></i>Carga masiva</button>
-        </div>
-        <div id="table-content"></div>
-      </section>
-    </main>
-  </div>
-
-  <!-- MODAL: CAPTURA INDIVIDUAL -->
-  <div id="modal-capture" class="modal-overlay hidden-ui">
-    <div class="modal">
-      <div class="modal-head">
-        <div class="font-black text-slate-900">Nuevo registro</div>
-        <button class="text-slate-400 hover:text-red-500" onclick="closeModal('modal-capture')"><i class="fas fa-times"></i></button>
+        )}
       </div>
-      <div class="modal-body">
-        <div class="mb-5">
-          <label class="form-label">Tipo</label>
-          <div class="grid grid-cols-2 gap-2">
-            <button class="px-3 py-3 rounded-xl border font-black text-xs" onclick="setFormType('REGLA_SPEI')"><i class="fas fa-balance-scale mr-2 text-amber-600"></i>Regla</button>
-            <button class="px-3 py-3 rounded-xl border font-black text-xs" onclick="setFormType('CERTIFICADO')"><i class="fas fa-certificate mr-2 text-blue-600"></i>Certificado</button>
-            <button class="px-3 py-3 rounded-xl border font-black text-xs" onclick="setFormType('EXTENSION')"><i class="fas fa-address-book mr-2 text-emerald-600"></i>Extensión</button>
-            <button class="px-3 py-3 rounded-xl border font-black text-xs" onclick="setFormType('MANUAL')"><i class="fas fa-book mr-2 text-slate-600"></i>Manual</button>
-          </div>
-          <input type="hidden" id="current-type" value="MANUAL" />
-          <input type="hidden" id="editing-id" value="" />
-        </div>
 
-        <div id="form-rule" class="space-y-3 hidden">
-          <div class="grid grid-cols-2 gap-3">
-            <div><label class="form-label">Regla</label><input id="r-rule" class="form-input" placeholder="Ej. 17a"></div>
-            <div><label class="form-label">Capítulo</label><input id="r-chap" class="form-input" placeholder="Ej. Cap 3"></div>
-          </div>
-          <div><label class="form-label">Tema operativo</label><input id="r-topic" class="form-input"></div>
-          <div><label class="form-label">Texto literal</label><textarea id="r-text" class="form-input" style="height:120px"></textarea></div>
-          <div><label class="form-label">Palabras clave</label><input id="r-key" class="form-input" placeholder="Ej. devolucion retorno rechazo"></div>
-        </div>
-
-        <div id="form-cert" class="space-y-3 hidden">
-          <div class="grid grid-cols-2 gap-3">
-            <div><label class="form-label">Últimos 4</label><input id="c-num" class="form-input uppercase" maxlength="4"></div>
-            <div><label class="form-label">Negocio</label><select id="c-neg" class="form-input">
-              <option>SPEI</option><option>CODI</option><option>DIMO</option><option>SPID</option><option>BDT</option><option>R2</option>
-            </select></div>
-            <div><label class="form-label">Entorno</label><select id="c-env" class="form-input"><option>PRODUCCION</option><option>BETA</option></select></div>
-            <div><label class="form-label">Estatus</label><input id="c-stat" class="form-input" placeholder="VIGENTE / VENCIDO"></div>
-            <div><label class="form-label">Vigencia inicio</label><input id="c-ini" type="date" class="form-input"></div>
-            <div><label class="form-label">Vigencia fin</label><input id="c-fin" type="date" class="form-input"></div>
-          </div>
-        </div>
-
-        <div id="form-ext" class="space-y-3 hidden">
-          <div class="grid grid-cols-2 gap-3">
-            <div><label class="form-label">Extensión</label><input id="e-num" class="form-input"></div>
-            <div><label class="form-label">Nombre</label><input id="e-nom" class="form-input"></div>
-          </div>
-          <div><label class="form-label">Área</label><input id="e-area" class="form-input"></div>
-        </div>
-
-        <div id="form-doc" class="space-y-3">
-          <div><label class="form-label">Título</label><input id="d-title" class="form-input"></div>
-          <div><label class="form-label">Contenido</label><textarea id="d-content" class="form-input" style="height:140px"></textarea></div>
-        </div>
+      {/* VISTA DESKTOP (Tabla tradicional) */}
+      <div className="hidden md:block bg-white border border-slate-200 rounded-b-xl shadow-sm overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-800 text-white text-xs uppercase tracking-wider">
+              <th className="p-3 font-semibold border-b border-slate-700 w-28">Fecha</th>
+              <th className="p-3 font-semibold border-b border-slate-700">Descripción</th>
+              <th className="p-3 font-semibold border-b border-slate-700 text-right">Afec. Enviadas</th>
+              <th className="p-3 font-semibold border-b border-slate-700 text-right">Afec. Recibidas</th>
+              <th className="p-3 font-semibold border-b border-slate-700 text-right">Afec. Devoluciones</th>
+              <th className="p-3 font-semibold border-b border-slate-700 text-right">Quejas</th>
+              <th className="p-3 font-semibold border-b border-slate-700 text-right">Total Operaciones</th>
+            </tr>
+          </thead>
+          <tbody className="text-sm divide-y divide-slate-100">
+            {filteredIncidents.length > 0 ? (
+              filteredIncidents.map((inc) => (
+                <tr key={inc.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="p-3 font-medium text-slate-900">{inc.fecha}</td>
+                  <td className="p-3 text-slate-600">{inc.descripcion}</td>
+                  <td className="p-3 text-right">{inc.afectacionEnviadas === 0 ? 'NA' : formatNumber(inc.afectacionEnviadas)}</td>
+                  <td className="p-3 text-right">{inc.afectacionRecibidas === 0 ? '-' : formatNumber(inc.afectacionRecibidas)}</td>
+                  <td className="p-3 text-right">{inc.afectacionDevoluciones === 0 ? '-' : formatNumber(inc.afectacionDevoluciones)}</td>
+                  <td className="p-3 text-right">{formatNumber(inc.quejas)}</td>
+                  <td className="p-3 text-right font-medium">{formatNumber(inc.totalOperaciones)}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7" className="p-8 text-center text-slate-500">
+                  No se encontraron incidencias para los criterios seleccionados.
+                </td>
+              </tr>
+            )}
+          </tbody>
+          {filteredIncidents.length > 0 && (
+            <tfoot className="bg-slate-800 text-white font-bold text-sm">
+              <tr>
+                <td colSpan="2" className="p-3 text-center tracking-widest uppercase">TOTAL</td>
+                <td className="p-3 text-right">{formatNumber(totals.afectacionEnviadas)}</td>
+                <td className="p-3 text-right">{formatNumber(totals.afectacionRecibidas)}</td>
+                <td className="p-3 text-right">{formatNumber(totals.afectacionDevoluciones)}</td>
+                <td className="p-3 text-right">{formatNumber(totals.quejas)}</td>
+                <td className="p-3 text-right">{formatNumber(totals.totalOperaciones)}</td>
+              </tr>
+            </tfoot>
+          )}
+        </table>
       </div>
-      <div class="modal-foot">
-        <button class="px-4 py-2 rounded-xl font-black text-xs border" onclick="closeModal('modal-capture')">Cancelar</button>
-        <button class="px-5 py-2 rounded-xl font-black text-xs bg-slate-900 text-white" onclick="saveRegistry()">Guardar</button>
-      </div>
-    </div>
-  </div>
 
-  <!-- MODAL: CARGA MASIVA -->
-  <div id="modal-upload" class="modal-overlay hidden-ui">
-    <div class="modal" style="max-width:560px">
-      <div class="modal-head">
-        <div class="font-black text-slate-900">Carga masiva (layout)</div>
-        <button class="text-slate-400 hover:text-red-500" onclick="closeModal('modal-upload')"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="modal-body">
-        <p class="text-sm text-slate-600 leading-relaxed">
-          Sube un <b>.xlsx</b> o <b>.csv</b>. El sistema detecta por columnas y conserva todos tus campos.
-        </p>
-        <div class="mt-4 p-6 border-2 border-dashed rounded-2xl cursor-pointer hover:bg-slate-50" onclick="document.getElementById('file-in').click()">
-          <div class="text-center">
-            <i class="fas fa-file-upload text-3xl text-blue-600"></i>
-            <div class="mt-2 font-black text-slate-900">Seleccionar archivo</div>
-            <div class="text-xs text-slate-500 font-bold mt-1">Columnas sugeridas abajo</div>
-          </div>
-        </div>
-        <input id="file-in" type="file" class="hidden" accept=".xlsx,.csv" onchange="handleBulkUpload(this)" />
+      {/* FAB (Floating Action Button) exclusivo MÓVIL */}
+      <button 
+        onClick={() => setIsModalOpen(true)} 
+        className="md:hidden fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-transform active:scale-95 z-40"
+      >
+        <Plus size={24} />
+      </button>
 
-        <div class="mt-5 text-xs text-slate-600">
-          <div class="font-black mb-1">Columnas sugeridas (pueden venir en MAYÚSCULAS o minúsculas):</div>
-          <ul class="list-disc ml-5 space-y-1">
-            <li><b>Regla</b>, <b>Capítulo</b>, <b>Texto_literal</b>, <b>Tema_operativo</b>, <b>Palabras_clave</b></li>
-            <li><b>NUMERO</b>, <b>NEGOCIO</b>, <b>ENTORNO</b>, <b>ESTATUS</b>, <b>INICIO</b>, <b>FIN</b></li>
-            <li><b>EXTENSION</b>, <b>NOMBRE</b>, <b>AREA</b></li>
-            <li><b>TITULO</b>, <b>CONTENIDO</b></li>
-          </ul>
-        </div>
-      </div>
-      <div class="modal-foot">
-        <button class="px-4 py-2 rounded-xl font-black text-xs border" onclick="closeModal('modal-upload')">Cerrar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: USUARIOS -->
-  <div id="modal-user" class="modal-overlay hidden-ui">
-    <div class="modal" style="max-width:520px">
-      <div class="modal-head">
-        <div class="font-black text-slate-900">Nuevo usuario</div>
-        <button class="text-slate-400 hover:text-red-500" onclick="closeModal('modal-user')"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="modal-body space-y-3">
-        <input id="u-name" class="form-input" placeholder="Nombre">
-        <input id="u-id" class="form-input" placeholder="ID Empleado">
-        <select id="u-role" class="form-input">
-          <option value="user">Usuario Operativo</option>
-          <option value="admin">Administrador</option>
-        </select>
-      </div>
-      <div class="modal-foot">
-        <button class="px-4 py-2 rounded-xl font-black text-xs border" onclick="closeModal('modal-user')">Cancelar</button>
-        <button class="px-5 py-2 rounded-xl font-black text-xs bg-indigo-600 text-white" onclick="saveUser()">Crear</button>
-      </div>
-    </div>
-  </div>
-
-  <script type="module">
-    const { auth, db, appId, doc, setDoc, collection, onSnapshot, deleteDoc, writeBatch, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getDoc } = window.fb;
-
-    let currentUser = null;
-    let knowledgeBase = [];
-    let team = [];
-    let currentViewType = null;
-
-    // --------- UI HELPERS ----------
-    window.toast = (msg, isErr=false) => {
-      const t = document.getElementById("toast");
-      t.textContent = msg;
-      t.style.background = isErr ? "rgba(239,68,68,.92)" : "rgba(16,185,129,.92)";
-      t.classList.add("show");
-      setTimeout(() => t.classList.remove("show"), 2600);
-    };
-
-    window.toggleSidebar = () => {
-      document.getElementById("sidebar").classList.toggle("open");
-      const b = document.getElementById("sidebar-backdrop");
-      b.classList.toggle("show");
-    };
-
-    window.openModal = (id) => document.getElementById(id).classList.remove("hidden-ui");
-    window.closeModal = (id) => document.getElementById(id).classList.add("hidden-ui");
-
-    // --------- AUTH / LOGIN ----------
-    function setLoginError(show) {
-      const el = document.getElementById("login-msg");
-      el.classList.toggle("show", !!show);
-    }
-
-    window.handleLogin = () => {
-      const val = document.getElementById("login-id").value.trim();
-      setLoginError(false);
-
-      // Super-admin bootstrap (tú)
-      if (val === "682930") {
-        login({ name: "Daniel Anzaldo", role: "admin", empNumber: "682930" });
-        return;
-      }
-
-      const u = team.find(x => (x.empNumber || x.id) === val);
-      if (u) login({ ...u, empNumber: u.empNumber || u.id });
-      else setLoginError(true);
-    };
-
-    window.logout = () => {
-      localStorage.removeItem("speikito_session");
-      location.reload();
-    };
-
-    function login(u) {
-      currentUser = u;
-      localStorage.setItem("speikito_session", JSON.stringify(u));
-
-      document.getElementById("login-screen").classList.add("hidden-ui");
-      document.getElementById("loading-screen").classList.add("hidden-ui");
-      document.getElementById("app-layout").classList.remove("hidden-ui");
-
-      document.getElementById("user-name").textContent = u.name || "Usuario";
-      document.getElementById("user-role").textContent = (u.role === "admin") ? "ADMIN" : "OPERATIVO";
-      document.getElementById("user-avatar").textContent = (u.name || "U").split(" ").slice(0,2).map(s=>s[0]).join("").toUpperCase();
-
-      if (u.role !== "admin") {
-        document.querySelectorAll(".admin-only").forEach(x => x.classList.add("hidden-ui"));
-      } else {
-        document.querySelectorAll(".admin-only").forEach(x => x.classList.remove("hidden-ui"));
-      }
-    }
-
-    const initAuth = async () => {
-      try {
-        if (typeof __initial_auth_token !== "undefined" && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
-      } catch (e) {
-        console.error(e);
-        window.toast("Error de autenticación Firebase", true);
-      }
-    };
-
-    // --------- NAV ----------
-    window.navigate = (view) => {
-      if (window.innerWidth < 768) {
-        document.getElementById("sidebar").classList.remove("open");
-        document.getElementById("sidebar-backdrop").classList.remove("show");
-      }
-
-      document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
-      document.getElementById("nav-chat")?.classList.remove("active");
-
-      const chat = document.getElementById("view-chat");
-      const table = document.getElementById("view-table");
-      const actions = document.getElementById("header-actions");
-
-      if (view === "chat") {
-        document.getElementById("nav-chat").classList.add("active");
-        document.getElementById("page-title").textContent = "Chat Operativo";
-        chat.style.display = "block";
-        table.classList.remove("active");
-        actions.innerHTML = "";
-        currentViewType = null;
-        return;
-      }
-
-      chat.style.display = "none";
-      table.classList.add("active");
-
-      let type="ALL", label="Base completa", navId="nav-all";
-      if (view==="admin-rules") { type="REGLA_SPEI"; label="Normativa"; navId="nav-rules"; }
-      if (view==="admin-cert") { type="CERTIFICADO"; label="Certificados"; navId="nav-cert"; }
-      if (view==="admin-ext")  { type="EXTENSION"; label="Directorio"; navId="nav-ext"; }
-      if (view==="admin-docs") { type="MANUAL"; label="Manuales"; navId="nav-docs"; }
-      if (view==="admin-users"){ type="USERS"; label="Usuarios"; navId="nav-users"; }
-
-      document.getElementById(navId)?.classList.add("active");
-      document.getElementById("page-title").textContent = label;
-      currentViewType = type;
-
-      if (type==="USERS") {
-        actions.innerHTML = `<button class="px-3 py-2 rounded-xl bg-indigo-600 text-white font-black text-xs" onclick="openModal('modal-user')"><i class="fas fa-user-plus mr-2"></i>Nuevo</button>`;
-      } else {
-        actions.innerHTML = `
-          <button class="px-3 py-2 rounded-xl bg-blue-600 text-white font-black text-xs admin-only" onclick="openModal('modal-capture')"><i class="fas fa-plus mr-2"></i>Nuevo</button>
-          <button class="px-3 py-2 rounded-xl bg-amber-600 text-white font-black text-xs admin-only" onclick="openModal('modal-upload')"><i class="fas fa-upload mr-2"></i>Carga masiva</button>
-        `;
-      }
-
-      renderCurrent();
-    };
-
-    window.renderCurrent = () => renderList(currentViewType);
-
-    // --------- FORMS ----------
-    window.setFormType = (t) => {
-      document.getElementById("current-type").value = t;
-      ["form-rule","form-cert","form-ext","form-doc"].forEach(id => document.getElementById(id).classList.add("hidden"));
-      if (t==="REGLA_SPEI") document.getElementById("form-rule").classList.remove("hidden");
-      else if (t==="CERTIFICADO") document.getElementById("form-cert").classList.remove("hidden");
-      else if (t==="EXTENSION") document.getElementById("form-ext").classList.remove("hidden");
-      else document.getElementById("form-doc").classList.remove("hidden");
-    };
-
-    window.saveRegistry = async () => {
-      try {
-        const type = document.getElementById("current-type").value || "MANUAL";
-        const id = document.getElementById("editing-id").value || ("doc_" + Date.now());
-        const now = new Date().toISOString();
-
-        let data = { contentType: type, date: now, author: (currentUser?.name || "SYSTEM") };
-
-        if (type==="REGLA_SPEI") {
-          data.regla = (document.getElementById("r-rule").value || "").trim();
-          data.capitulo = (document.getElementById("r-chap").value || "").trim();
-          data.tema = (document.getElementById("r-topic").value || "").trim();
-          data.content = (document.getElementById("r-text").value || "").trim();
-          data.keywords = (document.getElementById("r-key").value || "").trim();
-          data.title = `Regla ${data.regla || "s/n"}`;
-        } else if (type==="CERTIFICADO") {
-          data.num = (document.getElementById("c-num").value || "").trim();
-          data.negocio = document.getElementById("c-neg").value;
-          data.entorno = document.getElementById("c-env").value;
-          data.estatus = (document.getElementById("c-stat").value || "").trim();
-          data.vigenciaIni = document.getElementById("c-ini").value || "";
-          data.vigenciaFin = document.getElementById("c-fin").value || "";
-          data.title = `CERT ${data.num || "s/n"}`;
-          data.content = `${data.negocio} | ${data.entorno} | ${data.estatus}`;
-        } else if (type==="EXTENSION") {
-          data.ext = (document.getElementById("e-num").value || "").trim();
-          data.nombre = (document.getElementById("e-nom").value || "").trim();
-          data.area = (document.getElementById("e-area").value || "").trim();
-          data.title = `EXT ${data.ext || "s/n"}`;
-          data.content = `${data.nombre} - ${data.area}`;
-        } else {
-          data.title = (document.getElementById("d-title").value || "").trim() || "Sin título";
-          data.content = (document.getElementById("d-content").value || "").trim();
-        }
-
-        await setDoc(doc(db, "artifacts", appId, "public", "data", "knowledge", id), data, { merge: true });
-        window.toast("Guardado");
-        closeModal("modal-capture");
-        renderCurrent();
-      } catch (e) {
-        console.error(e);
-        window.toast("Error al guardar", true);
-      }
-    };
-
-    window.saveUser = async () => {
-      try {
-        const n = (document.getElementById("u-name").value || "").trim();
-        const i = (document.getElementById("u-id").value || "").trim();
-        const r = document.getElementById("u-role").value || "user";
-        if (!n || !i) return window.toast("Faltan datos", true);
-
-        await setDoc(doc(db, "artifacts", appId, "public", "data", "team", i), { name: n, empNumber: i, role: r }, { merge: true });
-        window.toast("Usuario creado");
-        closeModal("modal-user");
-        renderCurrent();
-      } catch (e) {
-        console.error(e);
-        window.toast("Error al crear usuario", true);
-      }
-    };
-
-    window.deleteRec = async (id) => {
-      if (!confirm("¿Eliminar registro?")) return;
-      await deleteDoc(doc(db, "artifacts", appId, "public", "data", "knowledge", id));
-      window.toast("Eliminado");
-      renderCurrent();
-    };
-
-    window.deleteUser = async (id) => {
-      if (!confirm("¿Eliminar usuario?")) return;
-      await deleteDoc(doc(db, "artifacts", appId, "public", "data", "team", id));
-      window.toast("Eliminado");
-      renderCurrent();
-    };
-
-    // --------- BULK UPLOAD ----------
-    function getAny(row, keys) {
-      for (const k of keys) {
-        if (row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== "") return row[k];
-      }
-      return "";
-    }
-
-    window.handleBulkUpload = async (input) => {
-      const f = input.files?.[0];
-      if (!f) return;
-
-      try {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          const arr = new Uint8Array(e.target.result);
-          const wb = XLSX.read(arr, { type: "array" });
-          const sheet = wb.Sheets[wb.SheetNames[0]];
-          const json = XLSX.utils.sheet_to_json(sheet);
-
-          const batch = writeBatch(db);
-
-          json.forEach((row) => {
-            const id = "imp_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
-            const ref = doc(db, "artifacts", appId, "public", "data", "knowledge", id);
-
-            const rowKeys = Object.keys(row).reduce((acc,k)=>{ acc[k]=row[k]; acc[String(k).toUpperCase()]=row[k]; return acc; }, {});
-
-            const regla = getAny(rowKeys, ["Regla","REGLA"]);
-            const cap = getAny(rowKeys, ["Capítulo","CAPITULO","CAPÍTULO"]);
-            const txt = getAny(rowKeys, ["Texto_literal","TEXTO_LITERAL","CONTENIDO","TEXTO"]);
-            const tema = getAny(rowKeys, ["Tema_operativo","TEMA_OPERATIVO","TEMA","TITULO"]);
-            const kw  = getAny(rowKeys, ["Palabras_clave","PALABRAS_CLAVE","KEYWORDS"]);
-
-            const ext = getAny(rowKeys, ["EXTENSION","EXT"]);
-            const nombre = getAny(rowKeys, ["NOMBRE","NOM"]);
-            const area = getAny(rowKeys, ["AREA","ÁREA"]);
-
-            const num = getAny(rowKeys, ["NUMERO","NÚMERO","CERTIFICADO","ULTIMOS4","ULTIMOS_4","ULTIMOS 4"]);
-            const negocio = getAny(rowKeys, ["NEGOCIO","SERVICIO"]);
-            const entorno = getAny(rowKeys, ["ENTORNO","AMBIENTE"]);
-            const estatus = getAny(rowKeys, ["ESTATUS","STATUS"]);
-            const ini = getAny(rowKeys, ["INICIO","VIGENCIA_INICIO","VIGENCIAINI"]);
-            const fin = getAny(rowKeys, ["FIN","VIGENCIA_FIN","VIGENCIAFIN"]);
-
-            const titulo = getAny(rowKeys, ["TITULO","TÍTULO","TITLE"]);
-            const contenido = getAny(rowKeys, ["CONTENIDO","CONTENT","DESCRIPCION","DESCRIPCIÓN"]);
-
-            let entry = { date: new Date().toISOString(), author: (currentUser?.name || "SYSTEM") };
-
-            if (String(regla).trim() !== "") {
-              entry.contentType = "REGLA_SPEI";
-              entry.regla = String(regla).trim();
-              entry.capitulo = String(cap).trim();
-              entry.content = String(txt).trim();
-              entry.tema = String(tema).trim();
-              entry.keywords = String(kw).trim();
-              entry.title = `Regla ${entry.regla}`;
-            } else if (String(ext).trim() !== "") {
-              entry.contentType = "EXTENSION";
-              entry.ext = String(ext).trim();
-              entry.nombre = String(nombre).trim();
-              entry.area = String(area).trim();
-              entry.title = `EXT ${entry.ext}`;
-              entry.content = `${entry.nombre} - ${entry.area}`;
-            } else if (String(num).trim() !== "") {
-              entry.contentType = "CERTIFICADO";
-              entry.num = String(num).trim();
-              entry.negocio = String(negocio || "SPEI").trim();
-              entry.entorno = String(entorno || "PRODUCCION").trim();
-              entry.estatus = String(estatus).trim();
-              entry.vigenciaIni = String(ini).trim();
-              entry.vigenciaFin = String(fin).trim();
-              entry.title = `CERT ${entry.num}`;
-              entry.content = `${entry.negocio} | ${entry.entorno} | ${entry.estatus}`;
-            } else {
-              entry.contentType = "MANUAL";
-              entry.title = String(titulo || "Importado").trim();
-              entry.content = String(contenido || "").trim();
-            }
-
-            batch.set(ref, entry);
-          });
-
-          await batch.commit();
-          window.toast("Carga exitosa");
-          closeModal("modal-upload");
-          renderCurrent();
-          input.value = "";
-        };
-        reader.readAsArrayBuffer(f);
-      } catch (e) {
-        console.error(e);
-        window.toast("Error en carga masiva", true);
-      }
-    };
-
-    // --------- RENDER LIST ----------
-    function normalize(s) {
-      return String(s || "")
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase();
-    }
-
-    function renderList(type) {
-      const container = document.getElementById("table-content");
-      if (!container) return;
-
-      const q = normalize(document.getElementById("table-search")?.value || "");
-
-      let data = [];
-      if (type === "USERS") data = team;
-      else if (type === "ALL") data = knowledgeBase;
-      else if (type) data = knowledgeBase.filter(x => x.contentType === type);
-
-      if (q) {
-        data = data.filter(x => normalize(JSON.stringify(x)).includes(q));
-      }
-
-      if (!data.length) {
-        container.innerHTML = "<div class='text-center text-slate-400 font-bold py-10'>Sin registros</div>";
-        return;
-      }
-
-      container.innerHTML = data.map((i) => {
-        const isUser = (type === "USERS");
-        const id = isUser ? (i.empNumber || i.id) : i.id;
-        const badge = isUser ? "USUARIO" : (i.contentType || "ITEM");
-        const title = isUser ? (i.name || "Usuario") : (i.title || "Sin título");
-        const desc = isUser ? (i.role || "") : (i.tema || i.content || "").toString().slice(0, 110);
-
-        return `
-          <div class="data-card">
-            <div class="min-w-0">
-              ${isUser ? "" : `<span class="badge badge-${i.contentType || "MANUAL"}">${badge}</span>`}
-              ${isUser ? `<span class="badge" style="background:#eef2ff;color:#3730a3">${badge}</span>` : ""}
-              <div class="font-black text-slate-900 mt-1 truncate">${title}</div>
-              <div class="text-xs text-slate-500 font-bold truncate">${desc}</div>
+      {/* Modal / Formulario tipo App (Bottom sheet en móvil) */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 flex items-end md:items-center justify-center z-50 p-0 md:p-4">
+          <div className="bg-white w-full md:rounded-xl rounded-t-2xl shadow-2xl max-w-2xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div className="bg-slate-800 p-4 text-white flex justify-between items-center shrink-0">
+              <h3 className="font-semibold text-lg">Nueva Incidencia Operativa</h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-300 hover:text-white p-2">&times;</button>
             </div>
-            <div class="flex gap-2 shrink-0">
-              ${isUser
-                ? `<button class="px-3 py-2 rounded-xl border font-black text-xs text-red-600" onclick="deleteUser('${id}')"><i class="fas fa-trash mr-2"></i>Borrar</button>`
-                : `<button class="px-3 py-2 rounded-xl border font-black text-xs text-red-600" onclick="deleteRec('${id}')"><i class="fas fa-trash mr-2"></i>Borrar</button>`
-              }
-            </div>
+            <form onSubmit={handleSubmit} className="p-4 md:p-6 overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="col-span-2 md:col-span-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Fecha del Evento</label>
+                  <input required type="date" name="fecha" value={formData.fecha} onChange={handleInputChange} className="w-full p-3 md:p-2 border border-slate-300 rounded-xl md:rounded-lg focus:ring-2 focus:ring-blue-500 text-base" />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Descripción Técnica / Causa Raíz</label>
+                  <textarea required rows="2" name="descripcion" value={formData.descripcion} onChange={handleInputChange} className="w-full p-3 md:p-2 border border-slate-300 rounded-xl md:rounded-lg focus:ring-2 focus:ring-blue-500 text-base" placeholder="Ej. Time-out en liquidador Banxico..." />
+                </div>
+                
+                {/* Métricas con input numérico móvil */}
+                <div className="col-span-2 md:col-span-1 border-t border-slate-100 pt-3">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Afectación Enviadas</label>
+                  <input type="number" inputMode="numeric" min="0" name="afectacionEnviadas" value={formData.afectacionEnviadas} onChange={handleInputChange} className="w-full p-3 md:p-2 border border-slate-300 rounded-xl md:rounded-lg focus:ring-2 focus:ring-blue-500 text-base" />
+                </div>
+                <div className="col-span-2 md:col-span-1 border-t border-slate-100 pt-3">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Afectación Recibidas</label>
+                  <input type="number" inputMode="numeric" min="0" name="afectacionRecibidas" value={formData.afectacionRecibidas} onChange={handleInputChange} className="w-full p-3 md:p-2 border border-slate-300 rounded-xl md:rounded-lg focus:ring-2 focus:ring-blue-500 text-base" />
+                </div>
+                <div className="col-span-2 md:col-span-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Afectación Devoluciones</label>
+                  <input type="number" inputMode="numeric" min="0" name="afectacionDevoluciones" value={formData.afectacionDevoluciones} onChange={handleInputChange} className="w-full p-3 md:p-2 border border-slate-300 rounded-xl md:rounded-lg focus:ring-2 focus:ring-blue-500 text-base" />
+                </div>
+                <div className="col-span-2 md:col-span-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Quejas Recibidas</label>
+                  <input type="number" inputMode="numeric" min="0" name="quejas" value={formData.quejas} onChange={handleInputChange} className="w-full p-3 md:p-2 border border-slate-300 rounded-xl md:rounded-lg focus:ring-2 focus:ring-blue-500 text-base" />
+                </div>
+                <div className="col-span-2 bg-slate-50 p-3 rounded-xl border border-slate-200 mt-2">
+                  <label className="block text-sm font-medium text-slate-900 mb-1">Total Operaciones Afectadas</label>
+                  <input type="number" inputMode="numeric" min="0" name="totalOperaciones" value={formData.totalOperaciones} onChange={handleInputChange} className="w-full p-3 md:p-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-slate-500 font-bold text-slate-900 bg-white text-base" />
+                </div>
+              </div>
+              <div className="flex flex-col md:flex-row justify-end gap-3 mt-4 border-t border-slate-200 pt-4 pb-6 md:pb-0">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="w-full md:w-auto px-4 py-3 md:py-2 text-slate-600 border border-slate-300 md:border-none hover:bg-slate-100 rounded-xl md:rounded-lg font-medium transition-colors order-2 md:order-1">Cancelar</button>
+                <button type="submit" className="w-full md:w-auto px-4 py-3 md:py-2 bg-blue-600 text-white rounded-xl md:rounded-lg hover:bg-blue-700 font-medium transition-colors order-1 md:order-2 shadow-sm">Guardar Incidencia</button>
+              </div>
+            </form>
           </div>
-        `;
-      }).join("");
-    }
-
-    // --------- CHAT (BASE + IA) ----------
-    function parseForceIA(text) {
-      const t = text.trim();
-      const force = /\/ia\s*$/i.test(t);
-      return { force, clean: t.replace(/\/ia\s*$/i, "").trim() };
-    }
-
-    function bestHits(query, limit=8) {
-      const q = normalize(query);
-      // scoring simple: exact includes, rule number match, keywords match
-      const scored = knowledgeBase.map(k => {
-        const hay = normalize((k.title || "") + " " + (k.tema || "") + " " + (k.keywords || "") + " " + (k.content || ""));
-        let score = 0;
-        if (hay.includes(q)) score += 3;
-        // tokens
-        q.split(/\s+/).filter(Boolean).forEach(tok => { if (hay.includes(tok)) score += 1; });
-        // rule-specific
-        const ruleMatch = (k.regla && normalize(k.regla) === q) ? 5 : 0;
-        score += ruleMatch;
-        return { k, score };
-      }).filter(x => x.score > 0)
-        .sort((a,b)=>b.score-a.score)
-        .slice(0, limit)
-        .map(x=>x.k);
-      return scored;
-    }
-
-    async function askGemini(prompt, model="gemini-2.5-flash") {
-      try {
-        const res = await fetch("/api/gemini", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt, model })
-        });
-        if (!res.ok) {
-          const err = await res.json().catch(()=>({}));
-          return `Error API (${res.status}): ${err?.error || err?.message || "No se pudo consultar la IA"}`;
-        }
-        const data = await res.json();
-        return data?.text || "Sin respuesta de IA.";
-      } catch (e) {
-        return "Error de conexión.";
-      }
-    }
-
-    function addMsg(html, isUser) {
-      const box = document.getElementById("chat-box");
-      const row = document.createElement("div");
-      row.className = "flex w-full mb-3 " + (isUser ? "justify-end" : "justify-start");
-      const bubble = document.createElement("div");
-      bubble.className = "chat-bubble " + (isUser ? "user-msg" : "bot-msg");
-      bubble.innerHTML = html;
-      row.appendChild(bubble);
-      box.appendChild(row);
-      box.scrollTop = box.scrollHeight;
-    }
-
-    document.getElementById("chat-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const raw = (document.getElementById("chat-input").value || "").trim();
-      if (!raw) return;
-      document.getElementById("chat-input").value = "";
-
-      const { force, clean } = parseForceIA(raw);
-      addMsg(clean, true);
-
-      const hits = bestHits(clean, 8);
-      const rules = hits.filter(h => h.contentType === "REGLA_SPEI");
-
-      // 1) Si hay hits, muéstralos SIEMPRE (así no se ve “cortado”)
-      if (hits.length) {
-        const list = hits.map(h => `
-          <div class="kb-row">
-            <h4>${h.title || "Sin título"} ${h.capitulo ? `<span class="opacity-70 font-bold">(${h.capitulo})</span>` : ""}</h4>
-            <p>${(h.tema || "").trim() || (h.contentType || "")}</p>
-          </div>
-        `).join("");
-
-        addMsg(`
-          <div class="kb-results">
-            <div class="font-black text-xs text-amber-700 uppercase tracking-widest mb-2">Base interna (${hits.length})</div>
-            ${list}
-          </div>
-        `, false);
-      }
-
-      // 2) Decide IA: si fuerza /ia, o si no hubo hits, o si pregunta es “aclaración” (heurística)
-      const isClarify = /(explica|aclara|dime|que es|qué es|como funciona|cómo funciona|ejemplo|paso a paso)/i.test(clean);
-      const shouldUseIA = force || !hits.length || isClarify;
-
-      if (!shouldUseIA) return;
-
-      // Contexto: si hay reglas, pásalas como fuente; si no, pasa un resumen de hits no-regla
-      const ctx = rules.length
-        ? rules.map(r => `Regla: ${r.regla} | Cap: ${r.capitulo} | Tema: ${r.tema}\nTexto: ${r.content}`).join("\n\n")
-        : hits.map(h => `${h.contentType}: ${h.title}\n${h.content}`).join("\n\n");
-
-      addMsg(`<div class="text-xs font-black text-slate-500">Consultando IA…</div>`, false);
-
-      const prompt = `
-Eres Speikito, asistente de Operación SPEI (Banco).
-Responde en español, claro y práctico.
-
-CONTEXTO (si aplica):
-${ctx || "(sin contexto interno)"}
-
-PREGUNTA:
-${clean}
-
-REGLAS:
-- Si el contexto incluye una regla o texto normativo, cítalo y dilo explícitamente.
-- Si NO hay contexto interno, responde con conocimiento general y sugiere qué dato interno faltó.
-- No devuelvas JSON ni bloques con "modo/estricto". Solo texto normal.
-`;
-      const answer = await askGemini(prompt, "gemini-2.5-flash");
-      // reemplaza el "Consultando IA..." (último bot msg si coincide)
-      addMsg(`<div class="bot-title"><i class="fas fa-wand-magic-sparkles text-indigo-600"></i> IA</div><div class="text-sm text-slate-800">${escapeHtml(answer).replace(/\n/g,"<br>")}</div>`, false);
-    });
-
-    function escapeHtml(str){
-      return String(str||"")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;");
-    }
-
-    // --------- INIT ----------
-    async function init() {
-      await initAuth();
-
-      onAuthStateChanged(auth, async (u) => {
-        if (!u) return;
-
-        // Team listener
-        onSnapshot(collection(db, "artifacts", appId, "public", "data", "team"), async (s) => {
-          team = s.docs.map(d => ({ id: d.id, ...d.data() }));
-
-          // bootstrap admin si no existe
-          const adminRef = doc(db, "artifacts", appId, "public", "data", "team", "682930");
-          const adminSnap = await getDoc(adminRef).catch(()=>null);
-          if (!adminSnap || !adminSnap.exists()) {
-            await setDoc(adminRef, { name: "Daniel Anzaldo", empNumber: "682930", role: "admin" }, { merge: true });
-          }
-
-          const saved = localStorage.getItem("speikito_session");
-          if (saved) login(JSON.parse(saved));
-          else document.getElementById("login-screen").classList.remove("hidden-ui");
-
-          document.getElementById("loading-screen").classList.add("hidden-ui");
-        });
-
-        // Knowledge listener
-        onSnapshot(collection(db, "artifacts", appId, "public", "data", "knowledge"), (s) => {
-          knowledgeBase = s.docs.map(d => ({ id: d.id, ...d.data() }));
-          renderCurrent();
-        });
-      });
-    }
-
-    window.addEventListener("load", init);
-  </script>
-</body>
-</html>
+        </div>
+      )}
+    </div>
+  );
+}
